@@ -1,5 +1,15 @@
 # Technology decisions
 
+## 30.7.2025
+
+### Better Auth
+
+Password reset and rate limiting does sound fun to implement, but it's better to leave it to a well maintained library.
+
+### MongoDB client
+
+Better auth apparently works better with MongoDB client so decided to add that for the auth setup. Rest of the app uses Mongoose.
+
 ## 29.7.2025
 
 ### Express

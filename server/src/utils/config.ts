@@ -2,6 +2,15 @@ import 'dotenv/config'
 
 const port = process.env.PORT || 3001
 
+const getCorsOrigin = (): string | boolean => {
+  if (process.env.NODE_ENV === 'production') {
+    return false // The origin is the same in production
+  }
+  return process.env.CLIENT_URL || 'http://localhost:5173'
+}
+
+const corsOrigin = getCorsOrigin()
+
 const getDatabaseUrl = (): string | undefined => {
   switch (process.env.NODE_ENV) {
     case 'production':
@@ -27,4 +36,4 @@ if (!databaseUrlResult) {
 
 const databaseUrl: string = databaseUrlResult
 
-export { databaseUrl, port }
+export { databaseUrl, port, corsOrigin }

@@ -1,4 +1,5 @@
 import 'dotenv/config'
+import logger from './logger'
 
 const port = process.env.PORT || 3001
 
@@ -14,15 +15,15 @@ const corsOrigin = getCorsOrigin()
 const getDatabaseUrl = (): string | undefined => {
   switch (process.env.NODE_ENV) {
     case 'production':
-      console.log('Using production database.')
+      logger.info('Using production database.')
       return process.env.MONGODB_URI
     case 'test':
       return process.env.TEST_MONGODB_URI
     case 'development':
-      console.log('Using development database.')
+      logger.info('Using development database.')
       return process.env.MONGODB_URI
     default:
-      console.error('NODE_ENV is not set.')
+      logger.error('NODE_ENV is not set.')
       return undefined
   }
 }

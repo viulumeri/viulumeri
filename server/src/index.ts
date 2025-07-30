@@ -1,8 +1,8 @@
 import 'dotenv/config'
 import { port } from './utils/config'
 import app from './app'
+import logger from './utils/logger'
 
 app.listen(port, () => {
-  console.log(`Server running on port ${port}`)
+  logger.info(`Server running on port ${port}`)
 })
-

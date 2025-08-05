@@ -12,6 +12,19 @@ const getCorsOrigin = (): string | boolean => {
 
 const corsOrigin = getCorsOrigin()
 
+const getTrustedOrigins = (): string[] => {
+  if (process.env.NODE_ENV === 'production') {
+    return [
+      process.env.PRODUCTION_URL || 'https://example.com'
+      // + others if needed
+    ]
+  }
+  // Dev:
+  return ['http://localhost:5173', 'http://localhost:3001']
+}
+
+const trustedOrigins = getTrustedOrigins()
+
 const getDatabaseUrl = (): string | undefined => {
   switch (process.env.NODE_ENV) {
     case 'production':
@@ -37,4 +50,4 @@ if (!databaseUrlResult) {
 
 const databaseUrl: string = databaseUrlResult
 
-export { databaseUrl, port, corsOrigin }
+export { databaseUrl, port, corsOrigin, trustedOrigins }

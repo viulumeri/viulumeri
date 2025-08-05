@@ -1,6 +1,7 @@
 import { betterAuth } from 'better-auth'
 import { mongodbAdapter } from 'better-auth/adapters/mongodb'
 import { client } from '../db'
+import { trustedOrigins } from './config'
 import logger from './logger'
 
 logger.info('Initializing better-auth...')
@@ -20,7 +21,8 @@ export const auth = betterAuth({
   database: mongodbAdapter(client.db('viulumeri') as any),
   emailAndPassword: {
     enabled: true
-  }
+  },
+  trustedOrigins
 })
 
 logger.info('Better-auth initialized successfully')

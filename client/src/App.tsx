@@ -1,3 +1,4 @@
+import { Login } from './components/Login.tsx'
 import { Signup } from './components/SignUp.tsx'
 import {
   BrowserRouter as Router,
@@ -15,6 +16,7 @@ const App = () => {
 
       <Routes>
         <Route path="/signup" element={<Signup />} />
+        <Route path="/login" element={<Login />} />
       </Routes>
     </div>
   )

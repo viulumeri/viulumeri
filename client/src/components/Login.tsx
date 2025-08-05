@@ -1,15 +1,18 @@
 import { useField } from '../hooks/useField'
 import { useLogin } from '../hooks/useAuth'
+import { useNavigate } from 'react-router-dom'
 
 export const Login = () => {
   const email = useField('text')
   const password = useField('password')
+  const navigate = useNavigate()
 
   const loginMutation = useLogin({
     onSuccess: () => {
       console.log(`Login successful for ${email.value}`)
       email.reset()
       password.reset()
+      navigate('/')
     },
     onError: error => {
       console.error(error instanceof Error ? error.message : 'Login failed.')

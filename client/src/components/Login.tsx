@@ -26,6 +26,7 @@ export const Login = () => {
       password: password.value
     })
   }
+
   return (
     <div>
       <h2>Login</h2>

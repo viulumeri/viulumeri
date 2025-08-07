@@ -1,5 +1,11 @@
 # Technology decisions
 
+## 7.8.2025
+
+### Resend
+
+Generous free tier, relatively easy to setup. For email verification and password reset.
+
 ## 30.7.2025
 
 ### Better Auth

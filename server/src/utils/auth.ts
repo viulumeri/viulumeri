@@ -24,6 +24,14 @@ export const auth = betterAuth({
     enabled: true,
     requireEmailVerification: true
   },
+  user: {
+    additionalFields: {
+      userType: {
+        type: 'string',
+        required: true
+      }
+    }
+  },
   emailVerification: {
     sendVerificationEmail: async ({ user, url, token }) => {
       await sendEmail({

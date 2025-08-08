@@ -5,6 +5,7 @@ interface SignUpData {
   email: string
   password: string
   name: string
+  userType: 'teacher' | 'student'
 }
 
 interface LoginData {

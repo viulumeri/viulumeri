@@ -1,10 +1,12 @@
+import { useState } from 'react'
 import { useField } from '../hooks/useField'
 import { useSignUp } from '../hooks/useAuth'
 
 export const Signup = () => {
-  const email = useField('text')
+  const email = useField('email')
   const password = useField('password')
   const name = useField('text')
+  const [userType, setUserType] = useState<'teacher' | 'student'>('student')
 
   const signUpMutation = useSignUp({
     onSuccess: () => {
@@ -12,6 +14,7 @@ export const Signup = () => {
       email.reset()
       password.reset()
       name.reset()
+      setUserType('student')
     },
     onError: error => {
       console.error(error instanceof Error ? error.message : 'Sign up failed.')
@@ -23,22 +26,53 @@ export const Signup = () => {
     signUpMutation.mutate({
       email: email.value,
       password: password.value,
-      name: name.value
+      name: name.value,
+      userType: userType
     })
   }
   return (
     <div>
-      <h2>Sign up</h2>
+      <h2>Luo uusi tunnus</h2>
       <form onSubmit={handleSignUp}>
         <div>
-          email <input {...email.props} />
+          <label htmlFor="email">Email:</label>
+          <input id="email" {...email.props} required />
         </div>
         <div>
-          password <input {...password.props} />
+          <label htmlFor="password">Salasana:</label>
+          <input id="password" {...password.props} required />
         </div>
         <div>
-          name <input {...name.props} />
+          <label htmlFor="name">Nimi:</label>
+          <input id="name" {...name.props} required />
         </div>
+        <fieldset>
+          <legend>Olen:</legend>
+          <label>
+            <input
+              type="radio"
+              name="userType"
+              value="student"
+              checked={userType === 'student'}
+              onChange={e =>
+                setUserType(e.target.value as 'teacher' | 'student')
+              }
+            />
+            Oppilas
+          </label>
+          <label>
+            <input
+              type="radio"
+              name="userType"
+              value="teacher"
+              checked={userType === 'teacher'}
+              onChange={e =>
+                setUserType(e.target.value as 'teacher' | 'student')
+              }
+            />
+            Opettaja
+          </label>
+        </fieldset>
         <button type="submit" disabled={signUpMutation.isPending}>
           {signUpMutation.isPending ? 'Signing up...' : 'Sign Up'}
         </button>
@@ -51,7 +85,9 @@ export const Signup = () => {
         </div>
       )}
       {signUpMutation.isSuccess && (
-        <div style={{ color: 'green' }}>Sign up successful!</div>
+        <div style={{ color: 'green' }}>
+          Käyttäjän lisäys onnistui. Vahvistuspyyntö on lähetetty sähköpostiisi.
+        </div>
       )}
     </div>
   )

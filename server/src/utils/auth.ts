@@ -1,11 +1,9 @@
 import { betterAuth } from 'better-auth'
-import { createAuthMiddleware } from 'better-auth/api'
 import { mongodbAdapter } from 'better-auth/adapters/mongodb'
 import { client } from '../db'
 import { trustedOrigins } from './config'
 import { sendEmail } from './email'
 import logger from './logger'
-import mongoose from 'mongoose'
 import Teacher from '../models/teacher'
 import Student from '../models/student'
 
@@ -68,7 +66,10 @@ export const auth = betterAuth({
               logger.info('Student profile created', { userId: user.id })
             }
           } catch (error) {
-            logger.error('Failed to create user profile', { userId: user.id, error })
+            logger.error('Failed to create user profile', {
+              userId: user.id,
+              error
+            })
             throw error
           }
         }

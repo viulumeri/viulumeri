@@ -1,9 +1,13 @@
 import { betterAuth } from 'better-auth'
+import { createAuthMiddleware } from 'better-auth/api'
 import { mongodbAdapter } from 'better-auth/adapters/mongodb'
 import { client } from '../db'
 import { trustedOrigins } from './config'
 import { sendEmail } from './email'
 import logger from './logger'
+import mongoose from 'mongoose'
+import Teacher from '../models/teacher'
+import Student from '../models/student'
 
 logger.info('Initializing better-auth...')
 
@@ -39,6 +43,36 @@ export const auth = betterAuth({
         subject: 'Verify your email address',
         text: `Click the link to verify your email: ${url}`
       })
+    }
+  },
+  databaseHooks: {
+    user: {
+      create: {
+        after: async (user: any) => {
+          try {
+            if (user.userType === 'teacher') {
+              const newTeacher = new Teacher({
+                userId: user.id,
+                name: user.name,
+                email: user.email
+              })
+              await newTeacher.save()
+              logger.info('Teacher profile created', { userId: user.id })
+            } else {
+              const newStudent = new Student({
+                userId: user.id,
+                name: user.name,
+                email: user.email
+              })
+              await newStudent.save()
+              logger.info('Student profile created', { userId: user.id })
+            }
+          } catch (error) {
+            logger.error('Failed to create user profile', { userId: user.id, error })
+            throw error
+          }
+        }
+      }
     }
   },
   trustedOrigins

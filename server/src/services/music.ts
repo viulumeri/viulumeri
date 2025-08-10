@@ -7,16 +7,10 @@ interface SongMetadata {
   composer?: string
 }
 
-interface AudioFiles {
-  backing: string
-  melody?: string
-  click?: string
-}
-
 interface Song {
   id: string
   title: string
-  audioFiles: AudioFiles
+  audioBundle: string
   metadata: SongMetadata
 }
 
@@ -32,6 +26,7 @@ class MusicService {
       this.songs = await this.scanMusicLibrary(musicDir)
       this.initialized = true
       logger.info(`Loaded ${this.songs.length} songs`)
+      logger.info(this.songs)
     } catch (error) {
       logger.error('Failed to initialize music library:', error)
       throw error
@@ -73,19 +68,11 @@ class MusicService {
 
     const files = await fs.readdir(songPath)
 
-    const audioFiles: AudioFiles = {
-      backing: files.find(
-        f => f.toLowerCase().includes('backing') && f.endsWith('.mp3')
-      ),
-      melody: files.find(
-        f => f.toLowerCase().includes('melody') && f.endsWith('.mp3')
-      ),
-      click: files.find(
-        f => f.toLowerCase().includes('click') && f.endsWith('.mp3')
-      )
+    const audioBundle = files.find(f => f.endsWith('.zip'))
+    if (!audioBundle) {
+      throw new Error(`Missing audio bundle (.zip) in ${folder}`)
     }
 
-    // Require metadata.json file. 'Fail early'.
     if (!files.includes('metadata.json')) {
       throw new Error(`Missing metadata.json in ${folder}`)
     }
@@ -99,7 +86,7 @@ class MusicService {
     return {
       id: folder,
       title: metadata.title,
-      audioFiles,
+      audioBundle,
       metadata
     }
   }

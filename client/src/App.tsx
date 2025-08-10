@@ -9,6 +9,7 @@ import {
   useNavigate
 } from 'react-router-dom'
 import { authClient, useSession } from './auth-client'
+import { Songlist } from './components/Songlist'
 
 const App = () => {
   const { data: session } = useSession()
@@ -27,7 +28,7 @@ const App = () => {
   return (
     <div>
       <h1>Viulumeri</h1>
-      
+
       <nav>
         {!session && (
           <>
@@ -40,6 +41,7 @@ const App = () => {
           <>
             <span>Tervetuloa, {session.user.email}!</span>
             <button onClick={handleSignOut}>Logout</button>
+            <Link to="/songlist">Biisilista</Link>
           </>
         )}
       </nav>
@@ -48,6 +50,7 @@ const App = () => {
         <Route path="/signup" element={<Signup />} />
         <Route path="/login" element={<Login />} />
         <Route path="/" element={<h2>Etusivu placeholder</h2>} />
+        <Route path="/songlist" element={<Songlist />} />
       </Routes>
     </div>
   )

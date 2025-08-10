@@ -91,11 +91,11 @@ class MusicService {
     }
   }
 
-  getAllSongs(): Song[] {
+  getAllSongs(): Omit<Song, 'audioBundle'>[] {
     if (!this.initialized) {
       throw new Error('Music service not initialized')
     }
-    return [...this.songs]
+    return this.songs.map(({ audioBundle, ...song }) => song)
   }
 
   getSongById(id: string): Song | undefined {

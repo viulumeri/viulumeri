@@ -11,6 +11,7 @@
 
 - GET /api/songs - Get all songs (with optional filters)
 - GET /api/songs/:id - Get specific song details
+- GET /api/songs/:id/bundle - Get .zip with mp3's
 
 ## Student Endpoints
 

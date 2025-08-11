@@ -1,5 +1,7 @@
 import { Login } from './components/Login.tsx'
 import { Signup } from './components/SignUp.tsx'
+import { MusicPlayer } from './components/MusicPlayer'
+import { Songslist } from './components/Songslist'
 import {
   BrowserRouter as Router,
   Link,
@@ -9,7 +11,6 @@ import {
   useNavigate
 } from 'react-router-dom'
 import { authClient, useSession } from './auth-client'
-import { MusicPlayer } from './components/MusicPlayer'
 
 const App = () => {
   const { data: session } = useSession()

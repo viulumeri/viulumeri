@@ -3,11 +3,9 @@ import { Signup } from './components/SignUp.tsx'
 import { MusicPlayer } from './components/MusicPlayer'
 import { Songslist } from './components/Songslist'
 import {
-  BrowserRouter as Router,
   Link,
   Route,
   Routes,
-  useMatch,
   useNavigate
 } from 'react-router-dom'
 import { authClient, useSession } from './auth-client'

@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { useSongsList } from '../hooks/useSongs'
+import type { SongListItem } from '../../../shared/types'
 
 export const Songslist = () => {
   const { isPending, isError, data, error } = useSongsList()
@@ -15,7 +16,7 @@ export const Songslist = () => {
     <div>
       <h1>Biisilista</h1>
       <ul>
-        {data.map(song => (
+        {data.map((song: SongListItem) => (
           <li key={song.id}>
             <Link to={`/player/${song.id}`}>{song.title}</Link>
           </li>

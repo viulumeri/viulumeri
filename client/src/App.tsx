@@ -2,6 +2,7 @@ import { Login } from './components/Login.tsx'
 import { Signup } from './components/SignUp.tsx'
 import { MusicPlayer } from './components/MusicPlayer'
 import { Songslist } from './components/Songslist'
+import { InviteLink } from './components/InviteLink'
 import {
   BrowserRouter as Router,
   Link,
@@ -43,6 +44,10 @@ const App = () => {
             <span>Tervetuloa, {session.user.email}!</span>
             <button onClick={handleSignOut}>Logout</button>
             <Link to="/songslist">Biisilista</Link>
+            {/* Teippi*/}
+            {(session.user as any)?.userType === 'teacher' && (
+              <Link to="/invite">Lisää uusi oppilas</Link>
+            )}
           </>
         )}
       </nav>
@@ -53,6 +58,7 @@ const App = () => {
         <Route path="/" element={<h2>Etusivu placeholder</h2>} />
         <Route path="/songslist" element={<Songslist />} />
         <Route path="/player/:songId" element={<MusicPlayer />} />
+        <Route path="/invite" element={<InviteLink />} />
       </Routes>
     </div>
   )

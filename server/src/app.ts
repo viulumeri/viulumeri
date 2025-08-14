@@ -7,6 +7,7 @@ import { corsOrigin } from './utils/config'
 import { musicService } from './services/music'
 const middleware = require('./utils/middleware.ts')
 import songsRouter from './controllers/songs'
+import inviteRouter from './controllers/invite'
 
 const app = express()
 
@@ -26,6 +27,7 @@ app.all('/api/auth/*splat', toNodeHandler(auth))
 
 app.use(express.json())
 app.use('/api/songs', songsRouter)
+app.use('/api/invites', inviteRouter)
 app.get('/ping', (req, res) => {
   res.send('pong')
 })

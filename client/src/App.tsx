@@ -3,6 +3,7 @@ import { Signup } from './components/SignUp.tsx'
 import { MusicPlayer } from './components/MusicPlayer'
 import { Songslist } from './components/Songslist'
 import { InviteLink } from './components/InviteLink'
+import { InviteAccept } from './components/InviteAccept'
 import {
   BrowserRouter as Router,
   Link,
@@ -59,6 +60,7 @@ const App = () => {
         <Route path="/songslist" element={<Songslist />} />
         <Route path="/player/:songId" element={<MusicPlayer />} />
         <Route path="/invite" element={<InviteLink />} />
+        <Route path="/invite/:token" element={<InviteAccept />} />
       </Routes>
     </div>
   )

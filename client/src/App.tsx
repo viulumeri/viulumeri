@@ -5,11 +5,9 @@ import { Songslist } from './components/Songslist'
 import { InviteLink } from './components/InviteLink'
 import { InviteAccept } from './components/InviteAccept'
 import {
-  BrowserRouter as Router,
   Link,
   Route,
   Routes,
-  useMatch,
   useNavigate
 } from 'react-router-dom'
 import { authClient, useSession } from './auth-client'

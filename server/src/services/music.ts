@@ -1,18 +1,7 @@
 import fs from 'fs/promises'
 import path from 'path'
 import logger from '../utils/logger'
-
-interface SongMetadata {
-  title: string
-  composer?: string
-}
-
-interface Song {
-  id: string
-  title: string
-  audioBundle: string
-  metadata: SongMetadata
-}
+import type { Song, SongMetadata, SongListItem } from '../../../shared/types'
 
 class MusicService {
   private songs: Song[] = []
@@ -91,7 +80,7 @@ class MusicService {
     }
   }
 
-  getAllSongs(): Omit<Song, 'audioBundle'>[] {
+  getAllSongs(): SongListItem[] {
     if (!this.initialized) {
       throw new Error('Music service not initialized')
     }

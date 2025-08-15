@@ -145,3 +145,5 @@ CLAUDE.md
 # Database data
 data/
 
+# Compiled shared types
+shared/*.js

@@ -26,3 +26,5 @@
 - POST /api/teacher/homework - Assign homework to student
 - PUT /api/teacher/homework/:id - Update homework assignment
 - PUT /api/teacher/progress/:studentId/:songId - Mark song as completed
+- GET /api/teacher/invite-link - Generate new invitation link
+- POST /api/teacher/invite/:token - Student accepts invitation

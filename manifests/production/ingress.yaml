@@ -1,0 +1,25 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: viulumeri-ingress
+  namespace: viulumeri-production
+  annotations:
+    cert-manager.io/cluster-issuer: 'letsencrypt-prod'
+    nginx.ingress.kubernetes.io/ssl-redirect: 'true'
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - viulumeri.fi
+      secretName: viulumeri-production-tls
+  rules:
+    - host: viulumeri.fi
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: viulumeri
+                port:
+                  number: 80

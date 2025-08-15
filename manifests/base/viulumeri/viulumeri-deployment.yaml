@@ -1,0 +1,94 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: viulumeri
+  labels:
+    app: viulumeri
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: viulumeri
+  template:
+    metadata:
+      labels:
+        app: viulumeri
+    spec:
+      containers:
+        - name: viulumeri
+          image: jayzstep/viulumeri:latest
+          ports:
+            - containerPort: 3001
+          env:
+            - name: NODE_ENV
+              valueFrom:
+                configMapKeyRef:
+                  name: viulumeri-config
+                  key: NODE_ENV
+            - name: MUSIC_DIR
+              valueFrom:
+                configMapKeyRef:
+                  name: viulumeri-config
+                  key: MUSIC_DIR
+            - name: MONGODB_URI
+              valueFrom:
+                secretKeyRef:
+                  name: viulumeri-secrets
+                  key: MONGODB_URI
+            - name: BETTER_AUTH_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: viulumeri-secrets
+                  key: BETTER_AUTH_SECRET
+            - name: BETTER_AUTH_URL
+              valueFrom:
+                secretKeyRef:
+                  name: viulumeri-secrets
+                  key: BETTER_AUTH_URL
+            - name: CLIENT_URL
+              valueFrom:
+                secretKeyRef:
+                  name: viulumeri-secrets
+                  key: CLIENT_URL
+            - name: PRODUCTION_URL
+              valueFrom:
+                secretKeyRef:
+                  name: viulumeri-secrets
+                  key: PRODUCTION_URL
+            - name: RESEND_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: viulumeri-secrets
+                  key: RESEND_API_KEY
+            - name: FROM_EMAIL
+              valueFrom:
+                secretKeyRef:
+                  name: viulumeri-secrets
+                  key: FROM_EMAIL
+          volumeMounts:
+            - name: audio-storage
+              mountPath: /var/www/audio
+              readOnly: true
+          resources:
+            requests:
+              memory: '512Mi'
+              cpu: '250m'
+            limits:
+              memory: '1.5Gi'
+              cpu: '1000m'
+          livenessProbe:
+            httpGet:
+              path: /ping
+              port: 3001
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /ping
+              port: 3001
+            initialDelaySeconds: 5
+            periodSeconds: 5
+      volumes:
+        - name: audio-storage
+          persistentVolumeClaim:
+            claimName: viulumeri-audio-pvc

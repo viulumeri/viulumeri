@@ -1,0 +1,11 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - storage/audio-pvc.yaml
+  - storage/mongodb-pvc.yaml
+  - mongodb/mongodb-deployment.yaml
+  - mongodb/mongodb-service.yaml
+  - viulumeri/viulumeri-configmap.yaml
+  - viulumeri/viulumeri-deployment.yaml
+  - viulumeri/viulumeri-service.yaml

@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: viulumeri
-          image: jayzstep/viulumeri:latest
+          image: jayzstep/viulumeri
           ports:
             - containerPort: 3001
           env:

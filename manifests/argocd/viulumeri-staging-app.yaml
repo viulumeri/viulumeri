@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: viulumeri-staging
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/viulumeri/viulumeri.git
+    targetRevision: HEAD
+    path: manifests/staging
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: viulumeri-staging
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

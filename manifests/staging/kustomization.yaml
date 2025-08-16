@@ -3,6 +3,10 @@ kind: Kustomization
 
 namespace: viulumeri-staging
 
+images:
+  - name: jayzstep/viulumeri
+    newTag: latest
+
 resources:
   - namespace.yaml
   - ../base

@@ -14,6 +14,11 @@ const studentSchema = new mongoose.Schema({
     type: String,
     required: true,
     unique: true
+  },
+  teacher: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Teacher',
+    default: null
   }
 })
 

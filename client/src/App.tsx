@@ -2,13 +2,11 @@ import { Login } from './components/Login.tsx'
 import { Signup } from './components/SignUp.tsx'
 import { MusicPlayer } from './components/MusicPlayer'
 import { Songslist } from './components/Songslist'
-import {
-  Link,
-  Route,
-  Routes,
-  useNavigate
-} from 'react-router-dom'
+import { InviteLink } from './components/InviteLink'
+import { InviteAccept } from './components/InviteAccept'
+import { Link, Route, Routes, useNavigate } from 'react-router-dom'
 import { authClient, useSession } from './auth-client'
+import type { AppSessionUser } from '../../shared/types'
 
 const App = () => {
   const { data: session } = useSession()
@@ -41,6 +39,11 @@ const App = () => {
             <span>Tervetuloa, {session.user.email}!</span>
             <button onClick={handleSignOut}>Logout</button>
             <Link to="/songslist">Biisilista</Link>
+            {/* Teippi*/}
+            {(session?.user as unknown as AppSessionUser | undefined)
+              ?.userType === 'teacher' && (
+              <Link to="/invite">Lisää uusi oppilas</Link>
+            )}
           </>
         )}
       </nav>
@@ -51,6 +54,8 @@ const App = () => {
         <Route path="/" element={<h2>Etusivu placeholder</h2>} />
         <Route path="/songslist" element={<Songslist />} />
         <Route path="/player/:songId" element={<MusicPlayer />} />
+        <Route path="/invite" element={<InviteLink />} />
+        <Route path="/invite/:token" element={<InviteAccept />} />
       </Routes>
     </div>
   )

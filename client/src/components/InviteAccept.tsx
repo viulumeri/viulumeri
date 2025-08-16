@@ -12,7 +12,10 @@ export const InviteAccept = () => {
   const accept = useAcceptInvite({
     onSuccess: response => {
       const name = response?.teacher?.name ?? data?.teacher.name
-      console.log('Linked to teacher', { teacherName: name })
+      console.log('Linked to teacher', {
+        teacherName: name,
+        changed: response?.changed
+      })
       navigate('/')
     },
     onError: error => console.error('Accept invite failed:', error)
@@ -39,13 +42,39 @@ export const InviteAccept = () => {
     )
   }
 
+  const { teacher, currentTeacher } = data
+
   return (
     <div>
-      <h2>Liity opettajan {data.teacher.name} oppilaaksi</h2>
-      <button onClick={() => accept.mutate(token!)} disabled={accept.isPending}>
-        {accept.isPending ? 'Liitetään…' : 'Vahvista'}
-      </button>
-      {accept.isError && <p style={{ color: 'red' }}>Linkitys epäonnistui.</p>}
+      {currentTeacher ? (
+        <>
+          <h2>Nykyinen opettajasi on {currentTeacher.name}.</h2>
+          <p>Haluatko vaihtaa opettajaksi {teacher.name}?</p>
+          <button
+            onClick={() => accept.mutate(token!)}
+            disabled={accept.isPending}
+          >
+            {accept.isPending ? 'Vaihdetaan…' : 'Vahvista'}
+          </button>
+          <button onClick={() => navigate('/')}>Peruuta</button>
+          {accept.isError && (
+            <p style={{ color: 'red' }}>Linkitys epäonnistui.</p>
+          )}
+        </>
+      ) : (
+        <>
+          <h2>Liity opettajan {data.teacher.name} oppilaaksi</h2>
+          <button
+            onClick={() => accept.mutate(token!)}
+            disabled={accept.isPending}
+          >
+            {accept.isPending ? 'Liitetään…' : 'Vahvista'}
+          </button>
+          {accept.isError && (
+            <p style={{ color: 'red' }}>Linkitys epäonnistui.</p>
+          )}
+        </>
+      )}
     </div>
   )
 }

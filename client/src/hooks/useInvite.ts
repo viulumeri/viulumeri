@@ -1,27 +1,32 @@
-import { useMutation, useQuery } from '@tanstack/react-query'
-import axios from 'axios'
+import {
+  useMutation,
+  useQuery,
+  type UseMutationOptions
+} from '@tanstack/react-query'
+import { invitesService } from '../services/invites'
 
-export const useGenerateInviteLink = () =>
-  useMutation({
-    mutationFn: async () =>
-      (await axios.post('/api/invites', null, { withCredentials: true })).data
+export const useGenerateInviteLink = (
+  options?: UseMutationOptions<any, Error, void>
+) => {
+  return useMutation({
+    mutationFn: invitesService.generate,
+    ...options
   })
+}
 
-export const useInviteDetails = (token: string) =>
-  useQuery({
+export const useInviteDetails = (token: string) => {
+  return useQuery({
     queryKey: ['invite', token],
-    queryFn: async () =>
-      (await axios.get(`/api/invites/${token}`, { withCredentials: true }))
-        .data,
+    queryFn: () => invitesService.details(token),
     enabled: !!token
   })
+}
 
-export const useAcceptInvite = () =>
-  useMutation({
-    mutationFn: async (token: string) =>
-      (
-        await axios.post(`/api/invites/${token}/accept`, null, {
-          withCredentials: true
-        })
-      ).data
+export const useAcceptInvite = (
+  options?: UseMutationOptions<any, Error, string>
+) => {
+  return useMutation({
+    mutationFn: invitesService.accept,
+    ...options
   })
+}

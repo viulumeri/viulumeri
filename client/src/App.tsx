@@ -4,13 +4,9 @@ import { MusicPlayer } from './components/MusicPlayer'
 import { Songslist } from './components/Songslist'
 import { InviteLink } from './components/InviteLink'
 import { InviteAccept } from './components/InviteAccept'
-import {
-  Link,
-  Route,
-  Routes,
-  useNavigate
-} from 'react-router-dom'
+import { Link, Route, Routes, useNavigate } from 'react-router-dom'
 import { authClient, useSession } from './auth-client'
+import type { AppSessionUser } from '../../shared/types'
 
 const App = () => {
   const { data: session } = useSession()
@@ -44,7 +40,8 @@ const App = () => {
             <button onClick={handleSignOut}>Logout</button>
             <Link to="/songslist">Biisilista</Link>
             {/* Teippi*/}
-            {(session.user as any)?.userType === 'teacher' && (
+            {(session?.user as unknown as AppSessionUser | undefined)
+              ?.userType === 'teacher' && (
               <Link to="/invite">Lisää uusi oppilas</Link>
             )}
           </>

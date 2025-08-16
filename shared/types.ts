@@ -13,3 +13,7 @@ export interface Song {
 export interface SongListItem extends Omit<Song, 'audioBundle'> {
   // This is what the client receives from GET /api/songs
 }
+
+export interface AppSessionUser {
+  userType: 'teacher' | 'student'
+}

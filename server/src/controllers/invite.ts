@@ -53,7 +53,19 @@ inviteRouter.get('/:token', async (request, response) => {
   if (!teacher) {
     return response.status(404).json({ error: 'Teacher not found' })
   }
-  return response.json({ teacher: { name: teacher.name } })
+
+  const student = await Student.findOne({ userId: session.user.id }).populate(
+    'teacher',
+    'name'
+  )
+  const currentTeacher = student?.teacher as any | null
+
+  return response.json({
+    teacher: { id: teacher.id, name: teacher.name },
+    currentTeacher: currentTeacher
+      ? { id: currentTeacher.id, name: currentTeacher.name }
+      : null
+  })
 })
 
 inviteRouter.post('/:token/accept', async (request, response) => {
@@ -75,16 +87,34 @@ inviteRouter.post('/:token/accept', async (request, response) => {
     return response.status(404).json({ error: 'Student profile not found' })
 
   //
-  await Promise.all([
+  if (student.teacher && teacher._id.equals(student.teacher))
+    return response.json({
+      teacher: { id: teacher.id, name: teacher.name },
+      changed: false
+    })
+
+  const ops: Promise<any>[] = [
     Student.updateOne({ _id: student._id }, { $set: { teacher: teacher._id } }),
     Teacher.updateOne(
       { _id: teacher._id },
       { $addToSet: { students: student._id } }
     )
-  ])
+  ]
 
-  response.json({
-    teacher: { id: teacher.id, name: teacher.name }
+  if (student.teacher) {
+    ops.push(
+      Teacher.updateOne(
+        { _id: student.teacher },
+        { $pull: { students: student._id } }
+      )
+    )
+  }
+
+  await Promise.all(ops)
+
+  return response.json({
+    teacher: { id: teacher.id, name: teacher.name },
+    changed: true
   })
 })
 

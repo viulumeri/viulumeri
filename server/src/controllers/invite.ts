@@ -8,7 +8,7 @@ import { verifyInviteToken } from '../utils/inviteToken'
 
 const inviteRouter = Router()
 
-async function getSession(request: Request, response: Response) {
+const getSession = async (request: Request, response: Response) => {
   const session = await auth.api.getSession({
     headers: fromNodeHeaders(request.headers)
   })

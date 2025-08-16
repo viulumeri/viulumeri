@@ -36,11 +36,8 @@ export const InviteAccept = () => {
       <button
         onClick={async () => {
           await accept.mutateAsync(token!)
-          navigate('/', {
-            state: {
-              flash: `Liityit opettajan ${data.teacher.name} oppilaaksi`
-            }
-          })
+          console.log('Linked to teacher:', data.teacher.name)
+          navigate('/')
         }}
         disabled={accept.isPending}
       >

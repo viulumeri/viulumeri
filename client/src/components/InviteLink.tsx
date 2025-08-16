@@ -4,20 +4,21 @@ import { useGenerateInviteLink } from '../hooks/useInvite'
 
 export const InviteLink = () => {
   const { data: session } = useSession()
-  const gen = useGenerateInviteLink()
   const [url, setUrl] = useState('')
+
+  const gen = useGenerateInviteLink({
+    onSuccess: data => {
+      setUrl(data.inviteUrl)
+    },
+    onError: error => console.error('Generate invite failed:', error)
+  })
 
   if (!session) return <div>Kirjaudu</div>
 
   return (
     <div>
       <h3>Lisää uusi oppilas</h3>
-      <button
-        onClick={async () => {
-          const r = await gen.mutateAsync()
-          setUrl(r.inviteUrl)
-        }}
-      >
+      <button onClick={() => gen.mutate()} disabled={gen.isPending}>
         {gen.isPending ? 'Luodaan…' : 'Luo kutsulinkki'}
       </button>
       {url && (

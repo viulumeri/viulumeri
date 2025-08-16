@@ -1,7 +1,6 @@
-import { useParams, useNavigate, Link } from 'react-router-dom'
+import { Link, useParams, useNavigate, useLocation } from 'react-router-dom'
 import { useInviteDetails, useAcceptInvite } from '../hooks/useInvite'
 import { useSession } from '../auth-client'
-import { useLocation } from 'react-router-dom'
 
 export const InviteAccept = () => {
   const location = useLocation()
@@ -9,7 +8,15 @@ export const InviteAccept = () => {
   const navigate = useNavigate()
   const { data: session, isPending: sessionPending } = useSession()
   const { data, isPending: invitePending, isError } = useInviteDetails(token!)
-  const accept = useAcceptInvite()
+
+  const accept = useAcceptInvite({
+    onSuccess: response => {
+      const name = response?.teacher?.name ?? data?.teacher.name
+      console.log('Linked to teacher', { teacherName: name })
+      navigate('/')
+    },
+    onError: error => console.error('Accept invite failed:', error)
+  })
 
   if (sessionPending || invitePending) return <div>Ladataan…</div>
 
@@ -24,7 +31,9 @@ export const InviteAccept = () => {
     )
   }
 
-  if (isError || !data) {
+  if (!token) return <div>Virheellinen kutsulinkki.</div>
+
+  if (isError || !data || !data.teacher) {
     return (
       <div>Linkki ei ole enää voimassa. Pyydä uusi linkki opettajalta.</div>
     )
@@ -33,14 +42,7 @@ export const InviteAccept = () => {
   return (
     <div>
       <h2>Liity opettajan {data.teacher.name} oppilaaksi</h2>
-      <button
-        onClick={async () => {
-          await accept.mutateAsync(token!)
-          console.log('Linked to teacher:', data.teacher.name)
-          navigate('/')
-        }}
-        disabled={accept.isPending}
-      >
+      <button onClick={() => accept.mutate(token!)} disabled={accept.isPending}>
         {accept.isPending ? 'Liitetään…' : 'Vahvista'}
       </button>
       {accept.isError && <p style={{ color: 'red' }}>Linkitys epäonnistui.</p>}

@@ -17,3 +17,18 @@ export interface SongListItem extends Omit<Song, 'audioBundle'> {
 export interface AppSessionUser {
   userType: 'teacher' | 'student'
 }
+
+export interface InviteTeacher {
+  id: string
+  name: string
+}
+
+export interface InviteDetails {
+  teacher: InviteTeacher
+  currentTeacher: InviteTeacher | null
+}
+
+export interface AcceptInviteResponse {
+  teacher: InviteTeacher
+  changed?: boolean
+}

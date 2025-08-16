@@ -9,3 +9,4 @@ resources:
   - viulumeri/viulumeri-configmap.yaml
   - viulumeri/viulumeri-deployment.yaml
   - viulumeri/viulumeri-service.yaml
+  - ../infrastructure

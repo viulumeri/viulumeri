@@ -7,7 +7,8 @@
     "dev": "nodemon src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "healthcheck": "tsc --noEmit"
   },
   "author": "Jasse Merivirta",
   "license": "UNLICENSED",

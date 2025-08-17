@@ -12,5 +12,5 @@ resources:
   - ../base
   - ingress.yaml
 
-patchesStrategicMerge:
-  - viulumeri-configmap-patch.yaml
+patches:
+  - path: viulumeri-configmap-patch.yaml

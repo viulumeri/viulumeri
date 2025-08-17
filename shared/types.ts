@@ -32,3 +32,8 @@ export interface AcceptInviteResponse {
   teacher: InviteTeacher
   changed?: boolean
 }
+
+export interface GenerateInviteResponse {
+  inviteUrl: string
+  expiresIn: string
+}

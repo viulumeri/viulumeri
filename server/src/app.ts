@@ -6,7 +6,7 @@ import { toNodeHandler } from 'better-auth/node'
 import { auth } from './utils/auth'
 import { corsOrigin } from './utils/config'
 import { musicService } from './services/music'
-const middleware = require('./utils/middleware.ts')
+import { requestLogger } from './utils/middleware'
 import songsRouter from './controllers/songs'
 import inviteRouter from './controllers/invite'
 
@@ -22,7 +22,7 @@ app.use(
   })
 )
 
-app.use(middleware.requestLogger)
+app.use(requestLogger)
 
 app.all('/api/auth/*splat', toNodeHandler(auth))
 

@@ -62,5 +62,8 @@ docker-compose.yml
 # Documentation
 documentation/
 
+# Manifests
+manifests/
+
 # Claude
 CLAUDE.md

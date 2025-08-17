@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: viulumeri-config
+data:
+  NODE_ENV: 'production'
+  MUSIC_DIR: '/var/www/audio'

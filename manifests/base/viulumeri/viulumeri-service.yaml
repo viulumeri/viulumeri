@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: viulumeri
+  labels:
+    app: viulumeri
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: 3001
+      protocol: TCP
+  selector:
+    app: viulumeri

@@ -4,8 +4,8 @@ import logger from './logger'
 const port = process.env.PORT || 3001
 
 const getCorsOrigin = (): string | boolean => {
-  if (process.env.NODE_ENV === 'production') {
-    return false // The origin is the same in production
+  if (process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'staging') {
+    return false // The origin is the same in production and staging
   }
   return process.env.CLIENT_URL || 'http://localhost:5173'
 }
@@ -13,7 +13,7 @@ const getCorsOrigin = (): string | boolean => {
 const corsOrigin = getCorsOrigin()
 
 const getTrustedOrigins = (): string[] => {
-  if (process.env.NODE_ENV === 'production') {
+  if (process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'staging') {
     return [
       process.env.PRODUCTION_URL || 'https://example.com'
       // + others if needed
@@ -30,6 +30,9 @@ const getDatabaseUrl = (): string | undefined => {
     case 'production':
       logger.info('Using production database.')
       return process.env.MONGODB_URI
+    case 'staging':
+      logger.info('Using staging database.')
+      return process.env.MONGODB_URI
     case 'test':
       return process.env.TEST_MONGODB_URI
     case 'development':
@@ -44,8 +47,8 @@ const getDatabaseUrl = (): string | undefined => {
 const databaseUrlResult = getDatabaseUrl()
 
 if (!databaseUrlResult) {
-  console.error('Database URL not set.')
-  throw new Error('Database URL is required')
+  console.error('MONGODB_URI not set.')
+  throw new Error('MONGODB_URI is required')
 }
 
 const databaseUrl: string = databaseUrlResult

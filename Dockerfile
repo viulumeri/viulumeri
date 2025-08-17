@@ -3,7 +3,7 @@ WORKDIR /usr/src/app/client
 COPY client/package*.json ./
 RUN npm install
 COPY client/ ./
-COPY ../shared/ ../shared/
+COPY shared/ ../shared/
 RUN npm run build
 
 FROM node:22-alpine AS backend-builder
@@ -32,4 +32,4 @@ RUN chown -R viulumeri:nodejs /usr/src/app
 USER viulumeri
 EXPOSE 3001
 ENTRYPOINT ["dumb-init", "--"]
-CMD ["node", "server/dist/index.js"]
+CMD ["node", "server/dist/server/src/index.js"]

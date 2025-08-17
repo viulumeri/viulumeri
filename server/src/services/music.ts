@@ -1,7 +1,7 @@
 import fs from 'fs/promises'
 import path from 'path'
 import logger from '../utils/logger'
-import type { Song, SongMetadata, SongListItem } from '../../../shared/types'
+import type { Song, SongListItem } from '../../../shared/types'
 
 class MusicService {
   private songs: Song[] = []

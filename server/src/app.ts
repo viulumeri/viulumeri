@@ -29,14 +29,14 @@ app.all('/api/auth/*splat', toNodeHandler(auth))
 app.use(express.json())
 app.use('/api/songs', songsRouter)
 app.use('/api/invites', inviteRouter)
-app.get('/ping', (req, res) => {
+app.get('/ping', (_req, res) => {
   res.send('pong')
 })
 
 const clientBuildPath = path.join(__dirname, '../../client/dist')
 app.use(express.static(clientBuildPath))
 
-app.use((req, res, next) => {
+app.use((req, res, _next) => {
   if (req.originalUrl.startsWith('/api')) {
     res.status(404).json({ message: 'Unknown endpoint!' })
     return

@@ -4,6 +4,7 @@ import { MusicPlayer } from './components/MusicPlayer'
 import { Songslist } from './components/Songslist'
 import { InviteLink } from './components/InviteLink'
 import { InviteAccept } from './components/InviteAccept'
+import { TeacherStudents } from './components/TeacherStudents'
 import { Link, Route, Routes, useNavigate } from 'react-router-dom'
 import { authClient, useSession } from './auth-client'
 import type { AppSessionUser } from '../../shared/types'
@@ -42,7 +43,10 @@ const App = () => {
             {/* Teippi*/}
             {(session?.user as unknown as AppSessionUser | undefined)
               ?.userType === 'teacher' && (
-              <Link to="/invite">Lisää uusi oppilas</Link>
+              <>
+                <Link to="/invite">Lisää uusi oppilas</Link>
+                <Link to="/teacher/students">Oppilaat</Link>
+              </>
             )}
           </>
         )}
@@ -56,6 +60,7 @@ const App = () => {
         <Route path="/player/:songId" element={<MusicPlayer />} />
         <Route path="/invite" element={<InviteLink />} />
         <Route path="/invite/:token" element={<InviteAccept />} />
+        <Route path="/teacher/students" element={<TeacherStudents />} />
       </Routes>
     </div>
   )

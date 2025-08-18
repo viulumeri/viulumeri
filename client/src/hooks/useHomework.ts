@@ -7,7 +7,7 @@ import { homeworkService } from '../services/homework'
 import type {
   CreateHomeworkBody,
   CreateHomeworkResponse,
-  StudentHomeworkListResponse,
+  HomeworkListResponse,
   PracticeResponse
 } from '../../../shared/types'
 
@@ -17,13 +17,13 @@ export const useCreateHomework = () =>
   })
 
 export const useStudentHomework = () =>
-  useQuery<StudentHomeworkListResponse, Error>({
+  useQuery<HomeworkListResponse, Error>({
     queryKey: ['student-homework'],
     queryFn: homeworkService.listForStudent
   })
 
 export const useTeacherStudentHomework = (studentId: string) =>
-  useQuery<StudentHomeworkListResponse, Error>({
+  useQuery<HomeworkListResponse, Error>({
     queryKey: ['teacher-student-homework', studentId],
     queryFn: () => homeworkService.listForTeacherStudent(studentId),
     enabled: !!studentId

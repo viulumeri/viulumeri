@@ -9,6 +9,8 @@ import { musicService } from './services/music'
 import { requestLogger } from './utils/middleware'
 import songsRouter from './controllers/songs'
 import inviteRouter from './controllers/invite'
+import teacherRouter from './controllers/teacher'
+import homeworkRouter from './controllers/homework'
 
 const app = express()
 
@@ -29,6 +31,8 @@ app.all('/api/auth/*splat', toNodeHandler(auth))
 app.use(express.json())
 app.use('/api/songs', songsRouter)
 app.use('/api/invites', inviteRouter)
+app.use('/api/teacher', teacherRouter)
+app.use('/api', homeworkRouter)
 app.get('/ping', (_req, res) => {
   res.send('pong')
 })

@@ -1,23 +1,9 @@
 import { Router } from 'express'
-import { fromNodeHeaders } from 'better-auth/node'
 import path from 'path'
 import { musicService } from '../services/music'
-import { auth } from '../utils/auth'
+import { authenticateSession } from '../utils/auth-helper'
 
 const songsRouter = Router()
-
-const authenticateSession = async (request: any, response: any) => {
-  const session = await auth.api.getSession({
-    headers: fromNodeHeaders(request.headers)
-  })
-
-  if (!session) {
-    response.status(401).json({ error: 'Authentication required' })
-    return null
-  }
-
-  return session
-}
 
 songsRouter.get('/', async (request, response) => {
   const session = await authenticateSession(request, response)

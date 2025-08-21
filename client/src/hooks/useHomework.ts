@@ -11,6 +11,8 @@ import type {
   PracticeResponse
 } from '../../../shared/types'
 
+type homeworkId = string
+
 export const useCreateHomework = () =>
   useMutation<CreateHomeworkResponse, Error, CreateHomeworkBody>({
     mutationFn: homeworkService.create
@@ -32,7 +34,7 @@ export const useTeacherStudentHomework = (studentId: string) =>
 export const usePracticeOnce = (
   options?: UseMutationOptions<PracticeResponse, Error, string>
 ) =>
-  useMutation<PracticeResponse, Error, string>({
+  useMutation<PracticeResponse, Error, homeworkId>({
     mutationFn: homeworkService.practiceOnce,
     ...options
   })

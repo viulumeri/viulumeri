@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { useTeacherStudents } from '../hooks/useTeacher'
+import { useTeacherStudents } from '../hooks/useStudents'
 import { Link } from 'react-router-dom'
 
 export const TeacherStudents = () => {

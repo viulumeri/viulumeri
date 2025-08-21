@@ -1,45 +1,61 @@
+import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import type { Homework, SongListItem } from '../../../shared/types'
 import { useSongsList } from '../hooks/useSongs'
+import { usePracticeOnce, useStudentHomework } from '../hooks/useHomework'
 
 type Props = {
-  items: Homework[]
-  onPractice?: (homeworkId: string) => void
-  isPracticingId?: string | null
   showPracticeCount?: boolean
 }
 
-export const HomeworkList = ({
-  items,
-  onPractice,
-  isPracticingId = null,
-  showPracticeCount = true
-}: Props) => {
-  const { data } = useSongsList()
+export const HomeworkList = ({ showPracticeCount = true }: Props) => {
+  const { data: songsData } = useSongsList()
+  const {
+    data: homeworkData,
+    isLoading,
+    isError,
+    refetch
+  } = useStudentHomework()
   const location = useLocation()
-  const allSongs: SongListItem[] | undefined = data
+  const [pendingId, setPendingId] = useState<string | null>(null)
+  const allSongs: SongListItem[] | undefined = songsData
 
-  console.log('HomeworkList items:', items)
+  const practice = usePracticeOnce({
+    onSuccess: () => {
+      setPendingId(null)
+      refetch()
+    },
+    onError: () => {
+      setPendingId(null)
+      alert('Harjoituskerran tallennus epäonnistui')
+    }
+  })
 
   const titleFor = (id: string) => allSongs?.find(s => s.id === id)?.title ?? id
+
+  if (isLoading) return <div>Ladataan tehtäviä...</div>
+  if (isError) return <div>Virhe ladattaessa tehtäviä</div>
+
+  const items = homeworkData?.homework ?? []
+  console.log('HomeworkList items:', items)
 
   if (!items.length) return <div>Ei vielä kotitehtäviä</div>
 
   return (
     <ul>
-      {items.map(hw => {
-        const isBusy = isPracticingId === hw.id
+      {items.map(homework => {
+        const isBusy = pendingId === homework.id
         return (
-          <li key={hw.id}>
+          <li key={homework.id}>
             <div>
               <strong>Pvm:</strong>{' '}
-              {new Date(hw.createdAt).toLocaleDateString()}
+              {new Date(homework.createdAt).toLocaleDateString()}
             </div>
 
-            {hw.songs.length > 0 && (
+            {homework.songs.length > 0 && (
               <div>
                 <strong>Kappaleet:</strong>{' '}
-                {hw.songs.map((id, i) => (
+                {homework.songs.map((id, i) => (
                   <span key={id}>
                     <Link
                       to={`/player/${id}`}
@@ -47,33 +63,35 @@ export const HomeworkList = ({
                     >
                       {titleFor(id)}
                     </Link>
-                    {i < hw.songs.length - 1 ? ', ' : ''}
+                    {i < homework.songs.length - 1 ? ', ' : ''}
                   </span>
                 ))}
               </div>
             )}
 
-            {hw.comment && (
+            {homework.comment && (
               <div>
-                <strong>Opettajan kommentti:</strong> {hw.comment}
+                <strong>Opettajan kommentti:</strong> {homework.comment}
               </div>
             )}
 
             {showPracticeCount && (
               <div>
-                <strong>Harjoituskerrat:</strong> {hw.practiceCount}
+                <strong>Harjoituskerrat:</strong> {homework.practiceCount}
               </div>
             )}
 
-            {onPractice && (
-              <button
-                onClick={() => onPractice(hw.id)}
-                disabled={isBusy}
-                aria-busy={isBusy}
-              >
-                {isBusy ? 'Tallennetaan…' : 'Harjoittelin'}
-              </button>
-            )}
+            <button
+              onClick={() => {
+                if (pendingId) return
+                setPendingId(homework.id)
+                practice.mutate(homework.id)
+              }}
+              disabled={isBusy}
+              aria-busy={isBusy}
+            >
+              {isBusy ? 'Tallennetaan…' : 'Harjoittelin'}
+            </button>
           </li>
         )
       })}

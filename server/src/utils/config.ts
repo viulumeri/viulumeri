@@ -4,7 +4,10 @@ import logger from './logger'
 const port = process.env.PORT || 3001
 
 const getCorsOrigin = (): string | boolean => {
-  if (process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'staging') {
+  if (
+    process.env.NODE_ENV === 'production' ||
+    process.env.NODE_ENV === 'staging'
+  ) {
     return false // The origin is the same in production and staging
   }
   return process.env.CLIENT_URL || 'http://localhost:5173'
@@ -13,7 +16,10 @@ const getCorsOrigin = (): string | boolean => {
 const corsOrigin = getCorsOrigin()
 
 const getTrustedOrigins = (): string[] => {
-  if (process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'staging') {
+  if (
+    process.env.NODE_ENV === 'production' ||
+    process.env.NODE_ENV === 'staging'
+  ) {
     return [
       process.env.PRODUCTION_URL || 'https://example.com'
       // + others if needed
@@ -47,7 +53,7 @@ const getDatabaseUrl = (): string | undefined => {
 const databaseUrlResult = getDatabaseUrl()
 
 if (!databaseUrlResult) {
-  console.error('MONGODB_URI not set.')
+  logger.error('MONGODB_URI not set.')
   throw new Error('MONGODB_URI is required')
 }
 

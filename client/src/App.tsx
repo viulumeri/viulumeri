@@ -7,6 +7,7 @@ import { InviteAccept } from './components/InviteAccept'
 import { TeacherStudentsPage } from './components/TeacherStudentsPage'
 import { StudentHomeworkPage } from './components/StudentHomeworkPage'
 import { TeacherStudentHomeworkPage } from './components/TeacherStudentHomeworkPage'
+import { CreateHomeworkPage } from './components/CreateHomeworkPage'
 import { Link, Route, Routes, useNavigate } from 'react-router-dom'
 import { authClient, useSession } from './auth-client'
 import type { AppSessionUser } from '../../shared/types'
@@ -72,6 +73,10 @@ const App = () => {
         <Route
           path="/teacher/students/:studentId/homework"
           element={<TeacherStudentHomeworkPage />}
+        />
+        <Route
+          path="/teacher/students/:studentId/homework/create"
+          element={<CreateHomeworkPage />}
         />
         <Route path="/student/homework" element={<StudentHomeworkPage />} />
       </Routes>

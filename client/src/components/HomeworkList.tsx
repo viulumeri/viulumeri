@@ -1,21 +1,28 @@
 import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import type { Homework, SongListItem } from '../../../shared/types'
+import type { Homework, SongListItem, HomeworkListResponse } from '../../../shared/types'
 import { useSongsList } from '../hooks/useSongs'
-import { usePracticeOnce, useStudentHomework } from '../hooks/useHomework'
+import { usePracticeOnce } from '../hooks/useHomework'
+import type { UseQueryResult } from '@tanstack/react-query'
 
 type Props = {
+  useHomeworkQuery: () => UseQueryResult<HomeworkListResponse>
   showPracticeCount?: boolean
+  actions?: 'student' | 'teacher' | 'none'
 }
 
-export const HomeworkList = ({ showPracticeCount = true }: Props) => {
+export const HomeworkList = ({ 
+  useHomeworkQuery, 
+  showPracticeCount = true, 
+  actions = 'none' 
+}: Props) => {
   const { data: songsData } = useSongsList()
   const {
     data: homeworkData,
     isLoading,
     isError,
     refetch
-  } = useStudentHomework()
+  } = useHomeworkQuery()
   const location = useLocation()
   const [pendingId, setPendingId] = useState<string | null>(null)
   const allSongs: SongListItem[] | undefined = songsData
@@ -81,17 +88,25 @@ export const HomeworkList = ({ showPracticeCount = true }: Props) => {
               </div>
             )}
 
-            <button
-              onClick={() => {
-                if (pendingId) return
-                setPendingId(homework.id)
-                practice.mutate(homework.id)
-              }}
-              disabled={isBusy}
-              aria-busy={isBusy}
-            >
-              {isBusy ? 'Tallennetaan…' : 'Harjoittelin'}
-            </button>
+            {actions === 'student' && (
+              <button
+                onClick={() => {
+                  if (pendingId) return
+                  setPendingId(homework.id)
+                  practice.mutate(homework.id)
+                }}
+                disabled={isBusy}
+                aria-busy={isBusy}
+              >
+                {isBusy ? 'Tallennetaan…' : 'Harjoittelin'}
+              </button>
+            )}
+            
+            {actions === 'teacher' && (
+              <button>
+                Muokkaa
+              </button>
+            )}
           </li>
         )
       })}

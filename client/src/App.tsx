@@ -4,7 +4,7 @@ import { MusicPlayer } from './components/MusicPlayer'
 import { Songslist } from './components/Songslist'
 import { InviteLink } from './components/InviteLink'
 import { InviteAccept } from './components/InviteAccept'
-import { TeacherStudents } from './components/TeacherStudents'
+import { TeacherStudentsPage } from './components/TeacherStudentsPage'
 import { StudentHomeworkPage } from './components/StudentHomeworkPage'
 import { TeacherStudentHomeworkPage } from './components/TeacherStudentHomeworkPage'
 import { Link, Route, Routes, useNavigate } from 'react-router-dom'
@@ -68,7 +68,7 @@ const App = () => {
         <Route path="/player/:songId" element={<MusicPlayer />} />
         <Route path="/invite" element={<InviteLink />} />
         <Route path="/invite/:token" element={<InviteAccept />} />
-        <Route path="/teacher/students" element={<TeacherStudents />} />
+        <Route path="/teacher/students" element={<TeacherStudentsPage />} />
         <Route
           path="/teacher/students/:studentId/homework"
           element={<TeacherStudentHomeworkPage />}

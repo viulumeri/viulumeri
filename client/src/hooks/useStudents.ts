@@ -1,8 +1,8 @@
 import { useQuery } from '@tanstack/react-query'
-import { teacherService } from '../services/teacher'
+import { studentsService } from '../services/students'
 
 export const useTeacherStudents = () =>
   useQuery({
     queryKey: ['teacher', 'students'],
-    queryFn: teacherService.getStudents
+    queryFn: studentsService.getStudents
   })

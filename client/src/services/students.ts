@@ -1,10 +1,10 @@
 import axios from 'axios'
 
-export const teacherService = {
+export const studentsService = {
   getStudents: async (): Promise<{
     students: { id: string; name: string }[]
   }> => {
-    const response = await axios.get('/api/teacher/students', {
+    const response = await axios.get('/api/students', {
       withCredentials: true
     })
     return response.data

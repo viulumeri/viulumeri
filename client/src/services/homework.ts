@@ -8,13 +8,13 @@ import type {
 
 export const homeworkService = {
   create: async (body: CreateHomeworkBody): Promise<CreateHomeworkResponse> => {
-    const response = await axios.post('/api/teacher/homework', body, {
+    const response = await axios.post('/api/homework', body, {
       withCredentials: true
     })
     return response.data
   },
   listForStudent: async (): Promise<HomeworkListResponse> => {
-    const response = await axios.get('/api/student/homework', {
+    const response = await axios.get('/api/homework', {
       withCredentials: true
     })
     return response.data
@@ -22,17 +22,14 @@ export const homeworkService = {
   listForTeacherStudent: async (
     studentId: string
   ): Promise<HomeworkListResponse> => {
-    const response = await axios.get(
-      `/api/teacher/students/${studentId}/homework`,
-      {
-        withCredentials: true
-      }
-    )
+    const response = await axios.get(`/api/students/${studentId}/homework`, {
+      withCredentials: true
+    })
     return response.data
   },
   practiceOnce: async (homeworkId: string): Promise<PracticeResponse> => {
     const response = await axios.post(
-      `/api/student/practice/${homeworkId}`,
+      `/api/homework/practice/${homeworkId}`,
       null,
       {
         withCredentials: true

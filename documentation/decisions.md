@@ -1,5 +1,11 @@
 # Technology decisions
 
+## 18.8.2025
+
+### MUI -> Tailwind css
+
+Tailwind seems more suitable for our needs than MUI. Easier to customize.
+
 ## 7.8.2025
 
 ### Resend

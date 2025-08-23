@@ -1,6 +1,7 @@
 export interface SongMetadata {
   title: string
   composer?: string
+  imgurl?: string
 }
 
 export interface Song {

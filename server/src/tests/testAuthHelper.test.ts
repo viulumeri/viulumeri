@@ -3,16 +3,10 @@ import assert from 'node:assert'
 import { TestAuthHelper } from '../utils/testAuthHelper'
 import Teacher from '../models/teacher'
 import Student from '../models/student'
-import { MongoClient } from 'mongodb'
-import { databaseUrl } from '../utils/config'
 
 describe('Auth Integration Tests', () => {
-  let client: MongoClient
-
   before(async () => {
     await TestAuthHelper.setupTestDatabase()
-    client = new MongoClient(databaseUrl)
-    await client.connect()
   })
 
   beforeEach(async () => {
@@ -21,9 +15,6 @@ describe('Auth Integration Tests', () => {
 
   after(async () => {
     await TestAuthHelper.cleanup()
-    if (client) {
-      await client.close()
-    }
   })
 
   describe('User Creation Hook', () => {
@@ -133,7 +124,7 @@ describe('Auth Integration Tests', () => {
       assert(session.token.startsWith('test-session-'))
 
       // Verify session was stored in database
-      const db = client.db()
+      const db = TestAuthHelper.getClient().db()
       const sessionsCollection = db.collection('session')
       const storedSession = await sessionsCollection.findOne({
         id: session.sessionId

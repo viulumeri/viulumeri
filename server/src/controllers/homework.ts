@@ -3,7 +3,7 @@ import {
   authenticateSession,
   requireTeacher,
   requireStudent
-} from '../utils/auth-helper'
+} from '../utils/session-helpers'
 import Teacher from '../models/teacher'
 import Student from '../models/student'
 import Homework from '../models/homework'

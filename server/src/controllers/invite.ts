@@ -38,7 +38,7 @@ inviteRouter.post('/', async (request, response) => {
     process.env.CLIENT_URL || `${request.protocol}://${request.get('host')}`
   const inviteUrl = `${base.replace(/\/$/, '')}/invite/${encodeURIComponent(token)}`
 
-  response.json({ inviteUrl, expiresIn: '7 days' })
+  response.json({ inviteUrl, expiresIn: '7 days' }) // Tarviikohan tätä expiresIn ?
 })
 
 inviteRouter.get('/:token', async (request, response) => {

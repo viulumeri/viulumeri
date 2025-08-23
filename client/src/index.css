@@ -1,1 +1,23 @@
 @import 'tailwindcss';
+@import url('https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap');
+
+@layer base {
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-weight: 550;
+    font-size: xx-large;
+  }
+  h2 {
+    font-family: 'Playfair Display', serif;
+    font-weight: 550;
+    font-size: x-large;
+  }
+  h3 {
+    font-family: 'EB Garamond, serif';
+    font-weight: 500;
+    font-size: x-large;
+  }
+  h4 {
+    font-family: 'Inter', sans-serif;
+  }
+}

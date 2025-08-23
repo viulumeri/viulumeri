@@ -1,6 +1,7 @@
 import { MongoClient } from 'mongodb'
 import mongoose from 'mongoose'
 import { databaseUrl } from './config'
+import { client } from '../db'
 import Teacher from '../models/teacher'
 import Student from '../models/student'
 
@@ -105,10 +106,23 @@ export class TestAuthHelper {
     if (mongoose.connection.readyState !== 0) {
       await mongoose.connection.close()
     }
+
+    // Also close the global Better Auth database client
+    try {
+      await client.close()
+    } catch (error) {
+      // Client might already be closed, ignore the error
+    }
   }
 
   // Helper to get session cookie for requests
   static getSessionCookie(token: string): string {
     return `better-auth.session_token=${token}`
+  }
+
+  // Helper to get database client for tests that need direct access
+  static getClient(): MongoClient {
+    if (!this.client) throw new Error('Database not connected')
+    return this.client
   }
 }

@@ -3,7 +3,6 @@ import mongoose from 'mongoose'
 import { databaseUrl } from './config'
 import Teacher from '../models/teacher'
 import Student from '../models/student'
-import { auth } from './auth'
 
 export class TestAuthHelper {
   private static client: MongoClient | null = null

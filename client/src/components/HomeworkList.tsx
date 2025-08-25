@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import type { Homework, SongListItem, HomeworkListResponse } from '../../../shared/types'
+import type { SongListItem, HomeworkListResponse } from '../../../shared/types'
 import { useSongsList } from '../hooks/useSongs'
 import { usePracticeOnce } from '../hooks/useHomework'
 import type { UseQueryResult } from '@tanstack/react-query'
@@ -11,18 +11,13 @@ type Props = {
   actions?: 'student' | 'teacher' | 'none'
 }
 
-export const HomeworkList = ({ 
-  useHomeworkQuery, 
-  showPracticeCount = true, 
-  actions = 'none' 
+export const HomeworkList = ({
+  useHomeworkQuery,
+  showPracticeCount = true,
+  actions = 'none'
 }: Props) => {
   const { data: songsData } = useSongsList()
-  const {
-    data: homeworkData,
-    isLoading,
-    isError,
-    refetch
-  } = useHomeworkQuery()
+  const { data: homeworkData, isLoading, isError, refetch } = useHomeworkQuery()
   const location = useLocation()
   const [pendingId, setPendingId] = useState<string | null>(null)
   const allSongs: SongListItem[] | undefined = songsData
@@ -101,12 +96,8 @@ export const HomeworkList = ({
                 {isBusy ? 'Tallennetaan…' : 'Harjoittelin'}
               </button>
             )}
-            
-            {actions === 'teacher' && (
-              <button>
-                Muokkaa
-              </button>
-            )}
+
+            {actions === 'teacher' && <button>Muokkaa</button>}
           </li>
         )
       })}

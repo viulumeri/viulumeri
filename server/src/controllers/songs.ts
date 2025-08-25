@@ -1,7 +1,7 @@
 import { Router } from 'express'
 import path from 'path'
 import { musicService } from '../services/music'
-import { authenticateSession } from '../utils/auth-helper'
+import { authenticateSession } from '../utils/session-helpers'
 
 const songsRouter = Router()
 

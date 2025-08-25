@@ -18,12 +18,18 @@
 
 - POST /api/homework - Create homework assignment (teacher only)
 - GET /api/homework - Get own homework assignments (student only)
-- POST /api/homework/practise/:homeworkId - Record practice session (student only)
+- POST /api/homework/practice/:homeworkId - Record practice session (student only)
 
 ## Students (Teacher access to student data)
 
 - GET /api/students - Get teacher's students list (teacher only)
 - GET /api/students/:studentId/homework - Get specific student's homework (teacher only)
+- POST /api/students/:studentId/played-songs - Mark song as played for student (teacher only)
+- DELETE /api/students/:studentId/played-songs/:songId - Unmark song as played (teacher only)
+
+## Played Songs (Song progress tracking)
+
+- GET /api/played-songs - Get own played songs list (student only)
 
 ## Invites (Teacher-student relationship management)
 

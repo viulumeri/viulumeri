@@ -260,7 +260,7 @@ describe('Students API GET /:studentId/homework', () => {
     )
     // Check that order is right:
     assert(homeworkList[0].songs.includes('002-jekku'))
-    assert.strictEqual(homeworkList[0].comment, 'Soita paremmin')
+    assert.strictEqual(homeworkList[0].comment, 'Soita paremmin.')
     assert.strictEqual(homeworkList[0].practiceCount, 2)
 
     assert(homeworkList[1].songs.includes('000-improvisaatio1'))

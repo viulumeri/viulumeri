@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import { authenticateSession, requireTeacher } from '../utils/auth-helper'
+import { authenticateSession, requireTeacher } from '../utils/session-helpers'
 import Teacher from '../models/teacher'
 import Student from '../models/student'
 import Homework from '../models/homework'

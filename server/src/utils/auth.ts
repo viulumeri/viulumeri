@@ -10,7 +10,7 @@ import Student from '../models/student'
 logger.info('Initializing better-auth...')
 
 client
-  .db('viulumeri')
+  .db()
   .admin()
   .ping()
   .then(() => {
@@ -21,10 +21,10 @@ client
   })
 
 export const auth = betterAuth({
-  database: mongodbAdapter(client.db('viulumeri') as any),
+  database: mongodbAdapter(client.db() as any),
   emailAndPassword: {
     enabled: true,
-    requireEmailVerification: true
+    requireEmailVerification: process.env.NODE_ENV !== 'test' // Disable email verification in tests
   },
   user: {
     additionalFields: {

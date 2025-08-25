@@ -30,3 +30,14 @@ export const playedSongsService = {
     )
     return response.data
   },
+
+  // Student function
+  getOwnPlayedSongs: async (): Promise<{
+    playedSongs: string[]
+  }> => {
+    const response = await axios.get('/api/played-songs', {
+      withCredentials: true
+    })
+    return response.data
+  }
+}

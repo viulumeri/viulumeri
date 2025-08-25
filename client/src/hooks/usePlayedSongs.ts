@@ -43,3 +43,10 @@ export const useUnmarkSongPlayed = (
       playedSongsService.unmarkSongPlayed(studentId, songId),
     ...options
   })
+
+// Student hook
+export const useOwnPlayedSongs = () =>
+  useQuery<PlayedSongsListResponse, Error>({
+    queryKey: ['student-played-songs'],
+    queryFn: playedSongsService.getOwnPlayedSongs
+  })

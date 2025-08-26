@@ -8,7 +8,9 @@ import type {
   CreateHomeworkBody,
   CreateHomeworkResponse,
   HomeworkListResponse,
-  PracticeResponse
+  PracticeResponse,
+  UpdateHomeworkBody,
+  UpdateHomeworkResponse
 } from '../../../shared/types'
 
 type homeworkId = string
@@ -36,5 +38,29 @@ export const usePracticeOnce = (
 ) =>
   useMutation<PracticeResponse, Error, homeworkId>({
     mutationFn: homeworkService.practiceOnce,
+    ...options
+  })
+
+export const useDeleteHomework = (
+  options?: UseMutationOptions<void, Error, string>
+) =>
+  useMutation<void, Error, homeworkId>({
+    mutationFn: homeworkService.delete,
+    ...options
+  })
+
+export const useUpdateHomework = (
+  options?: UseMutationOptions<
+    UpdateHomeworkResponse,
+    Error,
+    { homeworkId: string; body: UpdateHomeworkBody }
+  >
+) =>
+  useMutation<
+    UpdateHomeworkResponse,
+    Error,
+    { homeworkId: string; body: UpdateHomeworkBody }
+  >({
+    mutationFn: ({ homeworkId, body }) => homeworkService.update(homeworkId, body),
     ...options
   })

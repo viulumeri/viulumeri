@@ -18,6 +18,8 @@
 
 - POST /api/homework - Create homework assignment (teacher only)
 - GET /api/homework - Get own homework assignments (student only)
+- PUT /api/homework/:homeworkId - Update homework assignment (teacher only)
+- DELETE /api/homework/:homeworkId - Delete homework assignment (teacher only)
 - POST /api/homework/practice/:homeworkId - Record practice session (student only)
 
 ## Students (Teacher access to student data)

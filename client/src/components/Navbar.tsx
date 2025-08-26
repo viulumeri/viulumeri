@@ -8,7 +8,7 @@ export const Navbar = () => {
     location.pathname === path ? 'text-white' : 'text-gray-500'
 
   return (
-    <nav className="fixed bottom-0 w-full max-w-sm">
+    <nav className="fixed bottom-0 left-0 right-0 z-50">
       <div className="mx-auto w-full max-w-sm">
         <div className="flex justify-around p-2">
           <Link

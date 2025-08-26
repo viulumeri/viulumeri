@@ -36,11 +36,13 @@ export const auth = betterAuth({
     },
     deleteUser: {
       enabled: true,
-      sendDeleteAccountVerification: async ({ user, url }) => {
-        await sendEmail({
-          to: user.email,
-          subject: 'Vahvista tilin poistaminen - Viulumeri',
-          text: `Olet pyytänyt tilin poistamista Viulumeri-palvelussa.
+      sendDeleteAccountVerification:
+        process.env.NODE_ENV !== 'test'
+          ? async ({ user, url }) => {
+              await sendEmail({
+                to: user.email,
+                subject: 'Vahvista tilin poistaminen - Viulumeri',
+                text: `Olet pyytänyt tilin poistamista Viulumeri-palvelussa.
 
 Vahvista tilin poistaminen klikkaamalla alla olevaa linkkiä:
 ${url}
@@ -48,8 +50,9 @@ ${url}
 HUOM: Tämä toiminto on peruuttamaton ja kaikki tietosi poistetaan pysyvästi.
 
 Jos et pyytänyt tilin poistamista, voit jättää tämän viestin huomioimatta.`
-        })
-      },
+              })
+            }
+          : undefined,
       beforeDelete: async user => {
         try {
           const teacher = await Teacher.findOne({ userId: user.id })

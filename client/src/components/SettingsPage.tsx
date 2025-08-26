@@ -1,11 +1,14 @@
 import { useState } from 'react'
 import { useSession } from '../auth-client'
-import { useDeleteUser } from '../hooks/useAuth'
+import { useDeleteUser, useChangePassword } from '../hooks/useAuth'
+import { useField } from '../hooks/useField'
 import type { AppSessionUser } from '../../../shared/types'
 
 export const SettingsPage = () => {
   const { data: session } = useSession()
   const [isDeleting, setIsDeleting] = useState(false)
+  const currentPassword = useField('password')
+  const newPassword = useField('password')
   
   const deleteUser = useDeleteUser({
     onSuccess: () => {
@@ -15,6 +18,17 @@ export const SettingsPage = () => {
     onError: (error) => {
       setIsDeleting(false)
       alert(`Virhe tilin poistamisessa: ${error.message}`)
+    }
+  })
+
+  const changePassword = useChangePassword({
+    onSuccess: () => {
+      currentPassword.reset()
+      newPassword.reset()
+      alert('Salasana vaihdettu onnistuneesti!')
+    },
+    onError: (error) => {
+      alert(`Virhe salasanan vaihdossa: ${error.message}`)
     }
   })
   
@@ -31,6 +45,19 @@ export const SettingsPage = () => {
     }
   }
 
+  const handleChangePassword = (event: React.FormEvent) => {
+    event.preventDefault()
+    if (!currentPassword.value || !newPassword.value) {
+      alert('Täytä molemmat salasanakentät')
+      return
+    }
+    changePassword.mutate({
+      currentPassword: currentPassword.value,
+      newPassword: newPassword.value,
+      revokeOtherSessions: true
+    })
+  }
+
   return (
     <div>
       <h2>Asetukset</h2>
@@ -39,6 +66,23 @@ export const SettingsPage = () => {
         <h3>Käyttäjätiedot</h3>
         <p><strong>Sähköposti:</strong> {session.user.email}</p>
         <p><strong>Tyyppi:</strong> {userType === 'teacher' ? 'Opettaja' : 'Oppilas'}</p>
+      </div>
+
+      <div>
+        <h3>Salasanan vaihto</h3>
+        <form onSubmit={handleChangePassword}>
+          <div>
+            <label htmlFor="current-password">Nykyinen salasana:</label>
+            <input id="current-password" {...currentPassword.props} required />
+          </div>
+          <div>
+            <label htmlFor="new-password">Uusi salasana:</label>
+            <input id="new-password" {...newPassword.props} required />
+          </div>
+          <button type="submit" disabled={changePassword.isPending}>
+            {changePassword.isPending ? 'Vaihdetaan...' : 'Vaihda salasana'}
+          </button>
+        </form>
       </div>
 
       <div>

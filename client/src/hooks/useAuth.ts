@@ -13,6 +13,12 @@ interface LoginData {
   password: string
 }
 
+interface ChangePasswordData {
+  newPassword: string
+  currentPassword: string
+  revokeOtherSessions?: boolean
+}
+
 export const useSignUp = (
   options?: UseMutationOptions<any, Error, SignUpData>
 ) => {
@@ -48,7 +54,51 @@ export const useLogin = (
 ) => {
   return useMutation({
     mutationFn: async (data: LoginData) => {
-      return await authClient.signIn.email(data)
+      const response = await authClient.signIn.email(data)
+      
+      // Check if login actually succeeded by looking at the response
+      if (response.error) {
+        // Map common Better Auth error messages to Finnish
+        let errorMessage = response.error.message || 'Kirjautuminen epäonnistui'
+        
+        if (errorMessage.includes('Invalid credentials') || errorMessage.includes('Invalid email or password')) {
+          errorMessage = 'Virheellinen sähköposti tai salasana'
+        } else if (errorMessage.includes('User not found')) {
+          errorMessage = 'Käyttäjää ei löydy'
+        } else if (errorMessage.includes('Email not verified')) {
+          errorMessage = 'Sähköposti ei ole vahvistettu'
+        }
+        
+        throw new Error(errorMessage)
+      }
+      
+      return response
+    },
+    ...options
+  })
+}
+
+export const useChangePassword = (
+  options?: UseMutationOptions<any, Error, ChangePasswordData>
+) => {
+  return useMutation({
+    mutationFn: async (data: ChangePasswordData) => {
+      const response = await authClient.changePassword(data)
+      
+      if (response.error) {
+        // Map common Better Auth error messages to Finnish
+        let errorMessage = response.error.message || 'Salasanan vaihto epäonnistui'
+        
+        if (errorMessage.includes('Invalid password') || errorMessage.includes('Wrong password')) {
+          errorMessage = 'Nykyinen salasana on virheellinen'
+        } else if (errorMessage.includes('Password')) {
+          errorMessage = 'Uusi salasana ei täytä vaatimuksia'
+        }
+        
+        throw new Error(errorMessage)
+      }
+      
+      return response
     },
     ...options
   })

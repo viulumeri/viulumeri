@@ -28,7 +28,16 @@ const homeworkSchema = new Schema({
   createdAt: {
     type: Date,
     default: Date.now
+  },
+  updatedAt: {
+    type: Date,
+    default: Date.now
   }
+})
+
+homeworkSchema.pre('save', function(next) {
+  this.updatedAt = new Date()
+  next()
 })
 
 homeworkSchema.set('toJSON', {

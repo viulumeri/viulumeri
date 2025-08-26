@@ -46,6 +46,7 @@ export interface Homework {
   comment: string
   practiceCount: number
   createdAt: string
+  updatedAt: string
   // returned by GET /api/student/homework and GET /api/teacher/students/:id/homework
 }
 
@@ -63,6 +64,16 @@ export interface CreateHomeworkResponse extends Homework {
 export interface HomeworkListResponse {
   homework: Homework[]
   // response to GET /api/student/homework and and GET /api/teacher/students/:id/homework
+}
+
+export interface UpdateHomeworkBody {
+  songs?: string[]
+  comment?: string
+  // client sends in PUT /api/homework/:id
+}
+
+export interface UpdateHomeworkResponse extends Homework {
+  // response to PUT /api/homework/:id
 }
 
 export interface PracticeResponse {

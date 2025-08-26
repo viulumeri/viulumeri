@@ -3,7 +3,9 @@ import type {
   CreateHomeworkBody,
   CreateHomeworkResponse,
   HomeworkListResponse,
-  PracticeResponse
+  PracticeResponse,
+  UpdateHomeworkBody,
+  UpdateHomeworkResponse
 } from '../../../shared/types'
 
 export const homeworkService = {
@@ -35,6 +37,20 @@ export const homeworkService = {
         withCredentials: true
       }
     )
+    return response.data
+  },
+  delete: async (homeworkId: string): Promise<void> => {
+    await axios.delete(`/api/homework/${homeworkId}`, {
+      withCredentials: true
+    })
+  },
+  update: async (
+    homeworkId: string,
+    body: UpdateHomeworkBody
+  ): Promise<UpdateHomeworkResponse> => {
+    const response = await axios.put(`/api/homework/${homeworkId}`, body, {
+      withCredentials: true
+    })
     return response.data
   }
 }

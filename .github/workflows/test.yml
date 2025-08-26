@@ -1,0 +1,69 @@
+name: Test
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+    branches: [main, dev]
+
+jobs:
+  typecheck:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: TypeScript healthcheck
+        run: npm run healthcheck
+
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Start MongoDB with docker-compose
+        run: docker compose up -d
+
+      - name: Wait for MongoDB to be ready
+        run: |
+          until docker compose exec -T mongodb mongosh --eval "db.adminCommand('ping')" >/dev/null 2>&1; do
+            echo "Waiting for MongoDB..."
+            sleep 2
+          done
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Copy environment file
+        run: cp server/.env-example server/.env
+
+      - name: Create test audio directory
+        run: mkdir -p /tmp/test-audio
+
+      - name: Run tests
+        env:
+          BETTER_AUTH_SECRET: test-secret-key-for-github-actions
+          MUSIC_DIR: /tmp/test-audio
+        run: npm test --workspace=server
+
+      - name: Stop MongoDB
+        if: always()
+        run: docker compose down
+

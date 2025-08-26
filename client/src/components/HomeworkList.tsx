@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import type { SongListItem, HomeworkListResponse } from '../../../shared/types'
 import { useSongsList } from '../hooks/useSongs'
-import { usePracticeOnce } from '../hooks/useHomework'
+import { usePracticeOnce, useDeleteHomework } from '../hooks/useHomework'
 import type { UseQueryResult } from '@tanstack/react-query'
 
 type Props = {
@@ -20,6 +20,7 @@ export const HomeworkList = ({
   const { data: homeworkData, isLoading, isError, refetch } = useHomeworkQuery()
   const location = useLocation()
   const [pendingId, setPendingId] = useState<string | null>(null)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
   const allSongs: SongListItem[] | undefined = songsData
 
   const practice = usePracticeOnce({
@@ -30,6 +31,17 @@ export const HomeworkList = ({
     onError: () => {
       setPendingId(null)
       alert('Harjoituskerran tallennus epäonnistui')
+    }
+  })
+
+  const deleteHomework = useDeleteHomework({
+    onSuccess: () => {
+      setDeletingId(null)
+      refetch()
+    },
+    onError: () => {
+      setDeletingId(null)
+      alert('Läksyn poistaminen epäonnistui')
     }
   })
 
@@ -47,6 +59,7 @@ export const HomeworkList = ({
     <ul>
       {items.map(homework => {
         const isBusy = pendingId === homework.id
+        const isDeleting = deletingId === homework.id
         return (
           <li key={homework.id}>
             <div>
@@ -97,7 +110,24 @@ export const HomeworkList = ({
               </button>
             )}
 
-            {actions === 'teacher' && <button>Muokkaa</button>}
+            {actions === 'teacher' && (
+              <div>
+                <button>Muokkaa</button>
+                <button
+                  onClick={() => {
+                    if (deletingId || pendingId) return
+                    if (confirm('Haluatko varmasti poistaa tämän tehtävän?')) {
+                      setDeletingId(homework.id)
+                      deleteHomework.mutate(homework.id)
+                    }
+                  }}
+                  disabled={isDeleting || isBusy}
+                  style={{ marginLeft: '8px' }}
+                >
+                  {isDeleting ? 'Poistetaan…' : 'Poista'}
+                </button>
+              </div>
+            )}
           </li>
         )
       })}

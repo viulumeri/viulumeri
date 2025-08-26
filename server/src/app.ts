@@ -10,6 +10,7 @@ import inviteRouter from './controllers/invite'
 import teacherRouter from './controllers/teacher'
 import homeworkRouter from './controllers/homework'
 import studentsRouter from './controllers/students'
+import playedSongsRouter from './controllers/playedSongs'
 
 const app = express()
 
@@ -30,6 +31,7 @@ app.use('/api/invites', inviteRouter)
 app.use('/api/teacher', teacherRouter)
 app.use('/api/homework', homeworkRouter)
 app.use('/api/students', studentsRouter)
+app.use('/api/played-songs', playedSongsRouter)
 
 app.get('/ping', (_req, res) => {
   res.send('pong')

@@ -35,3 +35,14 @@ export const useLogin = (
   })
 }
 
+export const useDeleteUser = (
+  options?: UseMutationOptions<any, Error, { callbackURL?: string }>
+) => {
+  return useMutation({
+    mutationFn: async (data: { callbackURL?: string } = {}) => {
+      return await authClient.deleteUser(data)
+    },
+    ...options
+  })
+}
+

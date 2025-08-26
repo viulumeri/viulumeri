@@ -6,6 +6,7 @@ import { sendEmail } from './email'
 import logger from './logger'
 import Teacher from '../models/teacher'
 import Student from '../models/student'
+import Homework from '../models/homework'
 
 logger.info('Initializing better-auth...')
 
@@ -31,6 +32,57 @@ export const auth = betterAuth({
       userType: {
         type: 'string',
         required: true
+      }
+    },
+    deleteUser: {
+      enabled: true,
+      sendDeleteAccountVerification:
+        process.env.NODE_ENV !== 'test'
+          ? async ({ user, url }) => {
+              await sendEmail({
+                to: user.email,
+                subject: 'Vahvista tilin poistaminen - Viulumeri',
+                text: `Olet pyytänyt tilin poistamista Viulumeri-palvelussa.
+
+Vahvista tilin poistaminen klikkaamalla alla olevaa linkkiä:
+${url}
+
+HUOM: Tämä toiminto on peruuttamaton ja kaikki tietosi poistetaan pysyvästi.
+
+Jos et pyytänyt tilin poistamista, voit jättää tämän viestin huomioimatta.`
+              })
+            }
+          : undefined,
+      beforeDelete: async user => {
+        try {
+          const teacher = await Teacher.findOne({ userId: user.id })
+          if (teacher) {
+            await Homework.deleteMany({ teacher: teacher.id })
+            await Student.updateMany(
+              { teacher: teacher.id },
+              { $unset: { teacher: 1 } }
+            )
+            await Teacher.findByIdAndDelete(teacher.id)
+            logger.info('Teacher profile and related data deleted', {
+              userId: user.id
+            })
+          }
+
+          const student = await Student.findOne({ userId: user.id })
+          if (student) {
+            await Homework.deleteMany({ student: student.id })
+            await Student.findByIdAndDelete(student.id)
+            logger.info('Student profile and related data deleted', {
+              userId: user.id
+            })
+          }
+        } catch (error) {
+          logger.error('Failed to cleanup user data', {
+            userId: user.id,
+            error
+          })
+          throw error
+        }
       }
     }
   },

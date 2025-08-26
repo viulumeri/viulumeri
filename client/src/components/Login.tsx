@@ -19,6 +19,7 @@ export const Login = () => {
     },
     onError: error => {
       console.error(error instanceof Error ? error.message : 'Login failed.')
+      password.reset()
     }
   })
 

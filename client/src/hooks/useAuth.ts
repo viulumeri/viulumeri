@@ -18,7 +18,26 @@ export const useSignUp = (
 ) => {
   return useMutation({
     mutationFn: async (data: SignUpData) => {
-      return await authClient.signUp.email(data)
+      const response = await authClient.signUp.email(data)
+
+      // Check if signup actually succeeded by looking at the response
+      if (response.error) {
+        // Map common Better Auth error messages to Finnish
+        let errorMessage =
+          response.error.message || 'Rekisteröityminen epäonnistui'
+
+        if (errorMessage.includes('User already exists')) {
+          errorMessage = 'Käyttäjätunnus on jo olemassa'
+        } else if (errorMessage.includes('Invalid email')) {
+          errorMessage = 'Virheellinen sähköpostiosoite'
+        } else if (errorMessage.includes('Password')) {
+          errorMessage = 'Salasana ei täytä vaatimuksia'
+        }
+
+        throw new Error(errorMessage)
+      }
+
+      return response
     },
     ...options
   })
@@ -45,4 +64,3 @@ export const useDeleteUser = (
     ...options
   })
 }
-

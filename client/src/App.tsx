@@ -8,6 +8,7 @@ import { TeacherStudentsPage } from './components/TeacherStudentsPage'
 import { StudentHomeworkPage } from './components/StudentHomeworkPage'
 import { TeacherStudentHomeworkPage } from './components/TeacherStudentHomeworkPage'
 import { CreateHomeworkPage } from './components/CreateHomeworkPage'
+import { SettingsPage } from './components/SettingsPage'
 import { Link, Route, Routes, useNavigate } from 'react-router-dom'
 import { authClient, useSession } from './auth-client'
 import type { AppSessionUser } from '../../shared/types'
@@ -45,6 +46,7 @@ const App = () => {
               <span>Tervetuloa, {session.user.email}!</span>
               <button onClick={handleSignOut}>Logout</button>
               <Link to="/songslist">Biisilista</Link>
+              <Link to="/settings">Asetukset</Link>
               {/* Teippi*/}
               {(session?.user as unknown as AppSessionUser | undefined)
                 ?.userType === 'teacher' && (
@@ -81,6 +83,7 @@ const App = () => {
             element={<CreateHomeworkPage />}
           />
           <Route path="/student/homework" element={<StudentHomeworkPage />} />
+          <Route path="/settings" element={<SettingsPage />} />
         </Routes>
       </div>
     </div>

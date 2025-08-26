@@ -1,6 +1,6 @@
 import { useField } from '../hooks/useField'
 import { useLogin } from '../hooks/useAuth'
-import { useNavigate, useLocation } from 'react-router-dom'
+import { useNavigate, useLocation, Link } from 'react-router-dom'
 
 export const Login = () => {
   const email = useField('text')
@@ -55,6 +55,9 @@ export const Login = () => {
       {loginMutation.isSuccess && (
         <div style={{ color: 'green' }}>Login successful</div>
       )}
+      <div>
+        <Link to="/forgot-password">Unohdin salasanani</Link>
+      </div>
     </div>
   )
 }

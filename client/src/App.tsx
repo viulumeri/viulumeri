@@ -1,5 +1,7 @@
 import { Login } from './components/Login.tsx'
 import { Signup } from './components/SignUp.tsx'
+import { ForgotPassword } from './components/ForgotPassword'
+import { ResetPassword } from './components/ResetPassword'
 import { MusicPlayer } from './components/MusicPlayer'
 import { Songslist } from './components/Songslist'
 import { InviteLink } from './components/InviteLink'
@@ -68,6 +70,8 @@ const App = () => {
         <Routes>
           <Route path="/signup" element={<Signup />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/" element={<h2>Etusivu placeholder</h2>} />
           <Route path="/songslist" element={<Songslist />} />
           <Route path="/player/:songId" element={<MusicPlayer />} />

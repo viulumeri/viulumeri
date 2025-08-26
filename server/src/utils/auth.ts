@@ -25,7 +25,24 @@ export const auth = betterAuth({
   database: mongodbAdapter(client.db() as any),
   emailAndPassword: {
     enabled: true,
-    requireEmailVerification: process.env.NODE_ENV !== 'test' // Disable email verification in tests
+    requireEmailVerification: process.env.NODE_ENV !== 'test', // Disable email verification in tests
+    sendResetPassword: process.env.NODE_ENV !== 'test' 
+      ? async ({ user, url }) => {
+          await sendEmail({
+            to: user.email,
+            subject: 'Salasanan palautus - Viulumeri',
+            text: `Olet pyytänyt salasanan palautusta Viulumeri-palvelussa.
+
+Klikkaa alla olevaa linkkiä vaihtaaksesi salasanasi:
+${url}
+
+Jos et pyytänyt salasanan palautusta, voit jättää tämän viestin huomioimatta.`
+          })
+        }
+      : undefined,
+    onPasswordReset: async ({ user }) => {
+      logger.info('Password reset completed', { userId: user.id, email: user.email })
+    }
   },
   user: {
     additionalFields: {

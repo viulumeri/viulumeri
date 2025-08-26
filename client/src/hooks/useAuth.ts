@@ -19,6 +19,16 @@ interface ChangePasswordData {
   revokeOtherSessions?: boolean
 }
 
+interface RequestPasswordResetData {
+  email: string
+  redirectTo?: string
+}
+
+interface ResetPasswordData {
+  newPassword: string
+  token: string
+}
+
 export const useSignUp = (
   options?: UseMutationOptions<any, Error, SignUpData>
 ) => {
@@ -110,6 +120,56 @@ export const useDeleteUser = (
   return useMutation({
     mutationFn: async (data: { callbackURL?: string } = {}) => {
       return await authClient.deleteUser(data)
+    },
+    ...options
+  })
+}
+
+export const useRequestPasswordReset = (
+  options?: UseMutationOptions<any, Error, RequestPasswordResetData>
+) => {
+  return useMutation({
+    mutationFn: async (data: RequestPasswordResetData) => {
+      const response = await authClient.requestPasswordReset(data)
+      
+      if (response.error) {
+        let errorMessage = response.error.message || 'Salasanan palautus epäonnistui'
+        
+        if (errorMessage.includes('User not found')) {
+          errorMessage = 'Sähköpostiosoitetta ei löydy'
+        } else if (errorMessage.includes('Invalid email')) {
+          errorMessage = 'Virheellinen sähköpostiosoite'
+        }
+        
+        throw new Error(errorMessage)
+      }
+      
+      return response
+    },
+    ...options
+  })
+}
+
+export const useResetPassword = (
+  options?: UseMutationOptions<any, Error, ResetPasswordData>
+) => {
+  return useMutation({
+    mutationFn: async (data: ResetPasswordData) => {
+      const response = await authClient.resetPassword(data)
+      
+      if (response.error) {
+        let errorMessage = response.error.message || 'Salasanan vaihto epäonnistui'
+        
+        if (errorMessage.includes('Invalid token') || errorMessage.includes('Token expired')) {
+          errorMessage = 'Linkki on vanhentunut tai virheellinen'
+        } else if (errorMessage.includes('Password')) {
+          errorMessage = 'Salasana ei täytä vaatimuksia'
+        }
+        
+        throw new Error(errorMessage)
+      }
+      
+      return response
     },
     ...options
   })

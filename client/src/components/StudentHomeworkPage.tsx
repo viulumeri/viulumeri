@@ -5,7 +5,7 @@ export const StudentHomeworkPage = () => {
   return (
     <div>
       <h2>Tehtävät</h2>
-      <HomeworkList 
+      <HomeworkList
         useHomeworkQuery={useStudentHomework}
         showPracticeCount={false}
         actions="student"

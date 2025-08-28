@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from 'react'
 import {
   useTeacherStudentHomework,
-  useDeleteHomework
+  useDeleteHomework,
+  usePracticeOnce
   // useUpdateHomework //
 } from '../hooks/useHomework'
 import { useSongsList } from '../hooks/useSongs'
@@ -37,6 +38,12 @@ export const HomeworkCarousel = ({ studentId, mode }: Props) => {
       alert('Läksyn poistaminen epäonnistui')
     }
   })
+
+  const practice = usePracticeOnce()
+
+  const handlePractice = (homeworkId: string) => {
+    practice.mutate(homeworkId)
+  }
 
   const menuRef = useRef<HTMLDivElement | null>(null)
   useEffect(() => {
@@ -96,9 +103,9 @@ export const HomeworkCarousel = ({ studentId, mode }: Props) => {
                       >
                         Muokkaa
                       </button>
-                      <div className="border-t border-neutral-500 border-opacity-50" />
+                      <div className="border-t border-neutral-500 border-opacity-50 " />
                       <button
-                        className="block w-full text-left px-5 py-3 text-sm text-white"
+                        className="block w-full text-left px-5 py-3 text-sm text--white "
                         disabled={deletingId === hw.id}
                         onClick={() => {
                           if (deletingId) return
@@ -133,6 +140,15 @@ export const HomeworkCarousel = ({ studentId, mode }: Props) => {
                       <h3 className="mt-5 mb-3">Opettajan kommentti</h3>
                       <p className="text-xs text-gray-300">{hw.comment}</p>
                     </>
+                  )}
+                  {mode === 'student' && (
+                    <button
+                      className="mt-4 bg-white text-black rounded px-3 py-2 text-sm"
+                      onClick={() => handlePractice(hw.id)}
+                      disabled={practice.isPending}
+                    >
+                      {practice.isPending ? 'Tallennetaan…' : 'Harjoittelin'}
+                    </button>
                   )}
                 </div>
               </div>

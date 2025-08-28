@@ -1,9 +1,7 @@
-import { Route, Routes, Navigate } from 'react-router-dom'
-import { useSession } from './auth-client'
-import type { AppSessionUser } from '../../shared/types'
-
-import { Login } from './components/Login'
-import { Signup } from './components/SignUp'
+import { Login } from './components/Login.tsx'
+import { Signup } from './components/SignUp.tsx'
+import { ForgotPassword } from './components/ForgotPassword'
+import { ResetPassword } from './components/ResetPassword'
 import { MusicPlayer } from './components/MusicPlayer'
 import { Songslist } from './components/Songslist'
 import { InviteLink } from './components/InviteLink'
@@ -15,6 +13,10 @@ import { CreateHomeworkPage } from './components/CreateHomeworkPage'
 
 import { AppLayout } from './components/AppLayout'
 import PublicLayout from './components/PublicLayout'
+import { SettingsPage } from './components/SettingsPage'
+import { Route, Routes, Navigate } from 'react-router-dom'
+import { useSession } from './auth-client'
+import type { AppSessionUser } from '../../shared/types'
 import './index.css'
 
 const App = () => {
@@ -138,6 +140,11 @@ const App = () => {
           />
         }
       />
+
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
+
+      <Route path="/settings" element={<SettingsPage />} />
     </Routes>
   )
 }

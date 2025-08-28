@@ -6,6 +6,7 @@ import { sendEmail } from './email'
 import logger from './logger'
 import Teacher from '../models/teacher'
 import Student from '../models/student'
+import Homework from '../models/homework'
 
 logger.info('Initializing better-auth...')
 
@@ -24,13 +25,81 @@ export const auth = betterAuth({
   database: mongodbAdapter(client.db() as any),
   emailAndPassword: {
     enabled: true,
-    requireEmailVerification: process.env.NODE_ENV !== 'test' // Disable email verification in tests
+    requireEmailVerification: process.env.NODE_ENV !== 'test', // Disable email verification in tests
+    sendResetPassword: process.env.NODE_ENV !== 'test' 
+      ? async ({ user, url }) => {
+          await sendEmail({
+            to: user.email,
+            subject: 'Salasanan palautus - Viulumeri',
+            text: `Olet pyytänyt salasanan palautusta Viulumeri-palvelussa.
+
+Klikkaa alla olevaa linkkiä vaihtaaksesi salasanasi:
+${url}
+
+Jos et pyytänyt salasanan palautusta, voit jättää tämän viestin huomioimatta.`
+          })
+        }
+      : undefined,
+    onPasswordReset: async ({ user }) => {
+      logger.info('Password reset completed', { userId: user.id, email: user.email })
+    }
   },
   user: {
     additionalFields: {
       userType: {
         type: 'string',
         required: true
+      }
+    },
+    deleteUser: {
+      enabled: true,
+      sendDeleteAccountVerification:
+        process.env.NODE_ENV !== 'test'
+          ? async ({ user, url }) => {
+              await sendEmail({
+                to: user.email,
+                subject: 'Vahvista tilin poistaminen - Viulumeri',
+                text: `Olet pyytänyt tilin poistamista Viulumeri-palvelussa.
+
+Vahvista tilin poistaminen klikkaamalla alla olevaa linkkiä:
+${url}
+
+HUOM: Tämä toiminto on peruuttamaton ja kaikki tietosi poistetaan pysyvästi.
+
+Jos et pyytänyt tilin poistamista, voit jättää tämän viestin huomioimatta.`
+              })
+            }
+          : undefined,
+      beforeDelete: async user => {
+        try {
+          const teacher = await Teacher.findOne({ userId: user.id })
+          if (teacher) {
+            await Homework.deleteMany({ teacher: teacher.id })
+            await Student.updateMany(
+              { teacher: teacher.id },
+              { $unset: { teacher: 1 } }
+            )
+            await Teacher.findByIdAndDelete(teacher.id)
+            logger.info('Teacher profile and related data deleted', {
+              userId: user.id
+            })
+          }
+
+          const student = await Student.findOne({ userId: user.id })
+          if (student) {
+            await Homework.deleteMany({ student: student.id })
+            await Student.findByIdAndDelete(student.id)
+            logger.info('Student profile and related data deleted', {
+              userId: user.id
+            })
+          }
+        } catch (error) {
+          logger.error('Failed to cleanup user data', {
+            userId: user.id,
+            error
+          })
+          throw error
+        }
       }
     }
   },

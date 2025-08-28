@@ -9,6 +9,7 @@ export function StudentCard({ id, name }: Props) {
   return (
     <Link
       to={`/teacher/students/${id}/homework`}
+      state={{ studentName: name }}
       className="relative rounded-md aspect-square w-full h-full overflow-hidden"
     >
       <h2 className="absolute bottom-4 left-6 text-white z-10">{name}</h2>

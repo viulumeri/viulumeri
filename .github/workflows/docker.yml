@@ -1,4 +1,4 @@
-name: Build and Push Docker Image
+name: Build, Push, and Deploy
 
 on:
   push:
@@ -26,25 +26,60 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Extract metadata
+      # Build and push with SHA tag for main branch deployments
+      - name: Build and push Docker image (main branch)
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        run: |
+          docker build --tag "jayzstep/viulumeri:$GITHUB_SHA" .
+          docker push "jayzstep/viulumeri:$GITHUB_SHA"
+
+      # Build and push with version tags for releases
+      - name: Extract metadata (releases)
+        if: github.event_name == 'release'
         id: meta
         uses: docker/metadata-action@v5
         with:
           images: jayzstep/viulumeri
           tags: |
-            # Latest tag for main branch
-            type=raw,value=latest,enable={{is_default_branch}}
-            # Version tags for releases
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
 
-      - name: Build and push Docker image
+      - name: Build and push Docker image (releases)
+        if: github.event_name == 'release'
         uses: docker/build-push-action@v6
         with:
           context: .
           platforms: linux/amd64,linux/arm64
-          push: ${{ github.event_name != 'pull_request' }}
+          push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+      # Build only for PRs (no push)
+      - name: Build Docker image (PR)
+        if: github.event_name == 'pull_request'
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: false
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # Update staging Kustomization for main branch pushes
+      - name: Set up Kustomize
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        uses: imranismail/setup-kustomize@v2
+
+      - name: Update staging image tag
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        run: |
+          cd manifests/staging
+          kustomize edit set image jayzstep/viulumeri=jayzstep/viulumeri:$GITHUB_SHA
+
+      - name: Commit staging kustomization.yaml
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        uses: EndBug/add-and-commit@v9
+        with:
+          add: 'manifests/staging/kustomization.yaml'
+          message: 'Deploy to staging: ${{ github.sha }}'

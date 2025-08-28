@@ -3,19 +3,23 @@ import { useSession } from '../auth-client'
 import { useDeleteUser, useChangePassword } from '../hooks/useAuth'
 import { useField } from '../hooks/useField'
 import type { AppSessionUser } from '../../../shared/types'
+import { StudentSettings } from './StudentSettings'
+import { TeacherSettings } from './TeacherSettings'
 
 export const SettingsPage = () => {
   const { data: session } = useSession()
   const [isDeleting, setIsDeleting] = useState(false)
   const currentPassword = useField('password')
   const newPassword = useField('password')
-  
+
   const deleteUser = useDeleteUser({
     onSuccess: () => {
       setIsDeleting(false)
-      alert('Vahvistussähköposti lähetetty. Tarkista sähköpostisi viimeistelläksesi tilin poistamisen.')
+      alert(
+        'Vahvistussähköposti lähetetty. Tarkista sähköpostisi viimeistelläksesi tilin poistamisen.'
+      )
     },
-    onError: (error) => {
+    onError: error => {
       setIsDeleting(false)
       alert(`Virhe tilin poistamisessa: ${error.message}`)
     }
@@ -27,11 +31,12 @@ export const SettingsPage = () => {
       newPassword.reset()
       alert('Salasana vaihdettu onnistuneesti!')
     },
-    onError: (error) => {
+    onError: error => {
       alert(`Virhe salasanan vaihdossa: ${error.message}`)
     }
   })
-  
+
+
   if (!session) {
     return <div>Ei istuntoa</div>
   }
@@ -39,7 +44,11 @@ export const SettingsPage = () => {
   const userType = (session.user as unknown as AppSessionUser)?.userType
 
   const handleDeleteAccount = () => {
-    if (confirm('Haluatko varmasti poistaa käyttäjätilisi? Saat vahvistussähköpostin ennen lopullista poistamista.')) {
+    if (
+      confirm(
+        'Haluatko varmasti poistaa käyttäjätilisi? Saat vahvistussähköpostin ennen lopullista poistamista.'
+      )
+    ) {
       setIsDeleting(true)
       deleteUser.mutate({ callbackURL: '/login' })
     }
@@ -58,14 +67,20 @@ export const SettingsPage = () => {
     })
   }
 
+
   return (
     <div>
       <h2>Asetukset</h2>
-      
+
       <div>
         <h3>Käyttäjätiedot</h3>
-        <p><strong>Sähköposti:</strong> {session.user.email}</p>
-        <p><strong>Tyyppi:</strong> {userType === 'teacher' ? 'Opettaja' : 'Oppilas'}</p>
+        <p>
+          <strong>Sähköposti:</strong> {session.user.email}
+        </p>
+        <p>
+          <strong>Tyyppi:</strong>{' '}
+          {userType === 'teacher' ? 'Opettaja' : 'Oppilas'}
+        </p>
       </div>
 
       <div>
@@ -93,19 +108,9 @@ export const SettingsPage = () => {
         <p>Varoitus: Tilin poistaminen poistaa kaikki tietosi pysyvästi.</p>
       </div>
 
-      {userType === 'teacher' && (
-        <div>
-          <h3>Oppilaiden hallinta</h3>
-          <p>TODO: Oppilaiden poistaminen</p>
-        </div>
-      )}
-
-      {userType === 'student' && (
-        <div>
-          <h3>Opettajan hallinta</h3>
-          <p>TODO: Opettajan poistaminen</p>
-        </div>
-      )}
+      {userType === 'teacher' && <TeacherSettings />}
+      {userType === 'student' && <StudentSettings />}
     </div>
   )
 }
+

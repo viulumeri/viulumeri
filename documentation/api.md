@@ -38,3 +38,7 @@
 - GET /api/invites - Get teacher's invite codes (teacher only)
 - POST /api/invites - Create new invite code (teacher only)
 - POST /api/invites/:token/accept - Student accepts invitation (student only)
+
+## Teacher (Teacher-student relationship management)
+
+- DELETE /api/teacher - Student removes their teacher relationship (student only)

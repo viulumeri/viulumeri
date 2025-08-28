@@ -1,0 +1,30 @@
+import { BookOpen, ListMusic } from 'lucide-react'
+
+type ToggleSwitchProps = {
+  view: 'homework' | 'songs'
+  setView: (view: 'homework' | 'songs') => void
+}
+
+export default function ToggleSwitch({ view, setView }: ToggleSwitchProps) {
+  return (
+    <div className="relative w-17 h-9 bg-gray-800 rounded-full flex items-center px-1 gap-1">
+      <div
+        className={`absolute top-0 left-0 w-9 h-9 rounded-full bg-red-900 transition-all duration-300 ${
+          view === 'songs' ? 'translate-x-8' : 'translate-x-0'
+        }`}
+      />
+      <button
+        onClick={() => setView('homework')}
+        className="z-10 w-9 h-9 flex items-center justify-center"
+      >
+        <BookOpen color="white" size={20} />
+      </button>
+      <button
+        onClick={() => setView('songs')}
+        className="z-10 w-9 h-9 flex items-center justify-center"
+      >
+        <ListMusic color="white" size={20} />
+      </button>
+    </div>
+  )
+}

@@ -1,19 +1,18 @@
 import express from 'express'
 import cors from 'cors'
 import path from 'path'
-import connectDB from './db'
 import { toNodeHandler } from 'better-auth/node'
 import { auth } from './utils/auth'
 import { corsOrigin } from './utils/config'
-import { musicService } from './services/music'
 import { requestLogger } from './utils/middleware'
 import songsRouter from './controllers/songs'
 import inviteRouter from './controllers/invite'
+import teacherRouter from './controllers/teacher'
+import homeworkRouter from './controllers/homework'
+import studentsRouter from './controllers/students'
+import playedSongsRouter from './controllers/playedSongs'
 
 const app = express()
-
-connectDB()
-musicService.initialize()
 
 app.use(
   cors({
@@ -29,6 +28,11 @@ app.all('/api/auth/*splat', toNodeHandler(auth))
 app.use(express.json())
 app.use('/api/songs', songsRouter)
 app.use('/api/invites', inviteRouter)
+app.use('/api/teacher', teacherRouter)
+app.use('/api/homework', homeworkRouter)
+app.use('/api/students', studentsRouter)
+app.use('/api/played-songs', playedSongsRouter)
+
 app.get('/ping', (_req, res) => {
   res.send('pong')
 })

@@ -2,29 +2,43 @@
 
 ## Authentication (Better Auth handles these)
 
-- POST /api/auth/signin
-- POST /api/auth/signup
-- POST /api/auth/signout
-  ...
+- POST /api/auth/sign-up/email - Sign up with email
+- POST /api/auth/sign-in/email - Sign in with email
+- POST /api/auth/sign-out - Sign out
+- GET /api/auth/session - Get current session
+  ... (other Better Auth endpoints)
 
-## Songs
+## Songs (Available to all authenticated users)
 
-- GET /api/songs - Get all songs (with optional filters)
+- GET /api/songs - Get all songs list
 - GET /api/songs/:id - Get specific song details
-- GET /api/songs/:id/bundle - Get .zip with mp3's
+- GET /api/songs/:id/bundle - Download song's audio bundle (.zip with mp3s)
 
-## Student Endpoints
+## Homework (RESTful design with role-based access)
 
-- GET /api/student/songs - Get all songs with student's progress
-- GET /api/student/homework - Get current homework assignments
-- POST /api/student/practice/:homeworkId - Increment practice counter
-- PUT /api/student/progress/:songId - Update song status (self-learning)
+- POST /api/homework - Create homework assignment (teacher only)
+- GET /api/homework - Get own homework assignments (student only)
+- PUT /api/homework/:homeworkId - Update homework assignment (teacher only)
+- DELETE /api/homework/:homeworkId - Delete homework assignment (teacher only)
+- POST /api/homework/practice/:homeworkId - Record practice session (student only)
 
-## Teacher Endpoints
+## Students (Teacher access to student data)
 
-- GET /api/teacher/students - Get teacher's students
-- POST /api/teacher/homework - Assign homework to student
-- PUT /api/teacher/homework/:id - Update homework assignment
-- PUT /api/teacher/progress/:studentId/:songId - Mark song as completed
-- GET /api/teacher/invite-link - Generate new invitation link
-- POST /api/teacher/invite/:token - Student accepts invitation
+- GET /api/students - Get teacher's students list (teacher only)
+- GET /api/students/:studentId/homework - Get specific student's homework (teacher only)
+- POST /api/students/:studentId/played-songs - Mark song as played for student (teacher only)
+- DELETE /api/students/:studentId/played-songs/:songId - Unmark song as played (teacher only)
+
+## Played Songs (Song progress tracking)
+
+- GET /api/played-songs - Get own played songs list (student only)
+
+## Invites (Teacher-student relationship management)
+
+- GET /api/invites - Get teacher's invite codes (teacher only)
+- POST /api/invites - Create new invite code (teacher only)
+- POST /api/invites/:token/accept - Student accepts invitation (student only)
+
+## Teacher (Teacher-student relationship management)
+
+- DELETE /api/teacher - Student removes their teacher relationship (student only)

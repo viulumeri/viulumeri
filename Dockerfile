@@ -26,7 +26,7 @@ COPY server/package*.json ./server/
 RUN npm ci --only=production --workspace=server && \
     npm cache clean --force
 COPY --from=backend-builder /usr/src/app/server/dist ./server/dist
-COPY --from=frontend-builder /usr/src/app/client/dist ./client/dist
+COPY --from=frontend-builder /usr/src/app/client/dist ./server/dist/client/dist
 COPY shared/ ./shared/
 RUN chown -R viulumeri:nodejs /usr/src/app
 USER viulumeri

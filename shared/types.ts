@@ -1,6 +1,7 @@
 export interface SongMetadata {
   title: string
   composer?: string
+  imgurl?: string
 }
 
 export interface Song {
@@ -36,4 +37,46 @@ export interface AcceptInviteResponse {
 export interface GenerateInviteResponse {
   inviteUrl: string
   expiresIn: string
+}
+
+export interface Homework {
+  id: string
+  student: { id: string; name: string }
+  songs: string[]
+  comment: string
+  practiceCount: number
+  createdAt: string
+  updatedAt: string
+  // returned by GET /api/student/homework and GET /api/teacher/students/:id/homework
+}
+
+export interface CreateHomeworkBody {
+  studentId: string
+  songs?: string[]
+  comment?: string
+  // client sends in POST /api/teacher/homework
+}
+
+export interface CreateHomeworkResponse extends Homework {
+  // response to POST /api/teacher/homework)
+}
+
+export interface HomeworkListResponse {
+  homework: Homework[]
+  // response to GET /api/student/homework and and GET /api/teacher/students/:id/homework
+}
+
+export interface UpdateHomeworkBody {
+  songs?: string[]
+  comment?: string
+  // client sends in PUT /api/homework/:id
+}
+
+export interface UpdateHomeworkResponse extends Homework {
+  // response to PUT /api/homework/:id
+}
+
+export interface PracticeResponse {
+  id: string
+  practiceCount: number
 }

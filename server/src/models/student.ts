@@ -19,6 +19,10 @@ const studentSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Teacher',
     default: null
+  },
+  playedSongs: {
+    type: [String],
+    default: []
   }
 })
 

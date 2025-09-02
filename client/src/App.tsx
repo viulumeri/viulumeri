@@ -10,87 +10,142 @@ import { TeacherStudentsPage } from './components/TeacherStudentsPage'
 import { StudentHomeworkPage } from './components/StudentHomeworkPage'
 import { TeacherStudentHomeworkPage } from './components/TeacherStudentHomeworkPage'
 import { CreateHomeworkPage } from './components/CreateHomeworkPage'
+
+import { AppLayout } from './components/AppLayout'
+import PublicLayout from './components/PublicLayout'
 import { SettingsPage } from './components/SettingsPage'
-import { Link, Route, Routes, useNavigate } from 'react-router-dom'
-import { authClient, useSession } from './auth-client'
+import { Route, Routes, Navigate } from 'react-router-dom'
+import { useSession } from './auth-client'
 import type { AppSessionUser } from '../../shared/types'
 import './index.css'
 
 const App = () => {
   const { data: session } = useSession()
-  const navigate = useNavigate()
-
-  const handleSignOut = async () => {
-    await authClient.signOut({
-      fetchOptions: {
-        onSuccess: () => {
-          navigate('/login')
-        }
-      }
-    })
-  }
+  const userType = (session?.user as AppSessionUser | undefined)?.userType
 
   return (
-    <div className="min-h-screen bg-gray-100 flex justify-center">
-      <div className="w-full max-w-sm min-h-screen bg-neutral-900 text-gray-100">
-        <h1>Viulumeri</h1>
+    <Routes>
+      {/* Public routes */}
+      <Route
+        path="/login"
+        element={
+          <PublicLayout>
+            <Login />
+          </PublicLayout>
+        }
+      />
+      <Route
+        path="/signup"
+        element={
+          <PublicLayout>
+            <Signup />
+          </PublicLayout>
+        }
+      />
+      <Route
+        path="/invite/:token"
+        element={
+          <PublicLayout>
+            <InviteAccept />
+          </PublicLayout>
+        }
+      />
 
-        <nav>
-          {!session && (
+      {/* Protected routes */}
+      {session && (
+        <>
+          {/* Shared */}
+          <Route
+            path="/songslist"
+            element={
+              <AppLayout>
+                <Songslist />
+              </AppLayout>
+            }
+          />
+          <Route
+            path="/player/:songId"
+            element={
+              <AppLayout>
+                <MusicPlayer />
+              </AppLayout>
+            }
+          />
+
+          {/* Teacher-only */}
+          {userType === 'teacher' && (
             <>
-              <Link to="/login">Login</Link>
-              <Link to="/signup">Uusi käyttäjä</Link>
+              <Route
+                path="/invite"
+                element={
+                  <AppLayout>
+                    <InviteLink />
+                  </AppLayout>
+                }
+              />
+              <Route
+                path="/teacher/students"
+                element={
+                  <AppLayout>
+                    <TeacherStudentsPage />
+                  </AppLayout>
+                }
+              />
+              <Route
+                path="/teacher/students/:studentId/homework"
+                element={
+                  <AppLayout>
+                    <TeacherStudentHomeworkPage />
+                  </AppLayout>
+                }
+              />
+              <Route
+                path="/teacher/students/:studentId/homework/create"
+                element={
+                  <AppLayout>
+                    <CreateHomeworkPage />
+                  </AppLayout>
+                }
+              />
             </>
           )}
 
-          {session && (
-            <>
-              <span>Tervetuloa, {session.user.email}!</span>
-              <button onClick={handleSignOut}>Logout</button>
-              <Link to="/songslist">Biisilista</Link>
-              <Link to="/settings">Asetukset</Link>
-              {/* Teippi*/}
-              {(session?.user as unknown as AppSessionUser | undefined)
-                ?.userType === 'teacher' && (
-                <>
-                  <Link to="/invite">Lisää uusi oppilas</Link>
-                  <Link to="/teacher/students">Oppilaat</Link>
-                </>
-              )}
-              {(session?.user as unknown as AppSessionUser | undefined)
-                ?.userType === 'student' && (
-                <>
-                  <Link to="/student/homework">Tehtävät</Link>
-                </>
-              )}
-            </>
+          {/* Student-only */}
+          {userType === 'student' && (
+            <Route
+              path="/student/homework"
+              element={
+                <AppLayout>
+                  <StudentHomeworkPage />
+                </AppLayout>
+              }
+            />
           )}
-        </nav>
+        </>
+      )}
 
-        <Routes>
-          <Route path="/signup" element={<Signup />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/reset-password" element={<ResetPassword />} />
-          <Route path="/" element={<h2>Etusivu placeholder</h2>} />
-          <Route path="/songslist" element={<Songslist />} />
-          <Route path="/player/:songId" element={<MusicPlayer />} />
-          <Route path="/invite" element={<InviteLink />} />
-          <Route path="/invite/:token" element={<InviteAccept />} />
-          <Route path="/teacher/students" element={<TeacherStudentsPage />} />
-          <Route
-            path="/teacher/students/:studentId/homework"
-            element={<TeacherStudentHomeworkPage />}
+      {/* Fallback */}
+      <Route
+        path="*"
+        element={
+          <Navigate
+            to={
+              userType === 'teacher'
+                ? '/teacher/students'
+                : userType === 'student'
+                  ? '/student/homework'
+                  : '/login'
+            }
+            replace
           />
-          <Route
-            path="/teacher/students/:studentId/homework/create"
-            element={<CreateHomeworkPage />}
-          />
-          <Route path="/student/homework" element={<StudentHomeworkPage />} />
-          <Route path="/settings" element={<SettingsPage />} />
-        </Routes>
-      </div>
-    </div>
+        }
+      />
+
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
+
+      <Route path="/settings" element={<SettingsPage />} />
+    </Routes>
   )
 }
 

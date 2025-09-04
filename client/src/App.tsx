@@ -20,8 +20,12 @@ import type { AppSessionUser } from '../../shared/types'
 import './index.css'
 
 const App = () => {
-  const { data: session } = useSession()
+  const { data: session, isPending } = useSession()
   const userType = (session?.user as AppSessionUser | undefined)?.userType
+  
+  if (isPending) {
+    return <div>Loading...</div>
+  }
 
   return (
     <Routes>

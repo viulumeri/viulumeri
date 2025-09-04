@@ -10,9 +10,12 @@ services:
       MONGO_INITDB_ROOT_PASSWORD: password
       MONGO_INITDB_DATABASE: viulumeri
     volumes:
-      - ./data/mongodb:/data/db
+      - mongodb_data:/data/db
     networks:
       - viulumeri-network
+
+volumes:
+  mongodb_data:
 
 networks:
   viulumeri-network:

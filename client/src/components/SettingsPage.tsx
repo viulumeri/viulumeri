@@ -7,7 +7,7 @@ import { StudentSettings } from './StudentSettings'
 import { TeacherSettings } from './TeacherSettings'
 
 export const SettingsPage = () => {
-  const { data: session } = useSession()
+  const { data: session, isPending } = useSession()
   const [isDeleting, setIsDeleting] = useState(false)
   const currentPassword = useField('password')
   const newPassword = useField('password')
@@ -36,6 +36,10 @@ export const SettingsPage = () => {
     }
   })
 
+
+  if (isPending) {
+    return <div>Ladataan...</div>
+  }
 
   if (!session) {
     return <div>Ei istuntoa</div>

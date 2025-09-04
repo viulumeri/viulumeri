@@ -3,7 +3,7 @@ import { useSession } from '../auth-client'
 import { useGenerateInviteLink } from '../hooks/useInvite'
 
 export const InviteLink = () => {
-  const { data: session } = useSession()
+  const { data: session, isPending } = useSession()
   const [url, setUrl] = useState('')
 
   const gen = useGenerateInviteLink({
@@ -13,6 +13,7 @@ export const InviteLink = () => {
     onError: error => console.error('Generate invite failed:', error)
   })
 
+  if (isPending) return <div>Ladataan...</div>
   if (!session) return <div>Kirjaudu</div>
 
   return (

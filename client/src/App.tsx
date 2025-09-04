@@ -24,7 +24,7 @@ const App = () => {
   const userType = (session?.user as AppSessionUser | undefined)?.userType
   
   if (isPending) {
-    return <div>Loading...</div>
+    return <div>Ladataan...</div>
   }
 
   return (

@@ -52,6 +52,29 @@ studentsRouter.get('/:studentId/homework', async (request, response) => {
   })
 })
 
+// GET /api/students/:studentId/played-songs
+studentsRouter.get('/:studentId/played-songs', async (request, response) => {
+  const session = await authenticateSession(request, response)
+  if (!session) return
+  if (!requireTeacher(session, response)) return
+
+  const teacher = await validateTeacherProfile(session, response)
+  if (!teacher) return
+
+  const student = await validateTeacherStudentRelationship(
+    teacher,
+    request.params.studentId,
+    response
+  )
+  if (!student) return
+
+  response.json({
+    id: student.id,
+    name: student.name,
+    playedSongs: student.playedSongs
+  })
+})
+
 // POST /api/students/:studentId/played-songs
 studentsRouter.post('/:studentId/played-songs', async (request, response) => {
   const session = await authenticateSession(request, response)

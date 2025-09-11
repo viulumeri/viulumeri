@@ -2,6 +2,20 @@ import axios from 'axios'
 
 export const playedSongsService = {
   // Teacher functions
+  getStudentPlayedSongs: async (studentId: string): Promise<{
+    id: string
+    name: string
+    playedSongs: string[]
+  }> => {
+    const response = await axios.get(
+      `/api/students/${studentId}/played-songs`,
+      {
+        withCredentials: true
+      }
+    )
+    return response.data
+  },
+
   markSongPlayed: async (studentId: string, songId: string): Promise<{
     id: string
     name: string

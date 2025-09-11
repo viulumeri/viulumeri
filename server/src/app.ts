@@ -21,7 +21,9 @@ app.use(
   })
 )
 
-app.use(requestLogger)
+if (process.env.NODE_ENV === 'development') {
+  app.use(requestLogger)
+}
 
 app.all('/api/auth/*splat', toNodeHandler(auth))
 

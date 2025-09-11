@@ -107,8 +107,13 @@ Jos et pyytänyt tilin poistamista, voit jättää tämän viestin huomioimatta.
     sendVerificationEmail: async ({ user, url }) => {
       await sendEmail({
         to: user.email,
-        subject: 'Verify your email address',
-        text: `Click the link to verify your email: ${url}`
+        subject: 'Vahvista sähköpostiosoitteesi - Viulumeri',
+        text: `Tervetuloa Viulumeri-palveluun!
+
+Klikkaa alla olevaa linkkiä vahvistaaksesi sähköpostiosoitteesi:
+${url}
+
+Jos et rekisteröitynyt Viulumeri-palveluun, voit jättää tämän viestin huomioimatta.`
       })
     }
   },

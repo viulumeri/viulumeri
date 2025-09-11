@@ -1,6 +1,9 @@
 import { Router } from 'express'
-import { requireStudent, authenticateSession } from '../utils/session-helpers'
-import Student from '../models/student'
+import { 
+  requireStudent, 
+  authenticateSession,
+  validateStudentProfile 
+} from '../utils/session-helpers'
 import Teacher from '../models/teacher'
 
 const teacherRouter = Router()
@@ -12,9 +15,10 @@ teacherRouter.get('/', async (request, response) => {
   if (!session) return
   if (!requireStudent(session, response)) return
 
-  const student = await Student.findOne({ userId: session.user.id }).populate('teacher', 'name')
-  if (!student)
-    return response.status(404).json({ error: 'Student profile not found' })
+  const student = await validateStudentProfile(session, response)
+  if (!student) return
+
+  await student.populate('teacher', 'name')
 
   if (!student.teacher) {
     return response.json({ teacher: null })
@@ -35,9 +39,8 @@ teacherRouter.delete('/', async (request, response) => {
   if (!session) return
   if (!requireStudent(session, response)) return
 
-  const student = await Student.findOne({ userId: session.user.id })
-  if (!student)
-    return response.status(404).json({ error: 'Student profile not found' })
+  const student = await validateStudentProfile(session, response)
+  if (!student) return
 
   if (student.teacher) {
     const teacher = await Teacher.findById(student.teacher)
@@ -49,7 +52,7 @@ teacherRouter.delete('/', async (request, response) => {
     }
   }
 
-  (student as any).teacher = null
+  student.teacher = null as any
   await student.save()
 
   response.status(204).send()

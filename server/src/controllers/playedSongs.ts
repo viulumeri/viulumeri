@@ -1,6 +1,9 @@
 import { Router } from 'express'
-import { authenticateSession, requireStudent } from '../utils/session-helpers'
-import Student from '../models/student'
+import { 
+  authenticateSession, 
+  requireStudent,
+  validateStudentProfile 
+} from '../utils/session-helpers'
 
 const playedSongsRouter = Router()
 
@@ -9,9 +12,8 @@ playedSongsRouter.get('/', async (request, response) => {
   if (!session) return
   if (!requireStudent(session, response)) return
 
-  const student = await Student.findOne({ userId: session.user.id })
-  if (!student)
-    return response.status(404).json({ error: 'Student profile not found' })
+  const student = await validateStudentProfile(session, response)
+  if (!student) return
 
   response.json({
     playedSongs: student.playedSongs

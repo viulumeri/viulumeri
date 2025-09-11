@@ -1,5 +1,4 @@
 export const studentColors = [
-  '#D1D2F9',
   '#BAC7F9',
   '#A3BCF9',
   '#8DA9E2',

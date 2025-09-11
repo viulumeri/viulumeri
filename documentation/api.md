@@ -26,6 +26,7 @@
 
 - GET /api/students - Get teacher's students list (teacher only)
 - GET /api/students/:studentId/homework - Get specific student's homework (teacher only)
+- GET /api/students/:studentId/played-songs - Get student's played songs list (teacher only)
 - POST /api/students/:studentId/played-songs - Mark song as played for student (teacher only)
 - DELETE /api/students/:studentId/played-songs/:songId - Unmark song as played (teacher only)
 

@@ -269,6 +269,155 @@ describe('Students API GET /:studentId/homework', () => {
   })
 })
 
+describe('Students API GET /:studentId/played-songs', () => {
+  it('should return 401 Unauthorized without session', async () => {
+    const response = await api.get(`${url}/studentId/played-songs`)
+
+    assert.strictEqual(response.status, 401)
+    assert.strictEqual(response.body.error, 'Authentication required')
+  })
+
+  it('should return 403 Forbidden for a student', async () => {
+    const { sessionCookie } = await TestHelper.createAuthenticatedStudent(
+      api,
+      'some.student@edu.hel.fi',
+      'Some Student'
+    )
+
+    const response = await api
+      .get(`${url}/studentId/played-songs`)
+      .set('Cookie', sessionCookie)
+
+    assert.strictEqual(response.status, 403)
+    assert.strictEqual(response.body.error, 'Teacher role required')
+  })
+
+  it('should return 404 when teacher profile not found', async () => {
+    const { user, sessionCookie } = await TestHelper.createAuthenticatedTeacher(
+      api,
+      'orphaned.teacher@edu.hel.fi',
+      'Orphaned Teacher'
+    )
+
+    await Teacher.deleteOne({ userId: user.id })
+
+    const response = await api
+      .get(`${url}/studentId/played-songs`)
+      .set('Cookie', sessionCookie)
+
+    assert.strictEqual(response.status, 404)
+    assert.strictEqual(response.body.error, 'Teacher profile not found')
+  })
+
+  it('should return 404 when student not found', async () => {
+    const { sessionCookie } = await TestHelper.createAuthenticatedTeacher(
+      api,
+      'teacher.no.student@edu.hel.fi',
+      'Teacher No Student'
+    )
+
+    const response = await api
+      .get(`${url}/507f1f77bcf86cd799439011/played-songs`)
+      .set('Cookie', sessionCookie)
+
+    assert.strictEqual(response.status, 404)
+    assert.strictEqual(response.body.error, 'Student not found')
+  })
+
+  it('should return 403 when student not linked to teacher', async () => {
+    const { sessionCookie } = await TestHelper.createAuthenticatedTeacher(
+      api,
+      'unlinked.teacher@edu.hel.fi',
+      'Unlinked Teacher'
+    )
+
+    const { user: studentUser } = await TestHelper.createAuthenticatedStudent(
+      api,
+      'unlinked.student@edu.hel.fi',
+      'Unlinked Student'
+    )
+
+    const student = await Student.findOne({ userId: studentUser.id })
+
+    const response = await api
+      .get(`${url}/${student!.id}/played-songs`)
+      .set('Cookie', sessionCookie)
+
+    assert.strictEqual(response.status, 403)
+    assert.strictEqual(response.body.error, 'Student is not linked to this teacher')
+  })
+
+  it('should return 200 with empty played songs for student with no played songs', async () => {
+    const { user: teacherUser, sessionCookie } =
+      await TestHelper.createAuthenticatedTeacher(
+        api,
+        'teacher.empty.songs@edu.hel.fi',
+        'Teacher Empty Songs'
+      )
+
+    const { user: studentUser } = await TestHelper.createAuthenticatedStudent(
+      api,
+      'student.empty.songs@edu.hel.fi',
+      'Student Empty Songs'
+    )
+
+    const teacher = await Teacher.findOne({ userId: teacherUser.id })
+    const student = await Student.findOne({ userId: studentUser.id })
+
+    student!.teacher = teacher!.id
+    await student!.save()
+    teacher!.students.push(student!.id)
+    await teacher!.save()
+
+    const response = await api
+      .get(`${url}/${student!.id}/played-songs`)
+      .set('Cookie', sessionCookie)
+
+    assert.strictEqual(response.status, 200)
+    assert.strictEqual(response.body.id, student!.id)
+    assert.strictEqual(response.body.name, 'Student Empty Songs')
+    assert(Array.isArray(response.body.playedSongs))
+    assert.strictEqual(response.body.playedSongs.length, 0)
+  })
+
+  it('should return 200 with played songs for student with played songs', async () => {
+    const { user: teacherUser, sessionCookie } =
+      await TestHelper.createAuthenticatedTeacher(
+        api,
+        'teacher.with.songs@edu.hel.fi',
+        'Teacher With Songs'
+      )
+
+    const { user: studentUser } = await TestHelper.createAuthenticatedStudent(
+      api,
+      'student.with.songs@edu.hel.fi',
+      'Student With Songs'
+    )
+
+    const teacher = await Teacher.findOne({ userId: teacherUser.id })
+    const student = await Student.findOne({ userId: studentUser.id })
+
+    student!.teacher = teacher!.id
+    student!.playedSongs = ['song1', 'song2', 'song3']
+    await student!.save()
+    teacher!.students.push(student!.id)
+    await teacher!.save()
+
+    const response = await api
+      .get(`${url}/${student!.id}/played-songs`)
+      .set('Cookie', sessionCookie)
+
+    assert.strictEqual(response.status, 200)
+    assert.strictEqual(response.body.id, student!.id)
+    assert.strictEqual(response.body.name, 'Student With Songs')
+    assert(Array.isArray(response.body.playedSongs))
+    assert.strictEqual(response.body.playedSongs.length, 3)
+    assert(response.body.playedSongs.includes('song1'))
+    assert(response.body.playedSongs.includes('song2'))
+    assert(response.body.playedSongs.includes('song3'))
+  })
+})
+
 describe('Students API POST /:studentId/played-songs', () => {
   const studentId = '507f1f77bcf86cd799439011'
   const playedSongsUrl = `${url}/${studentId}/played-songs`

@@ -5,6 +5,7 @@ import { HomeworkCarousel } from './HomeworkCarousel'
 import ToggleSwitch from './ToggleSwitch'
 import { Header } from './Header'
 import { ChevronLeft } from 'lucide-react'
+import { getColorForStudent } from '../utils/studentcolors'
 
 export const TeacherStudentHomeworkPage = () => {
   const { studentId } = useParams()
@@ -17,6 +18,8 @@ export const TeacherStudentHomeworkPage = () => {
 
   const [view, setView] = useState<'homework' | 'songs'>('homework')
 
+  const color = studentId ? getColorForStudent(studentId) : '#ccc'
+
   return (
     <div className="flex flex-col min-h-screen">
       <Header
@@ -25,7 +28,15 @@ export const TeacherStudentHomeworkPage = () => {
             <ChevronLeft className="w-6 h-6 text-gray-300 hover:text-white" />
           </button>
         }
-        center={<h2 className="">{studentName}</h2>}
+        center={
+          <div className="flex items-center gap-3">
+            <div
+              className="w-8 h-8 rounded-full"
+              style={{ backgroundColor: color }}
+            />
+            <h2 className="">{studentName}</h2>
+          </div>
+        }
         right={<ToggleSwitch view={view} setView={setView} />}
       />
 

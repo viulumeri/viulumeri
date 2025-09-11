@@ -1,3 +1,4 @@
+import { getColorForStudent } from '../utils/studentcolors'
 import { Link } from 'react-router-dom'
 
 type Props = {
@@ -6,18 +7,15 @@ type Props = {
 }
 
 export function StudentCard({ id, name }: Props) {
+  const bgColor = getColorForStudent(id)
   return (
     <Link
       to={`/teacher/students/${id}/homework`}
       state={{ studentName: name }}
-      className="relative rounded-md aspect-square w-full h-full overflow-hidden"
+      className={`relative rounded-lg aspect-square w-full h-full overflow-hidden flex items-end p-4`}
+      style={{ backgroundColor: bgColor }}
     >
-      <h2 className="absolute bottom-4 left-6 text-white z-10">{name}</h2>
-      <img
-        src="https://images.metmuseum.org/CRDImages/ep/web-large/DT2145.jpg"
-        alt="kuva"
-        className="absolute inset-0 w-full h-full object-cover rounded-md z-0"
-      />
+      <h2 className=" ">{name}</h2>
     </Link>
   )
 }

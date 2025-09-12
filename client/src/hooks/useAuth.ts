@@ -174,3 +174,14 @@ export const useResetPassword = (
     ...options
   })
 }
+
+export const useLogout = (
+  options?: UseMutationOptions<any, Error, void>
+) => {
+  return useMutation({
+    mutationFn: async () => {
+      return await authClient.signOut()
+    },
+    ...options
+  })
+}

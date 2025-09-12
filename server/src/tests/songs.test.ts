@@ -5,17 +5,14 @@ import supertest from 'supertest'
 import app from '../app'
 import { musicService } from '../services/music'
 import path from 'path'
-import fs from 'fs'
 
 const api = supertest(app)
 const url = '/api/songs'
 
-// Set up test music directory
 const testMusicDir = path.join(__dirname, 'fixtures', 'music')
 
 before(async () => {
   await TestHelper.setupTestDatabase()
-  // Initialize music service with test fixtures
   await musicService.initialize(testMusicDir)
 })
 

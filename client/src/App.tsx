@@ -125,8 +125,34 @@ const App = () => {
               }
             />
           )}
+
+          <Route
+            path="/settings"
+            element={
+              <AppLayout>
+                <SettingsPage />
+              </AppLayout>
+            }
+          />
         </>
       )}
+
+      {/* Root redirect */}
+      <Route
+        path="/"
+        element={
+          <Navigate
+            to={
+              userType === 'teacher'
+                ? '/teacher/students'
+                : userType === 'student'
+                  ? '/student/homework'
+                  : '/login'
+            }
+            replace
+          />
+        }
+      />
 
       {/* Fallback */}
       <Route
@@ -147,8 +173,6 @@ const App = () => {
 
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
-
-      <Route path="/settings" element={<SettingsPage />} />
     </Routes>
   )
 }

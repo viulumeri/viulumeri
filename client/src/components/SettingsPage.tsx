@@ -11,6 +11,7 @@ export const SettingsPage = () => {
   const [isDeleting, setIsDeleting] = useState(false)
   const currentPassword = useField('password')
   const newPassword = useField('password')
+  const confirmPassword = useField('password')
 
   const deleteUser = useDeleteUser({
     onSuccess: () => {
@@ -29,6 +30,7 @@ export const SettingsPage = () => {
     onSuccess: () => {
       currentPassword.reset()
       newPassword.reset()
+      confirmPassword.reset()
       alert('Salasana vaihdettu onnistuneesti!')
     },
     onError: error => {
@@ -69,8 +71,12 @@ export const SettingsPage = () => {
 
   const handleChangePassword = (event: React.FormEvent) => {
     event.preventDefault()
-    if (!currentPassword.value || !newPassword.value) {
-      alert('Täytä molemmat salasanakentät')
+    if (!currentPassword.value || !newPassword.value || !confirmPassword.value) {
+      alert('Täytä kaikki salasanakentät')
+      return
+    }
+    if (newPassword.value !== confirmPassword.value) {
+      alert('Uudet salasanat eivät täsmää')
       return
     }
     changePassword.mutate({
@@ -110,6 +116,10 @@ export const SettingsPage = () => {
           <div>
             <label htmlFor="new-password">Uusi salasana:</label>
             <input id="new-password" {...newPassword.props} required />
+          </div>
+          <div>
+            <label htmlFor="confirm-password">Kirjoita uusi salasana uudelleen:</label>
+            <input id="confirm-password" {...confirmPassword.props} required />
           </div>
           <button type="submit" disabled={changePassword.isPending}>
             {changePassword.isPending ? 'Vaihdetaan...' : 'Vaihda salasana'}

@@ -344,7 +344,10 @@ describe('Students API GET /:studentId/played-songs', () => {
       .set('Cookie', sessionCookie)
 
     assert.strictEqual(response.status, 403)
-    assert.strictEqual(response.body.error, 'Student is not linked to this teacher')
+    assert.strictEqual(
+      response.body.error,
+      'Student is not linked to this teacher'
+    )
   })
 
   it('should return 200 with empty played songs for student with no played songs', async () => {
@@ -423,7 +426,9 @@ describe('Students API POST /:studentId/played-songs', () => {
   const playedSongsUrl = `${url}/${studentId}/played-songs`
 
   it('should return 401 Unauthorized without session', async () => {
-    const response = await api.post(playedSongsUrl).send({ songId: 'test-song' })
+    const response = await api
+      .post(playedSongsUrl)
+      .send({ songId: 'test-song' })
 
     assert.strictEqual(response.status, 401)
     assert.strictEqual(response.body.error, 'Authentication required')
@@ -517,7 +522,10 @@ describe('Students API POST /:studentId/played-songs', () => {
       .send({ songId: 'test-song' })
 
     assert.strictEqual(response.status, 403)
-    assert.strictEqual(response.body.error, 'Student is not linked to this teacher')
+    assert.strictEqual(
+      response.body.error,
+      'Student is not linked to this teacher'
+    )
   })
 
   it('should return 400 when song is already marked as played', async () => {
@@ -674,7 +682,10 @@ describe('Students API DELETE /:studentId/played-songs/:songId', () => {
       .set('Cookie', sessionCookie)
 
     assert.strictEqual(response.status, 403)
-    assert.strictEqual(response.body.error, 'Student is not linked to this teacher')
+    assert.strictEqual(
+      response.body.error,
+      'Student is not linked to this teacher'
+    )
   })
 
   it('should return 404 when song not found in played songs', async () => {
@@ -825,7 +836,10 @@ describe('Students API DELETE /:studentId', () => {
       .set('Cookie', sessionCookie)
 
     assert.strictEqual(response.status, 403)
-    assert.strictEqual(response.body.error, 'Student is not linked to this teacher')
+    assert.strictEqual(
+      response.body.error,
+      'Student is not linked to this teacher'
+    )
   })
 
   it('should successfully remove student from teacher and clear teacher from student', async () => {
@@ -845,30 +859,28 @@ describe('Students API DELETE /:studentId', () => {
     const teacher = await Teacher.findOne({ userId: teacherUser.id })
     const student = await Student.findOne({ userId: studentUser.id })
 
-    // Set up the bidirectional relationship
-    student!.teacher = teacher!.id
     await student!.save()
 
     teacher!.students.push(student!.id)
     await teacher!.save()
 
-    // Verify relationship exists
     let updatedTeacher = await Teacher.findById(teacher!.id)
     let updatedStudent = await Student.findById(student!.id)
     assert.strictEqual(updatedTeacher!.students.length, 1)
-    assert.strictEqual(updatedStudent!.teacher?.toString(), teacher!.id.toString())
+    assert.strictEqual(
+      updatedStudent!.teacher?.toString(),
+      teacher!.id.toString()
+    )
 
-    // Remove the student
     const response = await api
       .delete(`${url}/${student!._id}`)
       .set('Cookie', sessionCookie)
 
     assert.strictEqual(response.status, 204)
 
-    // Verify relationship is broken on both sides
     updatedTeacher = await Teacher.findById(teacher!.id)
     updatedStudent = await Student.findById(student!.id)
-    
+
     assert.strictEqual(updatedTeacher!.students.length, 0)
     assert.strictEqual(updatedStudent!.teacher, null)
   })
@@ -897,7 +909,6 @@ describe('Students API DELETE /:studentId', () => {
     const student1 = await Student.findOne({ userId: student1User.id })
     const student2 = await Student.findOne({ userId: student2User.id })
 
-    // Set up relationships for both students
     student1!.teacher = teacher!.id
     student2!.teacher = teacher!.id
     await student1!.save()
@@ -906,21 +917,25 @@ describe('Students API DELETE /:studentId', () => {
     teacher!.students.push(student1!.id, student2!.id)
     await teacher!.save()
 
-    // Remove only student1
     const response = await api
       .delete(`${url}/${student1!._id}`)
       .set('Cookie', sessionCookie)
 
     assert.strictEqual(response.status, 204)
 
-    // Verify only student1 relationship is broken
     const updatedTeacher = await Teacher.findById(teacher!.id)
     const updatedStudent1 = await Student.findById(student1!.id)
     const updatedStudent2 = await Student.findById(student2!.id)
-    
+
     assert.strictEqual(updatedTeacher!.students.length, 1)
-    assert.strictEqual(updatedTeacher!.students[0].toString(), student2!.id.toString())
+    assert.strictEqual(
+      updatedTeacher!.students[0].toString(),
+      student2!.id.toString()
+    )
     assert.strictEqual(updatedStudent1!.teacher, null)
-    assert.strictEqual(updatedStudent2!.teacher?.toString(), teacher!.id.toString())
+    assert.strictEqual(
+      updatedStudent2!.teacher?.toString(),
+      teacher!.id.toString()
+    )
   })
 })

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useSession } from '../auth-client'
-import { useDeleteUser, useChangePassword } from '../hooks/useAuth'
+import { useDeleteUser, useChangePassword, useLogout } from '../hooks/useAuth'
 import { useField } from '../hooks/useField'
 import type { AppSessionUser } from '../../../shared/types'
 import { StudentSettings } from './StudentSettings'
@@ -33,6 +33,15 @@ export const SettingsPage = () => {
     },
     onError: error => {
       alert(`Virhe salasanan vaihdossa: ${error.message}`)
+    }
+  })
+
+  const logout = useLogout({
+    onSuccess: () => {
+      window.location.href = '/login'
+    },
+    onError: error => {
+      alert(`Virhe uloskirjautumisessa: ${error.message}`)
     }
   })
 
@@ -71,6 +80,10 @@ export const SettingsPage = () => {
     })
   }
 
+  const handleLogout = () => {
+    logout.mutate()
+  }
+
 
   return (
     <div>
@@ -106,6 +119,11 @@ export const SettingsPage = () => {
 
       <div>
         <h3>Tilin hallinta</h3>
+        <button onClick={handleLogout} disabled={logout.isPending}>
+          {logout.isPending ? 'Kirjaudutaan ulos...' : 'Kirjaudu ulos'}
+        </button>
+        <br />
+        <br />
         <button onClick={handleDeleteAccount} disabled={isDeleting}>
           {isDeleting ? 'Lähetetään vahvistusta...' : 'Poista käyttäjätili'}
         </button>

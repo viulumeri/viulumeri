@@ -7,10 +7,12 @@ export const Signup = () => {
   const password = useField('password')
   const name = useField('text')
   const [userType, setUserType] = useState<'teacher' | 'student'>('student')
+  const [messageStatus, setMessageStatus] = useState<'success' | 'error' | null>(null)
 
   const signUpMutation = useSignUp({
     onSuccess: () => {
       console.log(`Sign up successful for ${name.value}`)
+      setMessageStatus('success')
       email.reset()
       password.reset()
       name.reset()
@@ -18,11 +20,13 @@ export const Signup = () => {
     },
     onError: error => {
       console.error(error instanceof Error ? error.message : 'Sign up failed.')
+      setMessageStatus('error')
     }
   })
 
   const handleSignUp = (event: React.FormEvent) => {
     event.preventDefault()
+    setMessageStatus(null)
     signUpMutation.mutate({
       email: email.value,
       password: password.value,
@@ -77,14 +81,14 @@ export const Signup = () => {
           {signUpMutation.isPending ? 'Signing up...' : 'Sign Up'}
         </button>
       </form>
-      {signUpMutation.isError && (
+      {messageStatus === 'error' && (
         <div style={{ color: 'red' }}>
           {signUpMutation.error instanceof Error
             ? signUpMutation.error.message
             : 'Sign up failed'}
         </div>
       )}
-      {signUpMutation.isSuccess && (
+      {messageStatus === 'success' && (
         <div style={{ color: 'green' }}>
           Käyttäjän lisäys onnistui. Vahvistuspyyntö on lähetetty sähköpostiisi.
         </div>

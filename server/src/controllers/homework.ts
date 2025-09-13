@@ -2,10 +2,13 @@ import { Router } from 'express'
 import {
   authenticateSession,
   requireTeacher,
-  requireStudent
+  requireStudent,
+  validateTeacherProfile,
+  validateStudentProfile,
+  validateTeacherStudentRelationship,
+  validateHomeworkOwnershipByTeacher,
+  validateHomeworkOwnershipByStudent
 } from '../utils/session-helpers'
-import Teacher from '../models/teacher'
-import Student from '../models/student'
 import Homework from '../models/homework'
 
 const homeworkRouter = Router()
@@ -22,18 +25,11 @@ homeworkRouter.post('/', async (request, response) => {
   if (!Array.isArray(songs))
     return response.status(400).json({ error: 'songs must be array' })
 
-  const [teacher, student] = await Promise.all([
-    Teacher.findOne({ userId: session.user.id }),
-    Student.findById(studentId)
-  ])
-  if (!teacher)
-    return response.status(404).json({ error: 'Teacher profile not found' })
-  if (!student) return response.status(404).json({ error: 'Student not found' })
-  if (!student.teacher || student.teacher.toString() !== teacher.id) {
-    return response
-      .status(403)
-      .json({ error: 'Student is not linked to this teacher' })
-  }
+  const teacher = await validateTeacherProfile(session, response)
+  if (!teacher) return
+
+  const student = await validateTeacherStudentRelationship(teacher, studentId, response)
+  if (!student) return
 
   const homework = await Homework.create({
     teacher: teacher.id,
@@ -52,9 +48,8 @@ homeworkRouter.get('/', async (request, response) => {
   if (!session) return
   if (!requireStudent(session, response)) return
 
-  const student = await Student.findOne({ userId: session.user.id })
-  if (!student)
-    return response.status(404).json({ error: 'Student profile not found' })
+  const student = await validateStudentProfile(session, response)
+  if (!student) return
 
   const homeworks = await Homework.find({ student: student.id })
     .sort({ createdAt: -1 })
@@ -69,18 +64,11 @@ homeworkRouter.post('/practice/:homeworkId', async (request, response) => {
   if (!session) return
   if (!requireStudent(session, response)) return
 
-  const student = await Student.findOne({ userId: session.user.id })
-  if (!student)
-    return response.status(404).json({ error: 'Student profile not found' })
+  const student = await validateStudentProfile(session, response)
+  if (!student) return
 
-  const homework = await Homework.findById(request.params.homeworkId)
-  if (!homework)
-    return response.status(404).json({ error: 'Homework not found' })
-  if (homework.student.toString() !== student.id) {
-    return response
-      .status(403)
-      .json({ error: 'Homework does not belong to this student' })
-  }
+  const homework = await validateHomeworkOwnershipByStudent(student, request.params.homeworkId, response)
+  if (!homework) return
 
   homework.practiceCount = (homework.practiceCount ?? 0) + 1
   await homework.save()
@@ -93,18 +81,11 @@ homeworkRouter.delete('/:homeworkId', async (request, response) => {
   if (!session) return
   if (!requireTeacher(session, response)) return
 
-  const teacher = await Teacher.findOne({ userId: session.user.id })
-  if (!teacher)
-    return response.status(404).json({ error: 'Teacher profile not found' })
+  const teacher = await validateTeacherProfile(session, response)
+  if (!teacher) return
 
-  const homework = await Homework.findById(request.params.homeworkId)
-  if (!homework)
-    return response.status(404).json({ error: 'Homework not found' })
-  if (homework.teacher.toString() !== teacher.id) {
-    return response
-      .status(403)
-      .json({ error: 'Homework does not belong to this teacher' })
-  }
+  const homework = await validateHomeworkOwnershipByTeacher(teacher, request.params.homeworkId, response)
+  if (!homework) return
 
   await Homework.findByIdAndDelete(request.params.homeworkId)
   response.status(204).send()
@@ -120,18 +101,11 @@ homeworkRouter.put('/:homeworkId', async (request, response) => {
   if (songs !== undefined && !Array.isArray(songs))
     return response.status(400).json({ error: 'songs must be array' })
 
-  const teacher = await Teacher.findOne({ userId: session.user.id })
-  if (!teacher)
-    return response.status(404).json({ error: 'Teacher profile not found' })
+  const teacher = await validateTeacherProfile(session, response)
+  if (!teacher) return
 
-  const homework = await Homework.findById(request.params.homeworkId)
-  if (!homework)
-    return response.status(404).json({ error: 'Homework not found' })
-  if (homework.teacher.toString() !== teacher.id) {
-    return response
-      .status(403)
-      .json({ error: 'Homework does not belong to this teacher' })
-  }
+  const homework = await validateHomeworkOwnershipByTeacher(teacher, request.params.homeworkId, response)
+  if (!homework) return
 
   if (songs !== undefined) homework.songs = songs
   if (comment !== undefined) homework.comment = comment

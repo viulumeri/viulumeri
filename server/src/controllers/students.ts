@@ -1,7 +1,10 @@
 import { Router } from 'express'
-import { authenticateSession, requireTeacher } from '../utils/session-helpers'
-import Teacher from '../models/teacher'
-import Student from '../models/student'
+import { 
+  authenticateSession, 
+  requireTeacher,
+  validateTeacherProfile,
+  validateTeacherStudentRelationship
+} from '../utils/session-helpers'
 import Homework from '../models/homework'
 
 const studentsRouter = Router()
@@ -11,13 +14,10 @@ studentsRouter.get('/', async (request, response) => {
   if (!session) return
   if (!requireTeacher(session, response)) return
 
-  const teacher = await Teacher.findOne({ userId: session.user.id })
-    .populate('students', 'name')
-    .exec()
+  const teacher = await validateTeacherProfile(session, response)
+  if (!teacher) return
 
-  if (!teacher) {
-    return response.status(404).json({ error: 'Teacher profile not found' })
-  }
+  await teacher.populate('students', 'name')
 
   const students = (teacher.students as any[]).map(s => ({
     id: s.id,
@@ -27,23 +27,50 @@ studentsRouter.get('/', async (request, response) => {
   response.json({ students })
 })
 
+// DELETE /api/students/:studentId
+studentsRouter.delete('/:studentId', async (request, response) => {
+  const session = await authenticateSession(request, response)
+  if (!session) return
+  if (!requireTeacher(session, response)) return
+
+  const teacher = await validateTeacherProfile(session, response)
+  if (!teacher) return
+
+  const student = await validateTeacherStudentRelationship(
+    teacher,
+    request.params.studentId,
+    response
+  )
+  if (!student) return
+
+  // Remove student from teacher's student list
+  teacher.students = teacher.students.filter(
+    studentId => studentId.toString() !== student.id
+  )
+  await teacher.save()
+
+  // Remove teacher from student's teacher field
+  student.teacher = null as any
+  await student.save()
+
+  response.status(204).send()
+})
+
 // GET /api/students/:studentId/homework
 studentsRouter.get('/:studentId/homework', async (request, response) => {
   const session = await authenticateSession(request, response)
   if (!session) return
   if (!requireTeacher(session, response)) return
 
-  const teacher = await Teacher.findOne({ userId: session.user.id })
-  if (!teacher)
-    return response.status(404).json({ error: 'Teacher profile not found' })
+  const teacher = await validateTeacherProfile(session, response)
+  if (!teacher) return
 
-  const student = await Student.findById(request.params.studentId)
-  if (!student) return response.status(404).json({ error: 'Student not found' })
-  if (!student.teacher || student.teacher.toString() !== teacher.id) {
-    return response
-      .status(403)
-      .json({ error: 'Student is not linked to this teacher' })
-  }
+  const student = await validateTeacherStudentRelationship(
+    teacher,
+    request.params.studentId,
+    response
+  )
+  if (!student) return
 
   const homeworks = await Homework.find({ student: student.id }).sort({
     createdAt: -1
@@ -51,6 +78,29 @@ studentsRouter.get('/:studentId/homework', async (request, response) => {
 
   response.json({
     homework: homeworks
+  })
+})
+
+// GET /api/students/:studentId/played-songs
+studentsRouter.get('/:studentId/played-songs', async (request, response) => {
+  const session = await authenticateSession(request, response)
+  if (!session) return
+  if (!requireTeacher(session, response)) return
+
+  const teacher = await validateTeacherProfile(session, response)
+  if (!teacher) return
+
+  const student = await validateTeacherStudentRelationship(
+    teacher,
+    request.params.studentId,
+    response
+  )
+  if (!student) return
+
+  response.json({
+    id: student.id,
+    name: student.name,
+    playedSongs: student.playedSongs
   })
 })
 
@@ -64,17 +114,15 @@ studentsRouter.post('/:studentId/played-songs', async (request, response) => {
   if (!songId)
     return response.status(400).json({ error: 'songId required' })
 
-  const teacher = await Teacher.findOne({ userId: session.user.id })
-  if (!teacher)
-    return response.status(404).json({ error: 'Teacher profile not found' })
+  const teacher = await validateTeacherProfile(session, response)
+  if (!teacher) return
 
-  const student = await Student.findById(request.params.studentId)
-  if (!student) return response.status(404).json({ error: 'Student not found' })
-  if (!student.teacher || student.teacher.toString() !== teacher.id) {
-    return response
-      .status(403)
-      .json({ error: 'Student is not linked to this teacher' })
-  }
+  const student = await validateTeacherStudentRelationship(
+    teacher,
+    request.params.studentId,
+    response
+  )
+  if (!student) return
 
   if (student.playedSongs.includes(songId)) {
     return response.status(400).json({ error: 'Song already marked as played' })
@@ -96,25 +144,22 @@ studentsRouter.delete('/:studentId/played-songs/:songId', async (request, respon
   if (!session) return
   if (!requireTeacher(session, response)) return
 
-  const teacher = await Teacher.findOne({ userId: session.user.id })
-  if (!teacher)
-    return response.status(404).json({ error: 'Teacher profile not found' })
+  const teacher = await validateTeacherProfile(session, response)
+  if (!teacher) return
 
-  const student = await Student.findById(request.params.studentId)
-  if (!student) return response.status(404).json({ error: 'Student not found' })
-  if (!student.teacher || student.teacher.toString() !== teacher.id) {
-    return response
-      .status(403)
-      .json({ error: 'Student is not linked to this teacher' })
-  }
+  const student = await validateTeacherStudentRelationship(
+    teacher,
+    request.params.studentId,
+    response
+  )
+  if (!student) return
 
   const songId = request.params.songId
-  const songIndex = student.playedSongs.indexOf(songId)
-  if (songIndex === -1) {
+  if (!student.playedSongs.includes(songId)) {
     return response.status(404).json({ error: 'Song not found in played songs' })
   }
 
-  student.playedSongs.splice(songIndex, 1)
+  student.playedSongs = student.playedSongs.filter(song => song !== songId)
   await student.save()
 
   response.json({

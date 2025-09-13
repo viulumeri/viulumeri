@@ -1,36 +1,23 @@
-import { Router, Request, Response } from 'express'
-import { fromNodeHeaders } from 'better-auth/node'
-import { auth } from '../utils/auth'
+import { Router } from 'express'
+import {
+  authenticateSession,
+  requireTeacher,
+  validateTeacherProfile,
+  validateStudentProfile
+} from '../utils/session-helpers'
 import Teacher from '../models/teacher'
-import { generateInviteToken } from '../utils/inviteToken'
 import Student from '../models/student'
-import { verifyInviteToken } from '../utils/inviteToken'
+import { generateInviteToken, verifyInviteToken } from '../utils/inviteToken'
 
 const inviteRouter = Router()
 
-const getSession = async (request: Request, response: Response) => {
-  const session = await auth.api.getSession({
-    headers: fromNodeHeaders(request.headers)
-  })
-  if (!session) {
-    response.status(401).json({ error: 'Authentication required' })
-    return null
-  }
-  return session
-}
-
 inviteRouter.post('/', async (request, response) => {
-  const session = await getSession(request, response)
+  const session = await authenticateSession(request, response)
   if (!session) return
+  if (!requireTeacher(session, response)) return
 
-  if (session.user.userType !== 'teacher') {
-    return response.status(403).json({ error: 'Teacher role required' })
-  }
-
-  const teacher = await Teacher.findOne({ userId: session.user.id })
-  if (!teacher) {
-    return response.status(404).json({ error: 'Teacher profile not found' })
-  }
+  const teacher = await validateTeacherProfile(session, response)
+  if (!teacher) return
 
   const token = generateInviteToken(teacher._id.toString())
 
@@ -42,7 +29,7 @@ inviteRouter.post('/', async (request, response) => {
 })
 
 inviteRouter.get('/:token', async (request, response) => {
-  const session = await getSession(request, response)
+  const session = await authenticateSession(request, response)
   if (!session) return
 
   const payload = verifyInviteToken(request.params.token)
@@ -69,7 +56,7 @@ inviteRouter.get('/:token', async (request, response) => {
 })
 
 inviteRouter.post('/:token/accept', async (request, response) => {
-  const session = await getSession(request, response)
+  const session = await authenticateSession(request, response)
   if (!session) return
 
   const payload = verifyInviteToken(request.params.token)
@@ -77,14 +64,11 @@ inviteRouter.post('/:token/accept', async (request, response) => {
     return response.status(400).json({ error: 'Invalid or expired invitation' })
   }
 
-  const [teacher, student] = await Promise.all([
-    Teacher.findById(payload.teacherId),
-    Student.findOne({ userId: session.user.id })
-  ])
-
+  const teacher = await Teacher.findById(payload.teacherId)
   if (!teacher) return response.status(404).json({ error: 'Teacher not found' })
-  if (!student)
-    return response.status(404).json({ error: 'Student profile not found' })
+
+  const student = await validateStudentProfile(session, response)
+  if (!student) return
 
   //
   if (student.teacher && teacher._id.equals(student.teacher))

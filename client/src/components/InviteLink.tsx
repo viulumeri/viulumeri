@@ -3,8 +3,9 @@ import { useSession } from '../auth-client'
 import { useGenerateInviteLink } from '../hooks/useInvite'
 
 export const InviteLink = () => {
-  const { data: session } = useSession()
+  const { data: session, isPending } = useSession()
   const [url, setUrl] = useState('')
+  const [copied, setCopied] = useState(false)
 
   const gen = useGenerateInviteLink({
     onSuccess: data => {
@@ -13,6 +14,7 @@ export const InviteLink = () => {
     onError: error => console.error('Generate invite failed:', error)
   })
 
+  if (isPending) return <div>Ladataan...</div>
   if (!session) return <div>Kirjaudu</div>
 
   return (
@@ -22,9 +24,29 @@ export const InviteLink = () => {
         {gen.isPending ? 'Luodaan…' : 'Luo kutsulinkki'}
       </button>
       {url && (
-        <p>
-          Linkki: <input readOnly value={url} />
-        </p>
+        <div style={{ marginTop: '1rem' }}>
+          <label style={{ display: 'block' }}>Linkki:</label>
+          <input
+            readOnly
+            value={url}
+            style={{ width: '100%', padding: '8px', fontSize: '0.9rem' }}
+          />
+          <button
+            onClick={() => {
+              navigator.clipboard.writeText(url)
+              setCopied(true)
+            }}
+            disabled={copied}
+            style={{
+              padding: '6px 12px',
+              backgroundColor: copied ? '#b0b0b0' : '#ffffff',
+              color: copied ? '#333333' : '#000000',
+              borderRadius: '4px'
+            }}
+          >
+            {copied ? 'Kopioitu' : 'Kopioi linkki'}
+          </button>
+        </div>
       )}
       {gen.isError && <div style={{ color: 'red' }}>Virhe</div>}
     </div>

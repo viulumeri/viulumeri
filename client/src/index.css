@@ -20,4 +20,8 @@
   h4 {
     font-family: 'Inter', sans-serif;
   }
+  button {
+    font-family: 'EB Garamond, serif';
+    font-weight: 600;
+  }
 }

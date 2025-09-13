@@ -8,5 +8,11 @@ export const studentsService = {
       withCredentials: true
     })
     return response.data
+  },
+
+  deleteStudent: async (studentId: string): Promise<void> => {
+    await axios.delete(`/api/students/${studentId}`, {
+      withCredentials: true
+    })
   }
 }

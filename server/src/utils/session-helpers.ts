@@ -1,6 +1,9 @@
 import type { Request, Response } from 'express'
 import { fromNodeHeaders } from 'better-auth/node'
 import { auth } from './auth'
+import Teacher from '../models/teacher'
+import Student from '../models/student'
+import Homework from '../models/homework'
 
 export const authenticateSession = async (request: Request, response: Response) => {
   const session = await auth.api.getSession({
@@ -27,4 +30,73 @@ export const requireStudent = (session: any, response: Response) => {
     return false
   }
   return true
+}
+
+export const validateTeacherProfile = async (session: any, response: Response) => {
+  const teacher = await Teacher.findOne({ userId: session.user.id })
+  if (!teacher) {
+    response.status(404).json({ error: 'Teacher profile not found' })
+    return null
+  }
+  return teacher
+}
+
+export const validateStudentProfile = async (session: any, response: Response) => {
+  const student = await Student.findOne({ userId: session.user.id })
+  if (!student) {
+    response.status(404).json({ error: 'Student profile not found' })
+    return null
+  }
+  return student
+}
+
+export const validateTeacherStudentRelationship = async (
+  teacher: any,
+  studentId: string,
+  response: Response
+) => {
+  const student = await Student.findById(studentId)
+  if (!student) {
+    response.status(404).json({ error: 'Student not found' })
+    return null
+  }
+  if (!student.teacher || student.teacher.toString() !== teacher.id) {
+    response.status(403).json({ error: 'Student is not linked to this teacher' })
+    return null
+  }
+  return student
+}
+
+export const validateHomeworkOwnershipByTeacher = async (
+  teacher: any,
+  homeworkId: string,
+  response: Response
+) => {
+  const homework = await Homework.findById(homeworkId)
+  if (!homework) {
+    response.status(404).json({ error: 'Homework not found' })
+    return null
+  }
+  if (homework.teacher.toString() !== teacher.id) {
+    response.status(403).json({ error: 'Homework does not belong to this teacher' })
+    return null
+  }
+  return homework
+}
+
+export const validateHomeworkOwnershipByStudent = async (
+  student: any,
+  homeworkId: string,
+  response: Response
+) => {
+  const homework = await Homework.findById(homeworkId)
+  if (!homework) {
+    response.status(404).json({ error: 'Homework not found' })
+    return null
+  }
+  if (homework.student.toString() !== student.id) {
+    response.status(403).json({ error: 'Homework does not belong to this student' })
+    return null
+  }
+  return homework
 }

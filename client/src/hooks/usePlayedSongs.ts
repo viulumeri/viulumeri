@@ -26,6 +26,13 @@ type UnmarkSongPlayedParams = {
 }
 
 // Teacher hooks
+export const useStudentPlayedSongs = (studentId: string) =>
+  useQuery<StudentPlayedSongsResponse, Error>({
+    queryKey: ['student-played-songs', studentId],
+    queryFn: () => playedSongsService.getStudentPlayedSongs(studentId),
+    enabled: !!studentId
+  })
+
 export const useMarkSongPlayed = (
   options?: UseMutationOptions<StudentPlayedSongsResponse, Error, MarkSongPlayedParams>
 ) =>

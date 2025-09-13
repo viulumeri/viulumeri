@@ -7,12 +7,12 @@ type Student = { id: string; name: string }
 
 export const TeacherStudentsList = () => {
   const { data, isPending, isError } = useTeacherStudents()
+  const navigate = useNavigate()
 
   if (isPending) return <div>Ladataan oppilaita…</div>
   if (isError) return <div>Virhe ladattaessa oppilaita.</div>
 
   const list: Student[] = data?.students ?? []
-  const navigate = useNavigate()
 
   return (
     <div className="px-6 mt-4">

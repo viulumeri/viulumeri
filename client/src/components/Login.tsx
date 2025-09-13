@@ -1,27 +1,32 @@
 import { useField } from '../hooks/useField'
 import { useLogin } from '../hooks/useAuth'
-import { useNavigate, useLocation, Link } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
+import { useSession } from '../auth-client'
+import { useEffect } from 'react'
 
 export const Login = () => {
   const email = useField('text')
   const password = useField('password')
   const navigate = useNavigate()
-  const location = useLocation()
+  const { data: session } = useSession()
 
   const loginMutation = useLogin({
     onSuccess: () => {
       console.log(`Login successful for ${email.value}`)
-      const params = new URLSearchParams(location.search)
-      const next = params.get('next') || '/'
       email.reset()
       password.reset()
-      navigate(next, { replace: true })
     },
     onError: error => {
       console.error(error instanceof Error ? error.message : 'Login failed.')
       password.reset()
     }
   })
+
+  useEffect(() => {
+    if (session) {
+      navigate('/', { replace: true })
+    }
+  }, [session, navigate])
 
   const handleLogin = (event: React.FormEvent) => {
     event.preventDefault()

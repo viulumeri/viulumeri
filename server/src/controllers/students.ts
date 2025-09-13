@@ -27,6 +27,35 @@ studentsRouter.get('/', async (request, response) => {
   response.json({ students })
 })
 
+// DELETE /api/students/:studentId
+studentsRouter.delete('/:studentId', async (request, response) => {
+  const session = await authenticateSession(request, response)
+  if (!session) return
+  if (!requireTeacher(session, response)) return
+
+  const teacher = await validateTeacherProfile(session, response)
+  if (!teacher) return
+
+  const student = await validateTeacherStudentRelationship(
+    teacher,
+    request.params.studentId,
+    response
+  )
+  if (!student) return
+
+  // Remove student from teacher's student list
+  teacher.students = teacher.students.filter(
+    studentId => studentId.toString() !== student.id
+  )
+  await teacher.save()
+
+  // Remove teacher from student's teacher field
+  student.teacher = null as any
+  await student.save()
+
+  response.status(204).send()
+})
+
 // GET /api/students/:studentId/homework
 studentsRouter.get('/:studentId/homework', async (request, response) => {
   const session = await authenticateSession(request, response)

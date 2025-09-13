@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useSession } from '../auth-client'
-import { useDeleteUser, useChangePassword } from '../hooks/useAuth'
+import { useDeleteUser, useChangePassword, useLogout } from '../hooks/useAuth'
 import { useField } from '../hooks/useField'
 import type { AppSessionUser } from '../../../shared/types'
 import { StudentSettings } from './StudentSettings'
@@ -11,6 +11,7 @@ export const SettingsPage = () => {
   const [isDeleting, setIsDeleting] = useState(false)
   const currentPassword = useField('password')
   const newPassword = useField('password')
+  const confirmPassword = useField('password')
 
   const deleteUser = useDeleteUser({
     onSuccess: () => {
@@ -29,10 +30,20 @@ export const SettingsPage = () => {
     onSuccess: () => {
       currentPassword.reset()
       newPassword.reset()
+      confirmPassword.reset()
       alert('Salasana vaihdettu onnistuneesti!')
     },
     onError: error => {
       alert(`Virhe salasanan vaihdossa: ${error.message}`)
+    }
+  })
+
+  const logout = useLogout({
+    onSuccess: () => {
+      window.location.href = '/login'
+    },
+    onError: error => {
+      alert(`Virhe uloskirjautumisessa: ${error.message}`)
     }
   })
 
@@ -60,8 +71,12 @@ export const SettingsPage = () => {
 
   const handleChangePassword = (event: React.FormEvent) => {
     event.preventDefault()
-    if (!currentPassword.value || !newPassword.value) {
-      alert('Täytä molemmat salasanakentät')
+    if (!currentPassword.value || !newPassword.value || !confirmPassword.value) {
+      alert('Täytä kaikki salasanakentät')
+      return
+    }
+    if (newPassword.value !== confirmPassword.value) {
+      alert('Uudet salasanat eivät täsmää')
       return
     }
     changePassword.mutate({
@@ -69,6 +84,10 @@ export const SettingsPage = () => {
       newPassword: newPassword.value,
       revokeOtherSessions: true
     })
+  }
+
+  const handleLogout = () => {
+    logout.mutate()
   }
 
 
@@ -98,6 +117,10 @@ export const SettingsPage = () => {
             <label htmlFor="new-password">Uusi salasana:</label>
             <input id="new-password" {...newPassword.props} required />
           </div>
+          <div>
+            <label htmlFor="confirm-password">Kirjoita uusi salasana uudelleen:</label>
+            <input id="confirm-password" {...confirmPassword.props} required />
+          </div>
           <button type="submit" disabled={changePassword.isPending}>
             {changePassword.isPending ? 'Vaihdetaan...' : 'Vaihda salasana'}
           </button>
@@ -106,6 +129,11 @@ export const SettingsPage = () => {
 
       <div>
         <h3>Tilin hallinta</h3>
+        <button onClick={handleLogout} disabled={logout.isPending}>
+          {logout.isPending ? 'Kirjaudutaan ulos...' : 'Kirjaudu ulos'}
+        </button>
+        <br />
+        <br />
         <button onClick={handleDeleteAccount} disabled={isDeleting}>
           {isDeleting ? 'Lähetetään vahvistusta...' : 'Poista käyttäjätili'}
         </button>

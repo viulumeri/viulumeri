@@ -344,7 +344,10 @@ describe('Students API GET /:studentId/played-songs', () => {
       .set('Cookie', sessionCookie)
 
     assert.strictEqual(response.status, 403)
-    assert.strictEqual(response.body.error, 'Student is not linked to this teacher')
+    assert.strictEqual(
+      response.body.error,
+      'Student is not linked to this teacher'
+    )
   })
 
   it('should return 200 with empty played songs for student with no played songs', async () => {
@@ -423,7 +426,9 @@ describe('Students API POST /:studentId/played-songs', () => {
   const playedSongsUrl = `${url}/${studentId}/played-songs`
 
   it('should return 401 Unauthorized without session', async () => {
-    const response = await api.post(playedSongsUrl).send({ songId: 'test-song' })
+    const response = await api
+      .post(playedSongsUrl)
+      .send({ songId: 'test-song' })
 
     assert.strictEqual(response.status, 401)
     assert.strictEqual(response.body.error, 'Authentication required')
@@ -517,7 +522,10 @@ describe('Students API POST /:studentId/played-songs', () => {
       .send({ songId: 'test-song' })
 
     assert.strictEqual(response.status, 403)
-    assert.strictEqual(response.body.error, 'Student is not linked to this teacher')
+    assert.strictEqual(
+      response.body.error,
+      'Student is not linked to this teacher'
+    )
   })
 
   it('should return 400 when song is already marked as played', async () => {
@@ -674,7 +682,10 @@ describe('Students API DELETE /:studentId/played-songs/:songId', () => {
       .set('Cookie', sessionCookie)
 
     assert.strictEqual(response.status, 403)
-    assert.strictEqual(response.body.error, 'Student is not linked to this teacher')
+    assert.strictEqual(
+      response.body.error,
+      'Student is not linked to this teacher'
+    )
   })
 
   it('should return 404 when song not found in played songs', async () => {
@@ -747,5 +758,185 @@ describe('Students API DELETE /:studentId/played-songs/:songId', () => {
     assert(response.body.playedSongs.includes('keep-song'))
     assert(response.body.playedSongs.includes('another-keep-song'))
     assert(!response.body.playedSongs.includes('remove-song'))
+  })
+})
+
+describe('Students API DELETE /:studentId', () => {
+  it('should return 401 Unauthorized without session', async () => {
+    const response = await api.delete(`${url}/507f1f77bcf86cd799439011`)
+
+    assert.strictEqual(response.status, 401)
+    assert.strictEqual(response.body.error, 'Authentication required')
+  })
+
+  it('should return 403 Forbidden for a student', async () => {
+    const { sessionCookie } = await TestHelper.createAuthenticatedStudent(
+      api,
+      'tauno.teststudent@edu.hel.fi',
+      'Tauno Teststudent'
+    )
+
+    const response = await api
+      .delete(`${url}/507f1f77bcf86cd799439011`)
+      .set('Cookie', sessionCookie)
+
+    assert.strictEqual(response.status, 403)
+    assert.strictEqual(response.body.error, 'Teacher role required')
+  })
+
+  it('should return 404 when teacher profile not found', async () => {
+    const { user, sessionCookie } = await TestHelper.createAuthenticatedTeacher(
+      api,
+      'orphaned.teacher@edu.hel.fi',
+      'Orphaned Teacher'
+    )
+
+    await Teacher.deleteOne({ userId: user.id })
+
+    const response = await api
+      .delete(`${url}/507f1f77bcf86cd799439011`)
+      .set('Cookie', sessionCookie)
+
+    assert.strictEqual(response.status, 404)
+    assert.strictEqual(response.body.error, 'Teacher profile not found')
+  })
+
+  it('should return 404 when student not found', async () => {
+    const { sessionCookie } = await TestHelper.createAuthenticatedTeacher(
+      api,
+      'valid.teacher@edu.hel.fi',
+      'Valid Teacher'
+    )
+
+    const response = await api
+      .delete(`${url}/507f1f77bcf86cd799439011`)
+      .set('Cookie', sessionCookie)
+
+    assert.strictEqual(response.status, 404)
+    assert.strictEqual(response.body.error, 'Student not found')
+  })
+
+  it('should return 403 when student is not linked to teacher', async () => {
+    const { sessionCookie } = await TestHelper.createAuthenticatedTeacher(
+      api,
+      'teacher.without.student@edu.hel.fi',
+      'Teacher Without Student'
+    )
+
+    const { user: studentUser } = await TestHelper.createAuthenticatedStudent(
+      api,
+      'unlinked.student@edu.hel.fi',
+      'Unlinked Student'
+    )
+
+    const student = await Student.findOne({ userId: studentUser.id })
+
+    const response = await api
+      .delete(`${url}/${student!._id}`)
+      .set('Cookie', sessionCookie)
+
+    assert.strictEqual(response.status, 403)
+    assert.strictEqual(
+      response.body.error,
+      'Student is not linked to this teacher'
+    )
+  })
+
+  it('should successfully remove student from teacher and clear teacher from student', async () => {
+    const { user: teacherUser, sessionCookie } =
+      await TestHelper.createAuthenticatedTeacher(
+        api,
+        'teacher.removing.student@edu.hel.fi',
+        'Teacher Removing Student'
+      )
+
+    const { user: studentUser } = await TestHelper.createAuthenticatedStudent(
+      api,
+      'student.being.removed@edu.hel.fi',
+      'Student Being Removed'
+    )
+
+    const teacher = await Teacher.findOne({ userId: teacherUser.id })
+    const student = await Student.findOne({ userId: studentUser.id })
+
+    student!.teacher = teacher!.id
+    await student!.save()
+
+    teacher!.students.push(student!.id)
+    await teacher!.save()
+
+    let updatedTeacher = await Teacher.findById(teacher!.id)
+    let updatedStudent = await Student.findById(student!.id)
+    assert.strictEqual(updatedTeacher!.students.length, 1)
+    assert.strictEqual(
+      updatedStudent!.teacher?.toString(),
+      teacher!.id.toString()
+    )
+
+    const response = await api
+      .delete(`${url}/${student!._id}`)
+      .set('Cookie', sessionCookie)
+
+    assert.strictEqual(response.status, 204)
+
+    updatedTeacher = await Teacher.findById(teacher!.id)
+    updatedStudent = await Student.findById(student!.id)
+
+    assert.strictEqual(updatedTeacher!.students.length, 0)
+    assert.strictEqual(updatedStudent!.teacher, null)
+  })
+
+  it('should remove only the specified student when teacher has multiple students', async () => {
+    const { user: teacherUser, sessionCookie } =
+      await TestHelper.createAuthenticatedTeacher(
+        api,
+        'teacher.multiple.students@edu.hel.fi',
+        'Teacher Multiple Students'
+      )
+
+    const { user: student1User } = await TestHelper.createAuthenticatedStudent(
+      api,
+      'student1.multiple@edu.hel.fi',
+      'Student 1 Multiple'
+    )
+
+    const { user: student2User } = await TestHelper.createAuthenticatedStudent(
+      api,
+      'student2.multiple@edu.hel.fi',
+      'Student 2 Multiple'
+    )
+
+    const teacher = await Teacher.findOne({ userId: teacherUser.id })
+    const student1 = await Student.findOne({ userId: student1User.id })
+    const student2 = await Student.findOne({ userId: student2User.id })
+
+    student1!.teacher = teacher!.id
+    student2!.teacher = teacher!.id
+    await student1!.save()
+    await student2!.save()
+
+    teacher!.students.push(student1!.id, student2!.id)
+    await teacher!.save()
+
+    const response = await api
+      .delete(`${url}/${student1!._id}`)
+      .set('Cookie', sessionCookie)
+
+    assert.strictEqual(response.status, 204)
+
+    const updatedTeacher = await Teacher.findById(teacher!.id)
+    const updatedStudent1 = await Student.findById(student1!.id)
+    const updatedStudent2 = await Student.findById(student2!.id)
+
+    assert.strictEqual(updatedTeacher!.students.length, 1)
+    assert.strictEqual(
+      updatedTeacher!.students[0].toString(),
+      student2!.id.toString()
+    )
+    assert.strictEqual(updatedStudent1!.teacher, null)
+    assert.strictEqual(
+      updatedStudent2!.teacher?.toString(),
+      teacher!.id.toString()
+    )
   })
 })

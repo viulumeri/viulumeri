@@ -16,7 +16,7 @@ export const Navbar = () => {
         <Link to="/songslist" className={isActive('/songslist')}>
           <Music className="w-6 h-6" />
         </Link>
-        <Link to="#" className={isActive('/teacher/settings')}>
+        <Link to="/settings" className={isActive('/settings')}>
           <Settings className="w-6 h-6" />
         </Link>
       </div>

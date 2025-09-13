@@ -1,6 +1,6 @@
 import { useLocation, useParams, useNavigate } from 'react-router-dom'
 import { useState } from 'react'
-
+import { useTeacherStudentHomework } from '../hooks/useHomework'
 import { HomeworkCarousel } from './HomeworkCarousel'
 import ToggleSwitch from './ToggleSwitch'
 import { Header } from './Header'
@@ -11,14 +11,14 @@ export const TeacherStudentHomeworkPage = () => {
   const { studentId } = useParams()
   const navigate = useNavigate()
   const location = useLocation()
+  const [view, setView] = useState<'homework' | 'songs'>('homework')
 
   const studentName =
     (location.state as { studentName?: string } | undefined)?.studentName ??
     'Oppilas'
 
-  const [view, setView] = useState<'homework' | 'songs'>('homework')
-
   const color = studentId ? getColorForStudent(studentId) : '#ccc'
+  const { data, isPending, refetch } = useTeacherStudentHomework(studentId!)
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -42,7 +42,13 @@ export const TeacherStudentHomeworkPage = () => {
 
       <main className="flex-1 overflow-y-auto pb-24">
         {view === 'homework' ? (
-          <HomeworkCarousel studentId={studentId!} mode="teacher" />
+          <HomeworkCarousel
+            mode="teacher"
+            studentId={studentId}
+            homework={data?.homework ?? []}
+            isPending={isPending}
+            refetch={refetch}
+          />
         ) : (
           <div className="p-4">Biisilista placeholder</div>
         )}

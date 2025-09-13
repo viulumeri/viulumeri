@@ -859,6 +859,7 @@ describe('Students API DELETE /:studentId', () => {
     const teacher = await Teacher.findOne({ userId: teacherUser.id })
     const student = await Student.findOne({ userId: studentUser.id })
 
+    student!.teacher = teacher!.id
     await student!.save()
 
     teacher!.students.push(student!.id)

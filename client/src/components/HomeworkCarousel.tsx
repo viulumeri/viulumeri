@@ -1,27 +1,32 @@
 import { useState, useEffect, useRef } from 'react'
 import {
-  useTeacherStudentHomework,
   useDeleteHomework,
   usePracticeOnce
   // useUpdateHomework //
 } from '../hooks/useHomework'
 import { useSongsList } from '../hooks/useSongs'
 import { Link } from 'react-router-dom'
-import type { SongListItem } from '../../../shared/types'
+import type { SongListItem, HomeworkListResponse } from '../../../shared/types'
 import SongCard from './SongCard'
 import { Plus, Ellipsis } from 'lucide-react'
 
+type HomeworkItem = HomeworkListResponse['homework'][number]
+
 type Props = {
-  studentId: string
   mode: 'teacher' | 'student'
+  studentId?: string
+  homework: HomeworkItem[]
+  isPending: boolean
+  refetch: () => void | Promise<unknown>
 }
 
-export const HomeworkCarousel = ({ studentId, mode }: Props) => {
-  const {
-    data: homeworkData,
-    isPending,
-    refetch
-  } = useTeacherStudentHomework(studentId)
+export const HomeworkCarousel = ({
+  mode,
+  studentId,
+  homework,
+  isPending,
+  refetch
+}: Props) => {
   const { data: songsData } = useSongsList()
 
   const [openMenuId, setOpenMenuId] = useState<string | null>(null)
@@ -40,10 +45,7 @@ export const HomeworkCarousel = ({ studentId, mode }: Props) => {
   })
 
   const practice = usePracticeOnce()
-
-  const handlePractice = (homeworkId: string) => {
-    practice.mutate(homeworkId)
-  }
+  const handlePractice = (homeworkId: string) => practice.mutate(homeworkId)
 
   const menuRef = useRef<HTMLDivElement | null>(null)
   useEffect(() => {
@@ -55,7 +57,6 @@ export const HomeworkCarousel = ({ studentId, mode }: Props) => {
     return () => document.removeEventListener('click', onDocClick)
   }, [])
 
-  const homework = homeworkData?.homework ?? []
   const songMap = new Map<string, SongListItem>(
     songsData?.map((song: SongListItem) => [song.id, song]) ?? []
   )
@@ -105,7 +106,7 @@ export const HomeworkCarousel = ({ studentId, mode }: Props) => {
                       </button>
                       <div className="border-t border-neutral-500 border-opacity-50 " />
                       <button
-                        className="block w-full text-left px-5 py-3 text-sm text--white "
+                        className="block w-full text-left px-5 py-3 text-sm text-white"
                         disabled={deletingId === hw.id}
                         onClick={() => {
                           if (deletingId) return
@@ -129,7 +130,7 @@ export const HomeworkCarousel = ({ studentId, mode }: Props) => {
                   {hw.songs.map(songId => {
                     const song = songMap.get(songId)
                     return song ? (
-                      <div key={songId} className="mb-2">
+                      <div key={songId} className="mb-5">
                         <SongCard song={song} />
                       </div>
                     ) : null
@@ -141,14 +142,17 @@ export const HomeworkCarousel = ({ studentId, mode }: Props) => {
                       <p className="text-xs text-gray-300">{hw.comment}</p>
                     </>
                   )}
+
                   {mode === 'student' && (
-                    <button
-                      className="mt-4 bg-white text-black rounded px-3 py-2 text-sm"
-                      onClick={() => handlePractice(hw.id)}
-                      disabled={practice.isPending}
-                    >
-                      {practice.isPending ? 'Tallennetaan…' : 'Harjoittelin'}
-                    </button>
+                    <div className="flex justify-center mt-4">
+                      <button
+                        className="mt-4 bg-white text-black rounded-3xl px-5 py-2 text-lg "
+                        onClick={() => handlePractice(hw.id)}
+                        disabled={practice.isPending}
+                      >
+                        {practice.isPending ? 'Tallennetaan…' : 'Harjoittelin'}
+                      </button>
+                    </div>
                   )}
                 </div>
               </div>
@@ -157,7 +161,7 @@ export const HomeworkCarousel = ({ studentId, mode }: Props) => {
           <div className="w-[calc(50vw-144px)] flex-shrink-0" />
         </div>
 
-        {mode === 'teacher' && (
+        {mode === 'teacher' && studentId && (
           <div className="fixed bottom-12 left-0 w-full h-20 bg-neutral-900 z-40 flex items-center justify-center">
             <Link
               to={`/teacher/students/${studentId}/homework/create`}

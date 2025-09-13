@@ -61,13 +61,25 @@ export const HomeworkCarousel = ({
     songsData?.map((song: SongListItem) => [song.id, song]) ?? []
   )
 
+  const scrollRef = useRef<HTMLDivElement | null>(null)
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.style.scrollBehavior = 'auto'
+      scrollRef.current.scrollLeft = scrollRef.current.scrollWidth
+      scrollRef.current.style.scrollBehavior = 'smooth'
+    }
+  }, [homework.length])
+
   if (isPending) return <div className="p-4">Ladataan…</div>
   if (!homework.length) return <div className="p-4">Tehtävälista on tyhjä</div>
 
   return (
-    <div className="flex flex-col px-4">
-      <div className="overflow-x-auto snap-x snap-mandatory scroll-smooth">
-        <div className="flex gap-4 px-4">
+    <div className="flex flex-col px-8">
+      <div
+        ref={scrollRef}
+        className="overflow-x-auto snap-x snap-mandatory scroll-smooth"
+      >
+        <div className="flex gap-4">
           {homework
             .slice()
             .reverse()
@@ -121,7 +133,9 @@ export const HomeworkCarousel = ({
                   )}
 
                   <h2 className="mb-1">
-                    {index === 0 ? 'Tehtävä' : 'Arkistoitu tehtävä'}
+                    {index === homework.length - 1
+                      ? 'Tehtävä'
+                      : 'Arkistoitu tehtävä'}
                   </h2>
                   <p className="text-xs text-gray-300 mb-12">
                     {new Date(hw.createdAt).toLocaleDateString()}
@@ -142,7 +156,6 @@ export const HomeworkCarousel = ({
                       <p className="text-xs text-gray-300">{hw.comment}</p>
                     </>
                   )}
-
                   {mode === 'student' && (
                     <div className="flex justify-center mt-4">
                       <button
@@ -157,8 +170,6 @@ export const HomeworkCarousel = ({
                 </div>
               </div>
             ))}
-
-          <div className="w-[calc(50vw-144px)] flex-shrink-0" />
         </div>
 
         {mode === 'teacher' && studentId && (

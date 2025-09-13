@@ -4,7 +4,7 @@ import { useTeacherStudentHomework } from '../hooks/useHomework'
 import { HomeworkCarousel } from './HomeworkCarousel'
 import ToggleSwitch from './ToggleSwitch'
 import { Header } from './Header'
-import { ChevronLeft } from 'lucide-react'
+import { ArrowLeft } from 'lucide-react'
 import { getColorForStudent } from '../utils/studentcolors'
 
 export const TeacherStudentHomeworkPage = () => {
@@ -25,7 +25,7 @@ export const TeacherStudentHomeworkPage = () => {
       <Header
         left={
           <button onClick={() => navigate(-1)}>
-            <ChevronLeft className="w-6 h-6 text-gray-300 hover:text-white" />
+            <ArrowLeft className="w-6 h-6 text-gray-300 hover:text-white" />
           </button>
         }
         center={

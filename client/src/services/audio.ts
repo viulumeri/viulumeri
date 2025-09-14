@@ -2,7 +2,6 @@ import axios from 'axios'
 import JSZip from 'jszip'
 
 const AUDIO_CACHE_NAME = 'viulumeri-audio'
-const IMAGE_CACHE_NAME = 'viulumeri-images'
 
 export const fetchSongBundle = async (songId: string): Promise<string> => {
   const cacheKey = `song-bundle-${songId}`
@@ -48,21 +47,3 @@ export const fetchSongBundle = async (songId: string): Promise<string> => {
   return URL.createObjectURL(audioBlob)
 }
 
-export const fetchSongCoverArt = async (imgurl: string): Promise<string> => {
-  const cache = await caches.open(IMAGE_CACHE_NAME)
-  
-  const cachedResponse = await cache.match(imgurl)
-  if (cachedResponse) {
-    const cachedBlob = await cachedResponse.blob()
-    return URL.createObjectURL(cachedBlob)
-  }
-
-  const response = await axios.get(imgurl, {
-    responseType: 'blob'
-  })
-
-  const cacheResponse = new Response(response.data)
-  await cache.put(imgurl, cacheResponse.clone())
-
-  return URL.createObjectURL(response.data)
-}

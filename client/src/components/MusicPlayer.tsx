@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import * as Tone from 'tone'
 import { useSongById } from '../hooks/useSongs'
-import { fetchSongBundle, fetchSongCoverArt } from '../services/audio'
+import { fetchSongBundle } from '../services/audio'
 
 export const MusicPlayer = () => {
   const { songId } = useParams<{ songId: string }>()
@@ -10,16 +10,8 @@ export const MusicPlayer = () => {
   const [isLoading, setIsLoading] = useState(false)
   const [isPlaying, setIsPlaying] = useState(false)
   const [audioError, setAudioError] = useState<string | null>(null)
-  const [coverArtUrl, setCoverArtUrl] = useState<string | null>(null)
   const playerRef = useRef<Tone.Player | null>(null)
 
-  useEffect(() => {
-    if (song?.metadata.imgurl && !coverArtUrl) {
-      fetchSongCoverArt(song.metadata.imgurl)
-        .then(setCoverArtUrl)
-        .catch(err => console.warn('Failed to load cover art:', err))
-    }
-  }, [song?.metadata.imgurl, coverArtUrl])
 
   const fetchAndPlaySong = async () => {
     if (!songId) return
@@ -79,9 +71,9 @@ export const MusicPlayer = () => {
 
       {song && (
         <div>
-          {coverArtUrl && (
+          {song.metadata.imgurl && (
             <img 
-              src={coverArtUrl} 
+              src={song.metadata.imgurl} 
               alt={`Cover art for ${song.title}`}
               style={{ maxWidth: '300px', height: 'auto' }}
             />

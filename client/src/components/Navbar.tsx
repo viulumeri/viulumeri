@@ -11,6 +11,9 @@ export const Navbar = () => {
   const isActive = (path: string) =>
     location.pathname === path ? 'text-white' : 'text-gray-500'
 
+  const lastRoute =
+    localStorage.getItem('studentLastHomeworkRoute') || '/student/homework'
+
   return (
     <nav className="fixed bottom-0 left-0 right-0 h-16 z-50 bg-neutral-900">
       <div className="mx-auto w-full max-w-sm h-full flex items-center justify-around pb-4">
@@ -24,10 +27,7 @@ export const Navbar = () => {
         )}
 
         {userType === 'student' && (
-          <Link
-            to="/student/homework"
-            className={isActive('/student/homework')}
-          >
+          <Link to={lastRoute} className={isActive(lastRoute)}>
             <BookOpenText className="w-6 h-6" />
           </Link>
         )}

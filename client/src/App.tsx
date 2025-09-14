@@ -10,6 +10,7 @@ import { TeacherStudentsPage } from './components/TeacherStudentsPage'
 import { StudentHomeworkPage } from './components/StudentHomeworkPage'
 import { TeacherStudentHomeworkPage } from './components/TeacherStudentHomeworkPage'
 import { CreateHomeworkPage } from './components/CreateHomeworkPage'
+import { StudentStartPage } from './components/StudentStartPage'
 
 import { AppLayout } from './components/AppLayout'
 import PublicLayout from './components/PublicLayout'
@@ -22,7 +23,7 @@ import './index.css'
 const App = () => {
   const { data: session, isPending } = useSession()
   const userType = (session?.user as AppSessionUser | undefined)?.userType
-  
+
   if (isPending) {
     return <div>Ladataan...</div>
   }
@@ -116,14 +117,24 @@ const App = () => {
 
           {/* Student-only */}
           {userType === 'student' && (
-            <Route
-              path="/student/homework"
-              element={
-                <AppLayout>
-                  <StudentHomeworkPage />
-                </AppLayout>
-              }
-            />
+            <>
+              <Route
+                path="/student/homework"
+                element={
+                  <AppLayout>
+                    <StudentStartPage />
+                  </AppLayout>
+                }
+              />
+              <Route
+                path="/student/homework/list"
+                element={
+                  <AppLayout>
+                    <StudentHomeworkPage />
+                  </AppLayout>
+                }
+              />
+            </>
           )}
 
           <Route

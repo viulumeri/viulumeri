@@ -5,10 +5,10 @@ import {
   // useUpdateHomework //
 } from '../hooks/useHomework'
 import { useSongsList } from '../hooks/useSongs'
-import { Link } from 'react-router-dom'
 import type { SongListItem, HomeworkListResponse } from '../../../shared/types'
 import SongCard from './SongCard'
-import { Plus, Ellipsis } from 'lucide-react'
+import { Ellipsis } from 'lucide-react'
+import { FloatingActionButton } from '../components/FloatingActionButton'
 
 type HomeworkItem = HomeworkListResponse['homework'][number]
 
@@ -71,7 +71,18 @@ export const HomeworkCarousel = ({
   }, [homework.length])
 
   if (isPending) return <div className="p-4">Ladataan…</div>
-  if (!homework.length) return <div className="p-4">Tehtävälista on tyhjä</div>
+  if (!homework.length) {
+    return (
+      <div className="flex flex-col px-10">
+        <div className="p-4 text-gray-300">Tehtävälista on tyhjä</div>
+        {mode === 'teacher' && studentId && (
+          <FloatingActionButton
+            to={`/teacher/students/${studentId}/homework/create`}
+          />
+        )}
+      </div>
+    )
+  }
 
   return (
     <div className="flex flex-col px-8">
@@ -171,16 +182,10 @@ export const HomeworkCarousel = ({
               </div>
             ))}
         </div>
-
         {mode === 'teacher' && studentId && (
-          <div className="fixed bottom-12 left-0 w-full h-20 bg-neutral-900 z-40 flex items-center justify-center">
-            <Link
-              to={`/teacher/students/${studentId}/homework/create`}
-              className="bg-white text-black rounded-full w-12 h-12 flex items-center justify-center shadow-lg"
-            >
-              <Plus size={28} strokeWidth={2.5} />
-            </Link>
-          </div>
+          <FloatingActionButton
+            to={`/teacher/students/${studentId}/homework/create`}
+          />
         )}
       </div>
     </div>

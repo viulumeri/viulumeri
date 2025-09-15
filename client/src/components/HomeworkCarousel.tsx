@@ -85,21 +85,22 @@ export const HomeworkCarousel = ({
   }
 
   return (
-    <div className="flex flex-col px-8">
+    <div className="flex flex-col">
       <div
         ref={scrollRef}
         className="overflow-x-auto snap-x snap-mandatory scroll-smooth"
       >
         <div className="flex gap-4">
+          <div className=" w-[5vw] flex-shrink-0" />
           {homework
             .slice()
             .reverse()
             .map((hw, index) => (
               <div
                 key={hw.id}
-                className="snap-center w-full max-w-sm flex-shrink-0 rounded-lg p-4 relative"
+                className="snap-center w-[90vw] flex-shrink-0 rounded-lg pt-4 pb-4 px-8 relative"
               >
-                <div className="overflow-y-auto max-h-[calc(100dvh-220px)] pt-0 px-4 pb-4 relative">
+                <div className="overflow-y-auto max-h-[calc(100dvh-220px)] pt-0 pb-4 relative">
                   {mode === 'teacher' && (
                     <button
                       type="button"
@@ -181,6 +182,7 @@ export const HomeworkCarousel = ({
                 </div>
               </div>
             ))}
+          <div className="w-[5vw] flex-shrink-0" />
         </div>
         {mode === 'teacher' && studentId && (
           <FloatingActionButton

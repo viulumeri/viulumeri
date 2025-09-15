@@ -135,7 +135,7 @@ export const MusicPlayer = () => {
   }
 
   const cleanupTransport = () => {
-    Tone.Transport.clear()
+    Tone.Transport.cancel()
     Tone.Transport.stop()
     Tone.Transport.position = 0
   }

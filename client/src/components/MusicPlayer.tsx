@@ -2,7 +2,11 @@ import { useState, useRef, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import * as Tone from 'tone'
 import { useSongById } from '../hooks/useSongs'
-import { fetchSongTracks, type AudioTracks } from '../services/audio'
+import {
+  fetchSongTracks,
+  fetchSlowSongTracks,
+  type AudioTracks
+} from '../services/audio'
 
 export const MusicPlayer = () => {
   const { songId } = useParams<{ songId: string }>()
@@ -13,6 +17,7 @@ export const MusicPlayer = () => {
   const [isMelodyMuted, setIsMelodyMuted] = useState(false)
   const [tracksLoaded, setTracksLoaded] = useState(false)
   const [isLooping, setIsLooping] = useState(false)
+  const [isPracticeTempo, setIsPracticeTempo] = useState(false)
   const playersRef = useRef<Tone.Players | null>(null)
   const audioTracksRef = useRef<AudioTracks | null>(null)
 
@@ -23,7 +28,9 @@ export const MusicPlayer = () => {
       setIsLoading(true)
       setAudioError(null)
 
-      const tracks = await fetchSongTracks(songId)
+      const tracks = isPracticeTempo
+        ? await fetchSlowSongTracks(songId)
+        : await fetchSongTracks(songId)
       audioTracksRef.current = tracks
 
       if (playersRef.current) {
@@ -86,7 +93,7 @@ export const MusicPlayer = () => {
     } catch (err) {
       console.error('Error loading tracks:', err)
       setAudioError(
-        err instanceof Error ? err.message : 'Äänten lataus epäonnistui'
+        err instanceof Error ? err.message : 'Raitojen lataus epäonnistui'
       )
       setIsLoading(false)
     }
@@ -158,9 +165,14 @@ export const MusicPlayer = () => {
     }
   }
 
+  const togglePracticeTempo = () => {
+    setIsPracticeTempo(!isPracticeTempo)
+    setTracksLoaded(false)
+  }
+
   useEffect(() => {
     loadSongTracks()
-  }, [songId])
+  }, [songId, isPracticeTempo])
 
   useEffect(() => {
     if (!isPlaying || !audioTracksRef.current?.backing || !playersRef.current)
@@ -242,6 +254,9 @@ export const MusicPlayer = () => {
             {isLooping ? 'Toisto: PÄÄLLÄ' : 'Toisto: POIS'}
           </button>
         )}
+        <button onClick={togglePracticeTempo}>
+          {isPracticeTempo ? 'Harjoitustempo: PÄÄLLÄ' : 'Harjoitustempo: POIS'}
+        </button>
       </div>
       {audioError && <p>Virhe: {audioError}</p>}
     </div>

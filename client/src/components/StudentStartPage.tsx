@@ -2,10 +2,12 @@ import { useSession } from '../auth-client'
 import { useNavigate } from 'react-router-dom'
 import { useEffect } from 'react'
 import { useStudentHomework } from '../hooks/useHomework.ts'
+import { useTeacher } from '../hooks/useTeacher.ts'
 
 export const StudentStartPage = () => {
   const { data: session, isPending } = useSession()
   const { data: homeworkData } = useStudentHomework()
+  const { data: teacherData, isPending: isTeacherPending } = useTeacher()
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -17,6 +19,8 @@ export const StudentStartPage = () => {
 
   const latestHomework = homeworkData?.homework?.[0]
   const practiceCount = latestHomework?.practiceCount ?? 0
+  const teacherName = teacherData?.teacher?.name ?? '–'
+  const teacherDisplay = isTeacherPending ? 'Ladataan…' : teacherName
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -53,18 +57,19 @@ export const StudentStartPage = () => {
         </div>
       </div>
 
-      <div className="h-[30vh] bg-neutral-900 text-neutral-100 px-6 pt-8 flex items-start justify-between">
+      <div className="h-[30vh] bg-neutral-900 text-neutral-100 px-6 pt-12 flex items-start justify-between">
         <div className="flex-1 text-center pt-3">
           <p className="text-sm  text-gray-400  mb-2">Harjoituskerrat</p>
           <div className="text-xl text-neutral-100 font-bold pt-4">
             {practiceCount}
           </div>
         </div>
-        <div className="flex-1 text-center pt-3">
-          <p className="text-sm  text-gray-400 mb-2 ">Opettaja</p>
+        <div className="flex-1 text-center pt-3 border-l border-gray-700 h-28 flex flex-col justify-start pl-1">
+          <p className="text-sm text-gray-400 mb-2 ">Opettaja</p>
+          <div className="text-l text-gray-100 pt-4 ">{teacherDisplay}</div>
         </div>
-        <div className="flex-1 text-center pt-3">
-          <p className="text-sm  text-gray-400  mb-2">Soitetut kappaleet</p>
+        <div className="flex-1 text-center pt-3 border-l border-gray-700 h-28 flex flex-col justify-start pl-1 ">
+          <p className="text-sm  text-gray-400 mb-2 ml-2">Soitetut kappaleet</p>
         </div>
       </div>
     </div>

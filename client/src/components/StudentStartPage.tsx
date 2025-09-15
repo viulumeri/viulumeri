@@ -1,9 +1,11 @@
 import { useSession } from '../auth-client'
 import { useNavigate } from 'react-router-dom'
 import { useEffect } from 'react'
+import { useStudentHomework } from '../hooks/useHomework.ts'
 
 export const StudentStartPage = () => {
   const { data: session, isPending } = useSession()
+  const { data: homeworkData } = useStudentHomework()
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -12,6 +14,9 @@ export const StudentStartPage = () => {
 
   if (isPending) return <div>Ladataan...</div>
   if (!session?.user?.name) return <div>Kirjaudu sisään</div>
+
+  const latestHomework = homeworkData?.homework?.[0]
+  const practiceCount = latestHomework?.practiceCount ?? 0
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -51,6 +56,9 @@ export const StudentStartPage = () => {
       <div className="h-[30vh] bg-neutral-900 text-neutral-100 px-6 pt-8 flex items-start justify-between">
         <div className="flex-1 text-center pt-3">
           <p className="text-sm  text-gray-400  mb-2">Harjoituskerrat</p>
+          <div className="text-xl text-neutral-100 font-bold pt-4">
+            {practiceCount}
+          </div>
         </div>
         <div className="flex-1 text-center pt-3">
           <p className="text-sm  text-gray-400 mb-2 ">Opettaja</p>

@@ -18,6 +18,8 @@ export const MusicPlayer = () => {
   const [tracksLoaded, setTracksLoaded] = useState(false)
   const [isLooping, setIsLooping] = useState(false)
   const [isPracticeTempo, setIsPracticeTempo] = useState(false)
+  const [currentTime, setCurrentTime] = useState(0)
+  const [duration, setDuration] = useState(0)
   const playersRef = useRef<Tone.Players | null>(null)
   const audioTracksRef = useRef<AudioTracks | null>(null)
 
@@ -86,6 +88,7 @@ export const MusicPlayer = () => {
           playersRef.current.player('backing').buffer.duration
         Tone.Transport.loopStart = 0
         Tone.Transport.loopEnd = backingDuration
+        setDuration(backingDuration)
       }
 
       setTracksLoaded(true)
@@ -145,6 +148,7 @@ export const MusicPlayer = () => {
       Tone.Transport.stop()
       Tone.Transport.position = 0
       setIsPlaying(false)
+      setCurrentTime(0)
     }
   }
 
@@ -170,6 +174,12 @@ export const MusicPlayer = () => {
     setTracksLoaded(false)
   }
 
+  const formatTime = (seconds: number): string => {
+    const mins = Math.floor(seconds / 60)
+    const secs = Math.floor(seconds % 60)
+    return `${mins}:${secs.toString().padStart(2, '0')}`
+  }
+
   useEffect(() => {
     loadSongTracks()
   }, [songId, isPracticeTempo])
@@ -178,22 +188,22 @@ export const MusicPlayer = () => {
     if (!isPlaying || !audioTracksRef.current?.backing || !playersRef.current)
       return
 
-    const checkPosition = () => {
+    const updatePosition = () => {
       const position = Tone.Transport.position
-      const backingDuration =
-        playersRef.current!.player('backing').buffer.duration
       const positionSeconds = Tone.Time(position).toSeconds()
+      setCurrentTime(positionSeconds)
 
-      if (positionSeconds >= backingDuration - 0.1 && !isLooping) {
+      if (positionSeconds >= duration - 0.1 && !isLooping) {
         setIsPlaying(false)
         Tone.Transport.stop()
         Tone.Transport.position = 0
+        setCurrentTime(0)
       }
     }
 
-    const interval = setInterval(checkPosition, 100)
+    const interval = setInterval(updatePosition, 100)
     return () => clearInterval(interval)
-  }, [isPlaying, isLooping])
+  }, [isPlaying, isLooping, duration])
 
   useEffect(() => {
     return () => {
@@ -257,6 +267,13 @@ export const MusicPlayer = () => {
         <button onClick={togglePracticeTempo}>
           {isPracticeTempo ? 'Harjoitustempo: PÄÄLLÄ' : 'Harjoitustempo: POIS'}
         </button>
+      </div>
+      <div>
+        {tracksLoaded && (
+          <p>
+            {formatTime(Math.floor(currentTime))} / {formatTime(Math.floor(duration))}
+          </p>
+        )}
       </div>
       {audioError && <p>Virhe: {audioError}</p>}
     </div>

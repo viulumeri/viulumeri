@@ -19,9 +19,7 @@ export const fetchSongBundle = async (songId: string): Promise<string> => {
     const zipContent = await zip.loadAsync(cachedBlob)
 
     const audioFile =
-      zipContent.file('backing.mp3') ||
-      zipContent.file('melody.mp3') ||
-      zipContent.file('click.mp3')
+      zipContent.file('backing.mp3') || zipContent.file('melody.mp3')
 
     if (!audioFile) {
       throw new Error('MP3-tiedostoja ei löytynyt välimuistista')
@@ -42,9 +40,7 @@ export const fetchSongBundle = async (songId: string): Promise<string> => {
   const zipContent = await zip.loadAsync(response.data)
 
   const audioFile =
-    zipContent.file('backing.mp3') ||
-    zipContent.file('melody.mp3') ||
-    zipContent.file('click.mp3')
+    zipContent.file('backing.mp3') || zipContent.file('melody.mp3')
 
   if (!audioFile) {
     throw new Error('MP3-tiedostoja ei löytynyt paketista')
@@ -54,9 +50,16 @@ export const fetchSongBundle = async (songId: string): Promise<string> => {
   return URL.createObjectURL(audioBlob)
 }
 
-export const fetchSongTracks = async (songId: string): Promise<AudioTracks> => {
-  // console.log('🔍 fetchSongTracks called for songId:', songId)
-  const cacheKey = `song-bundle-${songId}`
+const fetchSongTracksInternal = async (
+  songId: string,
+  bundleType: 'normal' | 'slow'
+): Promise<AudioTracks> => {
+  const suffix = bundleType === 'slow' ? '-slow' : ''
+  const cacheKey = `song-bundle${suffix}-${songId}`
+  const apiEndpoint =
+    bundleType === 'slow'
+      ? `/api/songs/${songId}/bundle-slow`
+      : `/api/songs/${songId}/bundle`
   const cache = await caches.open(AUDIO_CACHE_NAME)
 
   let zipContent: JSZip
@@ -67,7 +70,7 @@ export const fetchSongTracks = async (songId: string): Promise<AudioTracks> => {
     const zip = new JSZip()
     zipContent = await zip.loadAsync(cachedBlob)
   } else {
-    const response = await axios.get(`/api/songs/${songId}/bundle`, {
+    const response = await axios.get(apiEndpoint, {
       responseType: 'blob'
     })
 
@@ -93,8 +96,22 @@ export const fetchSongTracks = async (songId: string): Promise<AudioTracks> => {
   }
 
   if (!tracks.melody && !tracks.backing) {
-    throw new Error('Melody.mp3 tai backing.mp3 tiedostoja ei löytynyt paketista')
+    const bundleName =
+      bundleType === 'slow' ? 'hitaasta paketista' : 'paketista'
+    throw new Error(
+      `Melody.mp3 tai backing.mp3 tiedostoja ei löytynyt ${bundleName}`
+    )
   }
 
   return tracks
+}
+
+export const fetchSongTracks = async (songId: string): Promise<AudioTracks> => {
+  return fetchSongTracksInternal(songId, 'normal')
+}
+
+export const fetchSlowSongTracks = async (
+  songId: string
+): Promise<AudioTracks> => {
+  return fetchSongTracksInternal(songId, 'slow')
 }

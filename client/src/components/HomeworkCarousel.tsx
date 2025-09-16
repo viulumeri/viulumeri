@@ -5,10 +5,10 @@ import {
   // useUpdateHomework //
 } from '../hooks/useHomework'
 import { useSongsList } from '../hooks/useSongs'
-import { Link } from 'react-router-dom'
 import type { SongListItem, HomeworkListResponse } from '../../../shared/types'
 import SongCard from './SongCard'
-import { Plus, Ellipsis } from 'lucide-react'
+import { Ellipsis } from 'lucide-react'
+import { FloatingActionButton } from '../components/FloatingActionButton'
 
 type HomeworkItem = HomeworkListResponse['homework'][number]
 
@@ -61,22 +61,46 @@ export const HomeworkCarousel = ({
     songsData?.map((song: SongListItem) => [song.id, song]) ?? []
   )
 
+  const scrollRef = useRef<HTMLDivElement | null>(null)
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.style.scrollBehavior = 'auto'
+      scrollRef.current.scrollLeft = scrollRef.current.scrollWidth
+      scrollRef.current.style.scrollBehavior = 'smooth'
+    }
+  }, [homework.length])
+
   if (isPending) return <div className="p-4">Ladataan…</div>
-  if (!homework.length) return <div className="p-4">Tehtävälista on tyhjä</div>
+  if (!homework.length) {
+    return (
+      <div className="flex flex-col px-10">
+        <div className="p-4 text-gray-300">Tehtävälista on tyhjä</div>
+        {mode === 'teacher' && studentId && (
+          <FloatingActionButton
+            to={`/teacher/students/${studentId}/homework/create`}
+          />
+        )}
+      </div>
+    )
+  }
 
   return (
-    <div className="flex flex-col px-4">
-      <div className="overflow-x-auto snap-x snap-mandatory scroll-smooth">
-        <div className="flex gap-4 px-4">
+    <div className="flex flex-col">
+      <div
+        ref={scrollRef}
+        className="overflow-x-auto snap-x snap-mandatory scroll-smooth"
+      >
+        <div className="flex gap-4">
+          <div className=" w-[5vw] flex-shrink-0" />
           {homework
             .slice()
             .reverse()
             .map((hw, index) => (
               <div
                 key={hw.id}
-                className="snap-center w-full max-w-sm flex-shrink-0 rounded-lg p-4 relative"
+                className="snap-center w-[90vw] flex-shrink-0 rounded-lg pt-4 pb-4 px-8 relative"
               >
-                <div className="overflow-y-auto max-h-[calc(100dvh-220px)] pt-0 px-4 pb-4 relative">
+                <div className="overflow-y-auto max-h-[calc(100dvh-220px)] pt-0 pb-4 relative">
                   {mode === 'teacher' && (
                     <button
                       type="button"
@@ -121,7 +145,9 @@ export const HomeworkCarousel = ({
                   )}
 
                   <h2 className="mb-1">
-                    {index === 0 ? 'Tehtävä' : 'Arkistoitu tehtävä'}
+                    {index === homework.length - 1
+                      ? 'Tehtävä'
+                      : 'Arkistoitu tehtävä'}
                   </h2>
                   <p className="text-xs text-gray-300 mb-12">
                     {new Date(hw.createdAt).toLocaleDateString()}
@@ -142,8 +168,7 @@ export const HomeworkCarousel = ({
                       <p className="text-xs text-gray-300">{hw.comment}</p>
                     </>
                   )}
-
-                  {mode === 'student' && (
+                  {mode === 'student' && index === homework.length - 1 && (
                     <div className="flex justify-center mt-4">
                       <button
                         className="mt-4 bg-white text-black rounded-3xl px-5 py-2 text-lg "
@@ -157,19 +182,12 @@ export const HomeworkCarousel = ({
                 </div>
               </div>
             ))}
-
-          <div className="w-[calc(50vw-144px)] flex-shrink-0" />
+          <div className="w-[5vw] flex-shrink-0" />
         </div>
-
         {mode === 'teacher' && studentId && (
-          <div className="fixed bottom-12 left-0 w-full h-20 bg-neutral-900 z-40 flex items-center justify-center">
-            <Link
-              to={`/teacher/students/${studentId}/homework/create`}
-              className="bg-white text-black rounded-full w-12 h-12 flex items-center justify-center shadow-lg"
-            >
-              <Plus size={28} strokeWidth={2.5} />
-            </Link>
-          </div>
+          <FloatingActionButton
+            to={`/teacher/students/${studentId}/homework/create`}
+          />
         )}
       </div>
     </div>

@@ -40,13 +40,13 @@ export const SettingsPage = () => {
 
   const logout = useLogout({
     onSuccess: () => {
+      localStorage.removeItem('studentLastHomeworkRoute')
       window.location.href = '/login'
     },
     onError: error => {
       alert(`Virhe uloskirjautumisessa: ${error.message}`)
     }
   })
-
 
   if (isPending) {
     return <div>Ladataan...</div>
@@ -71,7 +71,11 @@ export const SettingsPage = () => {
 
   const handleChangePassword = (event: React.FormEvent) => {
     event.preventDefault()
-    if (!currentPassword.value || !newPassword.value || !confirmPassword.value) {
+    if (
+      !currentPassword.value ||
+      !newPassword.value ||
+      !confirmPassword.value
+    ) {
       alert('Täytä kaikki salasanakentät')
       return
     }
@@ -89,7 +93,6 @@ export const SettingsPage = () => {
   const handleLogout = () => {
     logout.mutate()
   }
-
 
   return (
     <div>
@@ -118,7 +121,9 @@ export const SettingsPage = () => {
             <input id="new-password" {...newPassword.props} required />
           </div>
           <div>
-            <label htmlFor="confirm-password">Kirjoita uusi salasana uudelleen:</label>
+            <label htmlFor="confirm-password">
+              Kirjoita uusi salasana uudelleen:
+            </label>
             <input id="confirm-password" {...confirmPassword.props} required />
           </div>
           <button type="submit" disabled={changePassword.isPending}>
@@ -145,4 +150,3 @@ export const SettingsPage = () => {
     </div>
   )
 }
-

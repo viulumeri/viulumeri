@@ -2,6 +2,7 @@ import { Login } from './components/Login.tsx'
 import { Signup } from './components/SignUp.tsx'
 import { ForgotPassword } from './components/ForgotPassword'
 import { ResetPassword } from './components/ResetPassword'
+import { EmailVerified } from './components/EmailVerified'
 import { MusicPlayer } from './components/MusicPlayer'
 import { Songslist } from './components/Songslist'
 import { InviteLink } from './components/InviteLink'
@@ -55,6 +56,16 @@ const App = () => {
           </PublicLayout>
         }
       />
+      <Route
+        path="/email-verified"
+        element={
+          <PublicLayout>
+            <EmailVerified />
+          </PublicLayout>
+        }
+      />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
 
       {/* Protected routes */}
       {session && (
@@ -181,9 +192,6 @@ const App = () => {
           />
         }
       />
-
-      <Route path="/forgot-password" element={<ForgotPassword />} />
-      <Route path="/reset-password" element={<ResetPassword />} />
     </Routes>
   )
 }

@@ -6,6 +6,7 @@ interface SignUpData {
   password: string
   name: string
   userType: 'teacher' | 'student'
+  callbackURL?: string
 }
 
 interface LoginData {

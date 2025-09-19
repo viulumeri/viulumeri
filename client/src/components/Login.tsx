@@ -2,13 +2,15 @@ import { useField } from '../hooks/useField'
 import { useLogin } from '../hooks/useAuth'
 import { useNavigate, Link } from 'react-router-dom'
 import { useSession } from '../auth-client'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
+import { ResendVerification } from './ResendVerification'
 
 export const Login = () => {
   const email = useField('text')
   const password = useField('password')
   const navigate = useNavigate()
   const { data: session } = useSession()
+  const [showResend, setShowResend] = useState(false)
 
   const loginMutation = useLogin({
     onSuccess: () => {
@@ -19,6 +21,13 @@ export const Login = () => {
     onError: error => {
       console.error(error instanceof Error ? error.message : 'Login failed.')
       password.reset()
+
+      if (
+        error instanceof Error &&
+        error.message.includes('Sähköposti ei ole vahvistettu')
+      ) {
+        setShowResend(true)
+      }
     }
   })
 
@@ -63,6 +72,8 @@ export const Login = () => {
       <div>
         <Link to="/forgot-password">Unohdin salasanani</Link>
       </div>
+
+      {showResend && <ResendVerification />}
     </div>
   )
 }

@@ -21,7 +21,7 @@ export const ResendVerification = ({ email }: ResendVerificationProps) => {
         email: email,
         fetchOptions: {
           onError: async context => {
-            const { response } = context.response
+            const { response } = context
             if (response.status === 429) {
               const retryAfter = response.headers.get('X-Retry-After')
               const seconds = retryAfter ? parseInt(retryAfter) : 60

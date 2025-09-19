@@ -1,5 +1,4 @@
 import { Link, useSearchParams } from 'react-router-dom'
-import { ResendVerification } from './ResendVerification'
 
 export const EmailVerified = () => {
   const [searchParams] = useSearchParams()
@@ -12,8 +11,8 @@ export const EmailVerified = () => {
         <div style={{ color: 'red', marginBottom: '16px' }}>
           Vahvistuslinkki on vanhentunut tai virheellinen.
         </div>
-        <div>
-          <ResendVerification />
+        <div style={{ marginBottom: '16px' }}>
+          Kirjaudu sisään saadaksesi uuden vahvistuslinkin.
         </div>
         <div>
           <Link to="/login">Takaisin kirjautumiseen</Link>

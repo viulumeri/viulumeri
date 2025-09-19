@@ -73,7 +73,7 @@ export const Login = () => {
         <Link to="/forgot-password">Unohdin salasanani</Link>
       </div>
 
-      {showResend && <ResendVerification />}
+      {showResend && <ResendVerification email={email.value} />}
     </div>
   )
 }

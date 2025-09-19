@@ -1,9 +1,11 @@
 import { useState } from 'react'
-import { useField } from '../hooks/useField'
 import { authClient } from '../auth-client'
 
-export const ResendVerification = () => {
-  const email = useField('email')
+interface ResendVerificationProps {
+  email: string
+}
+
+export const ResendVerification = ({ email }: ResendVerificationProps) => {
   const [status, setStatus] = useState<
     'idle' | 'loading' | 'success' | 'error'
   >('idle')
@@ -16,7 +18,7 @@ export const ResendVerification = () => {
 
     try {
       const response = await authClient.sendVerificationEmail({
-        email: email.value,
+        email: email,
         fetchOptions: {
           onError: async context => {
             const { response } = context.response
@@ -37,7 +39,6 @@ export const ResendVerification = () => {
       } else {
         setStatus('success')
         setMessage('Vahvistussähköposti lähetetty!')
-        email.reset()
       }
     } catch (error) {
       setStatus('error')
@@ -60,9 +61,11 @@ export const ResendVerification = () => {
           <label htmlFor="resend-email">Sähköpostiosoite:</label>
           <input
             id="resend-email"
-            {...email.props}
-            required
+            type="email"
+            value={email}
+            readOnly
             disabled={status === 'loading'}
+            style={{ backgroundColor: '#f5f5f5' }}
           />
         </div>
         <button

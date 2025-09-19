@@ -58,15 +58,7 @@ export const ResendVerification = ({ email }: ResendVerificationProps) => {
       <h3>Lähetä vahvistussähköposti uudelleen</h3>
       <form onSubmit={handleResend}>
         <div>
-          <label htmlFor="resend-email">Sähköpostiosoite:</label>
-          <input
-            id="resend-email"
-            type="email"
-            value={email}
-            readOnly
-            disabled={status === 'loading'}
-            style={{ backgroundColor: '#f5f5f5' }}
-          />
+          <strong>Sähköpostiosoite:</strong> {email}
         </div>
         <button
           type="submit"

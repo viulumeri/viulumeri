@@ -4,14 +4,16 @@ import { ForgotPassword } from './components/ForgotPassword'
 import { ResetPassword } from './components/ResetPassword'
 import { EmailVerified } from './components/EmailVerified'
 import { MusicPlayer } from './components/MusicPlayer'
-import { Songslist } from './components/Songslist'
 import { InviteLink } from './components/InviteLink'
 import { InviteAccept } from './components/InviteAccept'
 import { TeacherStudentsPage } from './components/TeacherStudentsPage'
 import { StudentHomeworkPage } from './components/StudentHomeworkPage'
-import { TeacherStudentHomeworkPage } from './components/TeacherStudentHomeworkPage'
+import { TeacherStudentHomeworkPage } from './components/TeacherStudentHomeworkPage.tsx'
 import { CreateHomeworkPage } from './components/CreateHomeworkPage'
 import { StudentStartPage } from './components/StudentStartPage'
+import { TeacherStudentSongsPage } from './components/TeacherStudentSongsPage'
+import { TeacherStudentLayout } from './components/TeacherStudentLayout'
+import { SongslistPage } from './components/SongslistPage'
 
 import { AppLayout } from './components/AppLayout'
 import PublicLayout from './components/PublicLayout'
@@ -72,14 +74,6 @@ const App = () => {
         <>
           {/* Shared */}
           <Route
-            path="/songslist"
-            element={
-              <AppLayout>
-                <Songslist />
-              </AppLayout>
-            }
-          />
-          <Route
             path="/player/:songId"
             element={
               <AppLayout>
@@ -108,13 +102,21 @@ const App = () => {
                 }
               />
               <Route
-                path="/teacher/students/:studentId/homework"
+                path="/teacher/students/:studentId"
                 element={
                   <AppLayout>
-                    <TeacherStudentHomeworkPage />
+                    <TeacherStudentLayout />
                   </AppLayout>
                 }
-              />
+              >
+                <Route index element={<Navigate to="homework" replace />} />
+                <Route
+                  path="homework"
+                  element={<TeacherStudentHomeworkPage />}
+                />
+                <Route path="songs" element={<TeacherStudentSongsPage />} />
+              </Route>
+
               <Route
                 path="/teacher/students/:studentId/homework/create"
                 element={
@@ -153,6 +155,15 @@ const App = () => {
             element={
               <AppLayout>
                 <SettingsPage />
+              </AppLayout>
+            }
+          />
+
+          <Route
+            path="/songslist"
+            element={
+              <AppLayout>
+                <SongslistPage />
               </AppLayout>
             }
           />

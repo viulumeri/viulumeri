@@ -18,7 +18,7 @@ export const Songslist = ({
   const canToggle = !!playedSet && !!onTogglePlayed
 
   return (
-    <ul className="flex flex-col pb-20 px-10">
+    <ul className="flex flex-col pb-20 px-10 pt-2 gap-1">
       {songs.map(song => {
         const isPlayed = !!playedSet?.has(song.id)
         return (
@@ -46,6 +46,8 @@ export const Songslist = ({
                   src={song.metadata.imgurl}
                   alt={song.title}
                   className="w-14 h-14 rounded-full object-cover"
+                  loading="lazy"
+                  decoding="async"
                 />
                 <h3 className="flex-1 min-w-0 truncate">{song.title}</h3>
                 {showChevron && <ChevronRight className="w-5 h-5" />}

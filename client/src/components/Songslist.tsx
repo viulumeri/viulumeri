@@ -40,7 +40,7 @@ export const Songslist = ({
 
               <Link
                 to={`/player/${song.id}`}
-                className="flex items-center gap-5 flex-1 min-w-0"
+                className="flex items-center gap-4 flex-1 min-w-0"
               >
                 <img
                   src={song.metadata.imgurl}
@@ -51,6 +51,12 @@ export const Songslist = ({
                 />
                 <h3 className="flex-1 min-w-0 truncate">{song.title}</h3>
                 {showChevron && <ChevronRight className="w-5 h-5" />}
+                <div className="flex items-center flex-1 min-w-0">
+                  <h3 className="flex-1 min-w-0 truncate">{song.title}</h3>
+                  {showChevron && (
+                    <ChevronRight size={24} color="white" strokeWidth={2} />
+                  )}
+                </div>
               </Link>
             </div>
           </li>

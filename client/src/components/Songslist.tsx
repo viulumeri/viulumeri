@@ -1,30 +1,30 @@
 import { Link } from 'react-router-dom'
 import type { SongListItem } from '../../../shared/types'
-import { ChevronRight, CheckCircle } from 'lucide-react'
+import { CheckCircle, ChevronRight } from 'lucide-react'
 
 type Props = {
   songs: SongListItem[]
-  showChevron?: boolean
   playedSet?: Set<string>
   onTogglePlayed?: (songId: string) => void
+  showChevron?: boolean
 }
 
 export const Songslist = ({
   songs,
-  showChevron = false,
   playedSet,
-  onTogglePlayed
+  onTogglePlayed,
+  showChevron = false
 }: Props) => {
-  const canToggle = !!playedSet && !!onTogglePlayed
+  const showPlayed = !!playedSet && !!onTogglePlayed
 
   return (
-    <ul className="flex flex-col pb-20 px-10 pt-2 gap-1">
+    <ul className={`flex flex-col gap-1 pb-20 px-4 pt-2`}>
       {songs.map(song => {
         const isPlayed = !!playedSet?.has(song.id)
         return (
           <li key={song.id}>
-            <div className="flex items-center gap-5 p-3 rounded-lg overflow-hidden">
-              {canToggle && (
+            <div className="flex items-center gap-4 p-3 rounded-lg">
+              {showPlayed && (
                 <button
                   type="button"
                   onClick={() => onTogglePlayed?.(song.id)}
@@ -37,7 +37,6 @@ export const Songslist = ({
                   )}
                 </button>
               )}
-
               <Link
                 to={`/player/${song.id}`}
                 className="flex items-center gap-4 flex-1 min-w-0"
@@ -49,8 +48,6 @@ export const Songslist = ({
                   loading="lazy"
                   decoding="async"
                 />
-                <h3 className="flex-1 min-w-0 truncate">{song.title}</h3>
-                {showChevron && <ChevronRight className="w-5 h-5" />}
                 <div className="flex items-center flex-1 min-w-0">
                   <h3 className="flex-1 min-w-0 truncate">{song.title}</h3>
                   {showChevron && (

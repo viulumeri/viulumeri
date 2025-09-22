@@ -1,8 +1,13 @@
 import { Link } from 'react-router-dom'
 import { useSongsList } from '../hooks/useSongs'
 import type { SongListItem } from '../../../shared/types'
+import { ChevronRight } from 'lucide-react'
 
-export const Songslist = () => {
+export const Songslist = ({
+  showChevron = false
+}: {
+  showChevron?: boolean
+}) => {
   const { isPending, isError, data, error } = useSongsList()
   if (isPending) {
     return <span>Loading...</span>
@@ -25,9 +30,14 @@ export const Songslist = () => {
               <img
                 src={song.metadata.imgurl}
                 alt={song.title}
-                className="w-14 h-14 rounded-full objec"
+                className="w-14 h-14 rounded-full object-cover"
+                loading="lazy"
+                decoding="async"
               />
               <h3 className="">{song.title}</h3>
+              {showChevron && (
+                <ChevronRight className="w-5 h-5 ml-auto opacity-80" />
+              )}
             </Link>
           </li>
         ))}

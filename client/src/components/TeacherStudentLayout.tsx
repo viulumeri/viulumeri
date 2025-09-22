@@ -1,4 +1,10 @@
-import { Outlet, useLocation, useNavigate, useParams } from 'react-router-dom'
+import {
+  Outlet,
+  useLocation,
+  useMatch,
+  useNavigate,
+  useParams
+} from 'react-router-dom'
 import ToggleSwitch from './ToggleSwitch'
 import { Header } from './Header'
 import { ArrowLeft } from 'lucide-react'
@@ -14,6 +20,8 @@ export function TeacherStudentLayout() {
     'Oppilas'
 
   const color = studentId ? getColorForStudent(studentId) : '#ccc'
+  const onSongs = !!useMatch('/teacher/students/:studentId/songs')
+  const toggleValue: 'homework' | 'songs' = onSongs ? 'songs' : 'homework'
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -32,7 +40,20 @@ export function TeacherStudentLayout() {
             <h2>{studentName}</h2>
           </div>
         }
-        right={<ToggleSwitch value="homework" onChange={() => {}} />}
+        right={
+          <ToggleSwitch
+            value={toggleValue}
+            onChange={next => {
+              if (!studentId) return
+              navigate(
+                next === 'songs'
+                  ? `/teacher/students/${studentId}/songs`
+                  : `/teacher/students/${studentId}/homework`,
+                { state: { studentName }, replace: true }
+              )
+            }}
+          />
+        }
       />
 
       <main className="flex-1 overflow-y-auto">

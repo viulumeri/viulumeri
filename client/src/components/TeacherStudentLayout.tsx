@@ -27,7 +27,9 @@ export function TeacherStudentLayout() {
     <div className="flex flex-col min-h-screen">
       <Header
         left={
-          <button onClick={() => navigate(-1)}>
+          <button
+            onClick={() => navigate('/teacher/students', { replace: true })}
+          >
             <ArrowLeft className="w-6 h-6 text-gray-300 hover:text-white" />
           </button>
         }

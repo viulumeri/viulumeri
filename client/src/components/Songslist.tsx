@@ -18,7 +18,7 @@ export const Songslist = ({
   const showPlayed = !!playedSet && !!onTogglePlayed
 
   return (
-    <ul className={`flex flex-col gap-1 pb-20 px-4 pt-2`}>
+    <ul className={`flex flex-col gap-1 px-4 pt-2`}>
       {songs.map(song => {
         const isPlayed = !!playedSet?.has(song.id)
         return (

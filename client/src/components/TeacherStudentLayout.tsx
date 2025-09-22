@@ -24,7 +24,7 @@ export function TeacherStudentLayout() {
   const toggleValue: 'homework' | 'songs' = onSongs ? 'songs' : 'homework'
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col">
       <Header
         left={
           <button
@@ -58,7 +58,7 @@ export function TeacherStudentLayout() {
         }
       />
 
-      <main className="flex-1 overflow-y-auto">
+      <main className="flex-1 overflow-y-auto pb-20">
         <Outlet />
       </main>
     </div>

@@ -2,7 +2,7 @@ import { useLocation, useParams, useNavigate } from 'react-router-dom'
 import { useState } from 'react'
 import { useTeacherStudentHomework } from '../hooks/useHomework'
 import { HomeworkCarousel } from './HomeworkCarousel'
-import ToggleSwitch from './ToggleSwitch'
+import ToggleSwitch, { ToggleSwitchValue } from './ToggleSwitch'
 import { Header } from './Header'
 import { ArrowLeft } from 'lucide-react'
 import { getColorForStudent } from '../utils/studentcolors'
@@ -11,7 +11,7 @@ export const TeacherStudentHomeworkPage = () => {
   const { studentId } = useParams()
   const navigate = useNavigate()
   const location = useLocation()
-  const [view, setView] = useState<'homework' | 'songs'>('homework')
+  const [view, setView] = useState<ToggleSwitchValue>('homework')
 
   const studentName =
     (location.state as { studentName?: string } | undefined)?.studentName ??
@@ -37,7 +37,7 @@ export const TeacherStudentHomeworkPage = () => {
             <h2 className="">{studentName}</h2>
           </div>
         }
-        right={<ToggleSwitch view={view} setView={setView} />}
+        right={<ToggleSwitch value={view} onChange={setView} />}
       />
 
       <main className="flex-1 overflow-y-auto pb-24">

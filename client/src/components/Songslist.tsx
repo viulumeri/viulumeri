@@ -6,10 +6,16 @@ import { ChevronRight, CheckCircle } from 'lucide-react'
 type Props = {
   showChevron?: boolean
   playedSet?: Set<string>
+  onTogglePlayed?: (songId: string) => void
 }
 
-export const Songslist = ({ showChevron = false, playedSet }: Props) => {
+export const Songslist = ({
+  showChevron = false,
+  playedSet,
+  onTogglePlayed
+}: Props) => {
   const { isPending, isError, data, error } = useSongsList()
+  const canToggle = !!playedSet && !!onTogglePlayed
 
   if (isPending) return <span>Loading...</span>
   if (isError) return <span>Error: {error.message}</span>
@@ -23,10 +29,26 @@ export const Songslist = ({ showChevron = false, playedSet }: Props) => {
           return (
             <li key={song.id}>
               <div className="flex items-center gap-5 p-3 rounded-lg overflow-hidden">
-                {isPlayed ? (
-                  <CheckCircle className="w-5 h-5 text-emerald-500 flex-none" />
+                {canToggle ? (
+                  <button
+                    type="button"
+                    onClick={() => onTogglePlayed?.(song.id)}
+                    className="w-5 h-5 flex items-center justify-center"
+                  >
+                    {isPlayed ? (
+                      <CheckCircle className="w-5 h-5 text-emerald-500" />
+                    ) : (
+                      <span className="w-5 h-5 rounded-full border border-white/40" />
+                    )}
+                  </button>
                 ) : (
-                  <span className="w-5 h-5 flex-none" />
+                  <>
+                    {isPlayed ? (
+                      <CheckCircle className="w-5 h-5 text-emerald-500 flex-none" />
+                    ) : (
+                      <span className="w-5 h-5 flex-none" />
+                    )}
+                  </>
                 )}
 
                 <Link

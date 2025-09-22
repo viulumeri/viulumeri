@@ -3,14 +3,13 @@ import { Signup } from './components/SignUp.tsx'
 import { ForgotPassword } from './components/ForgotPassword'
 import { ResetPassword } from './components/ResetPassword'
 import { MusicPlayer } from './components/MusicPlayer'
-import { Songslist } from './components/Songslist'
 import { InviteLink } from './components/InviteLink'
 import { InviteAccept } from './components/InviteAccept'
 import { TeacherStudentsPage } from './components/TeacherStudentsPage'
 import { StudentHomeworkPage } from './components/StudentHomeworkPage'
-import { TeacherStudentHomeworkPage } from './components/TeacherStudentHomeworkPage'
 import { CreateHomeworkPage } from './components/CreateHomeworkPage'
 import { StudentStartPage } from './components/StudentStartPage'
+import { SongslistPage } from './components/SongslistPage'
 
 import { AppLayout } from './components/AppLayout'
 import PublicLayout from './components/PublicLayout'
@@ -61,14 +60,6 @@ const App = () => {
         <>
           {/* Shared */}
           <Route
-            path="/songslist"
-            element={
-              <AppLayout>
-                <Songslist />
-              </AppLayout>
-            }
-          />
-          <Route
             path="/player/:songId"
             element={
               <AppLayout>
@@ -93,14 +84,6 @@ const App = () => {
                 element={
                   <AppLayout>
                     <TeacherStudentsPage />
-                  </AppLayout>
-                }
-              />
-              <Route
-                path="/teacher/students/:studentId/homework"
-                element={
-                  <AppLayout>
-                    <TeacherStudentHomeworkPage />
                   </AppLayout>
                 }
               />
@@ -142,6 +125,15 @@ const App = () => {
             element={
               <AppLayout>
                 <SettingsPage />
+              </AppLayout>
+            }
+          />
+
+          <Route
+            path="/songslist"
+            element={
+              <AppLayout>
+                <SongslistPage />
               </AppLayout>
             }
           />

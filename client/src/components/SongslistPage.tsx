@@ -14,7 +14,7 @@ export function SongslistPage() {
       <Header center={<h1>Kappaleet</h1>} />
       <main className="flex-1 overflow-y-auto pb-24">
         <div className="mx-auto max-w-sm">
-          <Songslist songs={data ?? []} />
+          <Songslist songs={data ?? []} showChevron />
         </div>
       </main>
     </div>

@@ -3,11 +3,17 @@ import { useNavigate } from 'react-router-dom'
 import { useEffect } from 'react'
 import { useStudentHomework } from '../hooks/useHomework.ts'
 import { useTeacher } from '../hooks/useTeacher.ts'
+import { useOwnPlayedSongs } from '../hooks/usePlayedSongs.ts'
 
 export const StudentStartPage = () => {
   const { data: session, isPending } = useSession()
   const { data: homeworkData } = useStudentHomework()
   const { data: teacherData, isPending: isTeacherPending } = useTeacher()
+  const {
+    data: playedData,
+    isPending: isPlayedPending,
+    isError: isPlayedError
+  } = useOwnPlayedSongs()
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -21,6 +27,11 @@ export const StudentStartPage = () => {
   const practiceCount = latestHomework?.practiceCount ?? 0
   const teacherName = teacherData?.teacher?.name ?? '–'
   const teacherDisplay = isTeacherPending ? 'Ladataan…' : teacherName
+  const playedCount = isPlayedPending
+    ? 'Ladataan…'
+    : isPlayedError
+      ? '—'
+      : (playedData?.playedSongs?.length ?? 0)
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -57,19 +68,22 @@ export const StudentStartPage = () => {
         </div>
       </div>
 
-      <div className="h-[30vh] bg-neutral-900 text-neutral-100 px-6 pt-12 flex items-start justify-between">
-        <div className="flex-1 text-center pt-3">
-          <p className="text-sm  text-gray-400  mb-2">Harjoituskerrat</p>
-          <div className="text-xl text-neutral-100 font-bold pt-4">
-            {practiceCount}
+      <div className="h-[30vh] bg-neutral-900 text-neutral-100 px-6 pt-12">
+        <div className="flex gap-4">
+          <div className="flex-1 h-28 flex flex-col justify-between items-center text-center">
+            <p className="text-sm text-gray-400 px-1">Harjoituskerrat</p>
+            <div className="text-xl font-bold pb-8">{practiceCount}</div>
           </div>
-        </div>
-        <div className="flex-1 text-center pt-3 border-l border-gray-700 h-28 flex flex-col justify-start pl-1">
-          <p className="text-sm text-gray-400 mb-2 ">Opettaja</p>
-          <div className="text-l text-gray-100 pt-4 ">{teacherDisplay}</div>
-        </div>
-        <div className="flex-1 text-center pt-3 border-l border-gray-700 h-28 flex flex-col justify-start pl-1 ">
-          <p className="text-sm  text-gray-400 mb-2 ml-2">Soitetut kappaleet</p>
+
+          <div className="flex-1 h-28 flex flex-col justify-between items-center text-center border-l border-gray-700 pl-3">
+            <p className="text-sm text-gray-400 px-1">Opettaja</p>
+            <div className="text-lg text-gray-100 pb-8">{teacherDisplay}</div>
+          </div>
+
+          <div className="flex-1 h-28 flex flex-col justify-between items-center text-center border-l border-gray-700 pl-3">
+            <p className="text-sm text-gray-400 px-1">Soitetut kappaleet</p>
+            <div className="text-xl font-bold pb-8">{playedCount}</div>
+          </div>
         </div>
       </div>
     </div>

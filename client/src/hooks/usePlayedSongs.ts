@@ -1,7 +1,8 @@
 import {
   useMutation,
   useQuery,
-  type UseMutationOptions
+  type UseMutationOptions,
+  type UseQueryOptions
 } from '@tanstack/react-query'
 import { playedSongsService } from '../services/playedSongs'
 
@@ -34,7 +35,11 @@ export const useStudentPlayedSongs = (studentId: string) =>
   })
 
 export const useMarkSongPlayed = (
-  options?: UseMutationOptions<StudentPlayedSongsResponse, Error, MarkSongPlayedParams>
+  options?: UseMutationOptions<
+    StudentPlayedSongsResponse,
+    Error,
+    MarkSongPlayedParams
+  >
 ) =>
   useMutation<StudentPlayedSongsResponse, Error, MarkSongPlayedParams>({
     mutationFn: ({ studentId, songId }) =>
@@ -43,7 +48,11 @@ export const useMarkSongPlayed = (
   })
 
 export const useUnmarkSongPlayed = (
-  options?: UseMutationOptions<StudentPlayedSongsResponse, Error, UnmarkSongPlayedParams>
+  options?: UseMutationOptions<
+    StudentPlayedSongsResponse,
+    Error,
+    UnmarkSongPlayedParams
+  >
 ) =>
   useMutation<StudentPlayedSongsResponse, Error, UnmarkSongPlayedParams>({
     mutationFn: ({ studentId, songId }) =>
@@ -52,8 +61,11 @@ export const useUnmarkSongPlayed = (
   })
 
 // Student hook
-export const useOwnPlayedSongs = () =>
+export const useOwnPlayedSongs = (
+  options?: Pick<UseQueryOptions<PlayedSongsListResponse, Error>, 'enabled'>
+) =>
   useQuery<PlayedSongsListResponse, Error>({
     queryKey: ['student-played-songs'],
-    queryFn: playedSongsService.getOwnPlayedSongs
+    queryFn: playedSongsService.getOwnPlayedSongs,
+    enabled: options?.enabled ?? true
   })

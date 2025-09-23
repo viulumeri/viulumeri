@@ -42,9 +42,7 @@ export const Songslist = ({
                   <span className="w-5 h-5 flex items-center justify-center">
                     {isPlayed ? (
                       <CheckCircle className="w-5 h-5 text-emerald-500" />
-                    ) : (
-                      <span className="w-5 h-5 rounded-full border border-white/40" />
-                    )}
+                    ) : null}
                   </span>
                 )
               ) : null}

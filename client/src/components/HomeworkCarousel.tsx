@@ -169,9 +169,9 @@ export const HomeworkCarousel = ({
                     </>
                   )}
                   {mode === 'student' && index === homework.length - 1 && (
-                    <div className="flex justify-center mt-4">
+                    <div className="flex justify-center mt-4 pt-4">
                       <button
-                        className="mt-4 bg-white text-black rounded-3xl px-5 py-2 text-lg "
+                        className="button-basic"
                         onClick={() => handlePractice(hw.id)}
                         disabled={practice.isPending}
                       >

@@ -61,7 +61,7 @@ export const StudentStartPage = () => {
               )
               navigate('/student/homework/list')
             }}
-            className="bg-neutral-100  text-black rounded-full px-6 py-2 text-xl "
+            className="button-basic"
           >
             Aloita
           </button>

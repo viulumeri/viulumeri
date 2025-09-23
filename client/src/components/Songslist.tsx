@@ -8,35 +8,47 @@ type Props = {
   onTogglePlayed?: (songId: string) => void
   showChevron?: boolean
 }
-
 export const Songslist = ({
   songs,
   playedSet,
   onTogglePlayed,
   showChevron = false
 }: Props) => {
-  const showPlayed = !!playedSet && !!onTogglePlayed
+  const showPlayed = !!playedSet
+  const canToggle = !!onTogglePlayed
 
   return (
     <ul className={`flex flex-col gap-1 px-4 pt-2`}>
       {songs.map(song => {
         const isPlayed = !!playedSet?.has(song.id)
+
         return (
           <li key={song.id}>
-            <div className="flex items-center gap-4 p-3 rounded-lg">
-              {showPlayed && (
-                <button
-                  type="button"
-                  onClick={() => onTogglePlayed?.(song.id)}
-                  className="w-5 h-5 flex items-center justify-center"
-                >
-                  {isPlayed ? (
-                    <CheckCircle className="w-5 h-5 text-emerald-500" />
-                  ) : (
-                    <span className="w-5 h-5 rounded-full border border-white/40" />
-                  )}
-                </button>
-              )}
+            <div className="flex items-center gap-5 p-3 rounded-lg">
+              {showPlayed ? (
+                canToggle ? (
+                  <button
+                    type="button"
+                    onClick={() => onTogglePlayed?.(song.id)}
+                    className="w-5 h-5 flex items-center justify-center"
+                  >
+                    {isPlayed ? (
+                      <CheckCircle className="w-5 h-5 text-emerald-500" />
+                    ) : (
+                      <span className="w-5 h-5 rounded-full border border-white/40" />
+                    )}
+                  </button>
+                ) : (
+                  <span className="w-5 h-5 flex items-center justify-center">
+                    {isPlayed ? (
+                      <CheckCircle className="w-5 h-5 text-emerald-500" />
+                    ) : (
+                      <span className="w-5 h-5 rounded-full border border-white/40" />
+                    )}
+                  </span>
+                )
+              ) : null}
+
               <Link
                 to={`/player/${song.id}`}
                 className="flex items-center gap-4 flex-1 min-w-0"

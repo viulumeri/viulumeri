@@ -25,7 +25,10 @@ export const HomeworkCarousel = ({
   const { data: songsData } = useSongsList()
 
   const songMap = useMemo(
-    () => new Map<string, SongListItem>((songsData ?? []).map(s => [s.id, s])),
+    () =>
+      new Map<string, SongListItem>(
+        (songsData ?? []).map((s: SongListItem) => [s.id, s])
+      ),
     [songsData]
   )
 

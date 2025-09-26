@@ -19,6 +19,7 @@ export const ResendVerification = ({ email }: ResendVerificationProps) => {
     try {
       const response = await authClient.sendVerificationEmail({
         email: email,
+        callbackURL: `${window.location.origin}/email-verified`,
         fetchOptions: {
           onError: async context => {
             const { response } = context
@@ -83,4 +84,3 @@ export const ResendVerification = ({ email }: ResendVerificationProps) => {
     </div>
   )
 }
-

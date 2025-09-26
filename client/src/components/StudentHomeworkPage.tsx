@@ -26,7 +26,7 @@ export const StudentHomeworkPage = () => {
             <ArrowLeft className="w-6 h-6 text-gray-300 hover:text-white" />
           </button>
         }
-        center={<h1 className="">Otsikko tähän?</h1>}
+        center={<h1 className="">Tehtäväsi</h1>}
       />
       <HomeworkCarousel
         mode="student"

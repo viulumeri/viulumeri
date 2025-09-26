@@ -31,7 +31,8 @@ export const Signup = () => {
       email: email.value,
       password: password.value,
       name: name.value,
-      userType: userType
+      userType: userType,
+      callbackURL: `${window.location.origin}/email-verified`
     })
   }
   return (

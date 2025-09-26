@@ -1,37 +1,74 @@
 import { Link } from 'react-router-dom'
-import { useSongsList } from '../hooks/useSongs'
 import type { SongListItem } from '../../../shared/types'
+import { CheckCircle, ChevronRight } from 'lucide-react'
 
-export const Songslist = () => {
-  const { isPending, isError, data, error } = useSongsList()
-  if (isPending) {
-    return <span>Loading...</span>
-  }
-
-  if (isError) {
-    return <span>Error: {error.message}</span>
-  }
+type Props = {
+  songs: SongListItem[]
+  playedSet?: Set<string>
+  onTogglePlayed?: (songId: string) => void
+  showChevron?: boolean
+}
+export const Songslist = ({
+  songs,
+  playedSet,
+  onTogglePlayed,
+  showChevron = false
+}: Props) => {
+  const showPlayed = !!playedSet
+  const canToggle = !!onTogglePlayed
 
   return (
-    <div>
-      <h1 className=" px-4 pb-4"> Kappaleet</h1>
-      <ul className="flex flex-col pb-20 px-10">
-        {data.map((song: SongListItem) => (
+    <ul className={`flex flex-col gap-1 px-4 pt-2`}>
+      {songs.map(song => {
+        const isPlayed = !!playedSet?.has(song.id)
+
+        return (
           <li key={song.id}>
-            <Link
-              to={`/player/${song.id}`}
-              className="flex items-center gap-5 p-3 rounded-lg overflow-hidden"
-            >
-              <img
-                src={song.metadata.imgurl}
-                alt={song.title}
-                className="w-14 h-14 rounded-full objec"
-              />
-              <h3 className="">{song.title}</h3>
-            </Link>
+            <div className="flex items-center gap-5 p-3 rounded-lg">
+              {showPlayed ? (
+                canToggle ? (
+                  <button
+                    type="button"
+                    onClick={() => onTogglePlayed?.(song.id)}
+                    className="w-5 h-5 flex items-center justify-center"
+                  >
+                    {isPlayed ? (
+                      <CheckCircle className="w-5 h-5 text-emerald-500" />
+                    ) : (
+                      <span className="w-5 h-5 rounded-full border border-white/40" />
+                    )}
+                  </button>
+                ) : (
+                  <span className="w-5 h-5 flex items-center justify-center">
+                    {isPlayed ? (
+                      <CheckCircle className="w-5 h-5 text-emerald-500" />
+                    ) : null}
+                  </span>
+                )
+              ) : null}
+
+              <Link
+                to={`/player/${song.id}`}
+                className="flex items-center gap-4 flex-1 min-w-0"
+              >
+                <img
+                  src={song.metadata.imgurl}
+                  alt={song.title}
+                  className="w-14 h-14 rounded-full object-cover"
+                  loading="lazy"
+                  decoding="async"
+                />
+                <div className="flex items-center flex-1 min-w-0">
+                  <h3 className="flex-1 min-w-0 truncate">{song.title}</h3>
+                  {showChevron && (
+                    <ChevronRight size={24} color="white" strokeWidth={2} />
+                  )}
+                </div>
+              </Link>
+            </div>
           </li>
-        ))}
-      </ul>
-    </div>
+        )
+      })}
+    </ul>
   )
 }

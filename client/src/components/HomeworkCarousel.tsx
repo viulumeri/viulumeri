@@ -29,13 +29,11 @@ export const HomeworkCarousel = ({
     [songsData]
   )
 
-  const [openMenuId, setOpenMenuId] = useState<string | null>(null)
   const [deletingId, setDeletingId] = useState<string | null>(null)
 
   const deleteHomework = useDeleteHomework({
     onSuccess: () => {
       setDeletingId(null)
-      setOpenMenuId(null)
       refetch()
     },
     onError: () => {
@@ -43,6 +41,13 @@ export const HomeworkCarousel = ({
       alert('Läksyn poistaminen epäonnistui')
     }
   })
+
+  const handleDelete = (hwId: string) => {
+    if (deletingId) return
+    if (!confirm('Poistetaanko tämä tehtävä?')) return
+    setDeletingId(hwId)
+    deleteHomework.mutate(hwId)
+  }
 
   const practice = usePracticeOnce()
   const handlePractice = (homeworkId: string) => practice.mutate(homeworkId)
@@ -88,18 +93,7 @@ export const HomeworkCarousel = ({
                 hw={hw}
                 isLatest={index === homework.length - 1}
                 songMap={songMap}
-                isMenuOpen={openMenuId === hw.id}
-                onToggleMenu={setOpenMenuId}
-                onDelete={
-                  mode === 'teacher'
-                    ? id => {
-                        if (deletingId === id) return
-                        if (!confirm('Poistetaanko tämä kotitehtävä?')) return
-                        setDeletingId(id)
-                        deleteHomework.mutate(id)
-                      }
-                    : undefined
-                }
+                onDelete={mode === 'teacher' ? handleDelete : undefined}
                 onPractice={mode === 'student' ? handlePractice : undefined}
                 practicePending={practice.isPending}
               />

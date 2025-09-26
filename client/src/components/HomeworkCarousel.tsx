@@ -88,6 +88,18 @@ export const HomeworkCarousel = ({
                 hw={hw}
                 isLatest={index === homework.length - 1}
                 songMap={songMap}
+                isMenuOpen={openMenuId === hw.id}
+                onToggleMenu={setOpenMenuId}
+                onDelete={
+                  mode === 'teacher'
+                    ? id => {
+                        if (deletingId === id) return
+                        if (!confirm('Poistetaanko tämä kotitehtävä?')) return
+                        setDeletingId(id)
+                        deleteHomework.mutate(id)
+                      }
+                    : undefined
+                }
                 onPractice={mode === 'student' ? handlePractice : undefined}
                 practicePending={practice.isPending}
               />

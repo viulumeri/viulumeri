@@ -25,10 +25,7 @@ export const HomeworkCarousel = ({
   const { data: songsData } = useSongsList()
 
   const songMap = useMemo(
-    () =>
-      new Map<string, SongListItem>(
-        (songsData ?? []).map((s: SongListItem) => [s.id, s])
-      ),
+    () => new Map<string, SongListItem>((songsData ?? []).map(s => [s.id, s])),
     [songsData]
   )
 
@@ -49,13 +46,6 @@ export const HomeworkCarousel = ({
 
   const practice = usePracticeOnce()
   const handlePractice = (homeworkId: string) => practice.mutate(homeworkId)
-
-  const handleDelete = (hwId: string) => {
-    if (deletingId) return
-    if (!confirm('Poistetaanko tämä kotitehtävä?')) return
-    setDeletingId(hwId)
-    deleteHomework.mutate(hwId)
-  }
 
   const scrollRef = useRef<HTMLDivElement | null>(null)
   useEffect(() => {
@@ -98,21 +88,10 @@ export const HomeworkCarousel = ({
                 hw={hw}
                 isLatest={index === homework.length - 1}
                 songMap={songMap}
-                isMenuOpen={openMenuId === hw.id}
-                onToggleMenu={setOpenMenuId}
-                onDelete={
-                  mode === 'teacher'
-                    ? id => {
-                        if (deletingId === id) return
-                        handleDelete(id)
-                      }
-                    : undefined
-                }
                 onPractice={mode === 'student' ? handlePractice : undefined}
                 practicePending={practice.isPending}
               />
             ))}
-
           <div className="w-[5vw] flex-shrink-0" />
         </div>
         {mode === 'teacher' && studentId && (

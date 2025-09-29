@@ -50,7 +50,14 @@ export const InviteLink = () => {
             {copied ? 'Kopioitu' : 'Kopioi linkki'}
           </button>
           <div style={{ marginTop: '1rem', textAlign: 'center' }}>
-            <QRCodeSVG value={url} size={128} />
+            <div style={{
+              display: 'inline-block',
+              padding: '16px',
+              backgroundColor: 'white',
+              borderRadius: '4px'
+            }}>
+              <QRCodeSVG value={url} size={128} />
+            </div>
           </div>
         </div>
       )}

@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useParams, useNavigate } from 'react-router-dom'
 import * as Tone from 'tone'
 import { useSongById } from '../hooks/useSongs'
 import {
@@ -10,6 +10,7 @@ import {
 
 export const MusicPlayer = () => {
   const { songId } = useParams<{ songId: string }>()
+  const navigate = useNavigate()
   const { data: song, isPending, isError, error } = useSongById(songId)
   const [isLoading, setIsLoading] = useState(false)
   const [isPlaying, setIsPlaying] = useState(false)
@@ -257,7 +258,7 @@ export const MusicPlayer = () => {
 
   return (
     <div>
-      <Link to="/songslist">← takaisin</Link>
+      <button onClick={() => navigate(-1)}>← takaisin</button>
 
       {song && (
         <div>

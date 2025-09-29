@@ -14,11 +14,11 @@ export const useGenerateInviteLink = (
   options?: UseMutationOptions<GenerateInviteResponse, Error, void>
 ) => useMutation({ mutationFn: invitesService.generate, ...options })
 
-export const useInviteDetails = (token: string) => {
+export const useInviteDetails = (token: string, isAuthenticated: boolean = true) => {
   return useQuery({
     queryKey: ['invite', token],
     queryFn: (): Promise<InviteDetails> => invitesService.details(token),
-    enabled: !!token
+    enabled: !!token && isAuthenticated
   })
 }
 

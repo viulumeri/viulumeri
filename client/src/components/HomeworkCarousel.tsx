@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { useDeleteHomework, usePracticeOnce } from '../hooks/useHomework'
 import { useSongsList } from '../hooks/useSongs'
 import type { SongListItem, HomeworkListResponse } from '../../../shared/types'
@@ -24,6 +25,9 @@ export const HomeworkCarousel = ({
 }: Props) => {
   const { data: songsData } = useSongsList()
 
+  const navigate = useNavigate()
+  const location = useLocation()
+
   const songMap = useMemo(
     () =>
       new Map<string, SongListItem>(
@@ -32,11 +36,14 @@ export const HomeworkCarousel = ({
     [songsData]
   )
 
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null)
   const [deletingId, setDeletingId] = useState<string | null>(null)
 
   const deleteHomework = useDeleteHomework({
     onSuccess: () => {
       setDeletingId(null)
+
+      setOpenMenuId(null)
       refetch()
     },
     onError: () => {
@@ -50,6 +57,11 @@ export const HomeworkCarousel = ({
     if (!confirm('Poistetaanko tämä tehtävä?')) return
     setDeletingId(hwId)
     deleteHomework.mutate(hwId)
+  }
+
+  const handleEdit = (hwId: string) => {
+    const state = location.state ?? {}
+    navigate(`/teacher/students/${studentId}/homework/${hwId}/edit`, { state })
   }
 
   const practice = usePracticeOnce()
@@ -96,6 +108,9 @@ export const HomeworkCarousel = ({
                 hw={hw}
                 isLatest={index === homework.length - 1}
                 songMap={songMap}
+                isMenuOpen={openMenuId === hw.id}
+                onToggleMenu={setOpenMenuId}
+                onEdit={mode === 'teacher' ? handleEdit : undefined}
                 onDelete={mode === 'teacher' ? handleDelete : undefined}
                 onPractice={mode === 'student' ? handlePractice : undefined}
                 practicePending={practice.isPending}

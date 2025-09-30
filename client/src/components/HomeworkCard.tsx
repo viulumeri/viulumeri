@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { Ellipsis } from 'lucide-react'
+import { Ellipsis, X } from 'lucide-react'
 import type { SongListItem, HomeworkListResponse } from '../../../shared/types'
 import SongCard from './SongCard'
 
@@ -8,11 +8,16 @@ type HomeworkItem = HomeworkListResponse['homework'][number]
 type Props = {
   mode: 'teacher' | 'student'
   hw: HomeworkItem
-  isLatest: boolean
+  isLatest?: boolean
   songMap: Map<string, SongListItem>
+  headingLabel?: string
   isMenuOpen?: boolean
   onToggleMenu?: (hwId: string | null) => void
+  onEdit?: (hwId: string) => void
   onDelete?: (hwId: string) => void
+  editableSongs?: boolean
+  onRemoveSong?: (songId: string) => void
+
   onPractice?: (hwId: string) => void
   practicePending?: boolean
 }
@@ -22,11 +27,15 @@ export default function HomeworkCard({
   hw,
   isLatest,
   songMap,
+  headingLabel,
   isMenuOpen = false,
   onToggleMenu,
+  onEdit,
   onDelete,
   onPractice,
-  practicePending
+  practicePending,
+  editableSongs = false,
+  onRemoveSong
 }: Props) {
   const menuRef = useRef<HTMLDivElement | null>(null)
 
@@ -45,7 +54,7 @@ export default function HomeworkCard({
 
   return (
     <div className="snap-center w-[90vw] flex-shrink-0 rounded-lg pt-4 pb-4 px-8 relative">
-      <div className="overflow-y-auto max-h-[calc(100dvh-220px)] pt-0 pb-4 relative">
+      <div className="overflow-y-auto overflow-x-hidden max-h-[calc(100dvh-220px)] pt-0 pb-4 relative">
         {mode === 'teacher' && onToggleMenu && (
           <>
             <button
@@ -64,6 +73,14 @@ export default function HomeworkCard({
                 ref={menuRef}
                 className="absolute top-10 right-3 bg-[#2e2e2e] rounded-md z-20 overflow-hidden"
               >
+                {onEdit && (
+                  <button
+                    className="block w-full text-left px-5 py-3 text-sm text-white"
+                    onClick={() => onEdit(hw.id)}
+                  >
+                    Muokkaa
+                  </button>
+                )}
                 <div className="border-t border-neutral-500 border-opacity-50" />
                 {onDelete && (
                   <button
@@ -78,18 +95,36 @@ export default function HomeworkCard({
           </>
         )}
 
-        <h2 className="mb-1">{isLatest ? 'Tehtävä' : 'Arkistoitu tehtävä'}</h2>
+        <h2 className="mb-1">
+          {headingLabel ?? (isLatest ? 'Tehtävä' : 'Arkistoitu tehtävä')}
+        </h2>
         <p className="text-xs text-gray-300 mb-12">
           {new Date(hw.createdAt).toLocaleDateString()}
         </p>
 
         {hw.songs.map(songId => {
           const song = songMap.get(songId)
-          return song ? (
-            <div key={songId} className="mb-5">
-              <SongCard song={song} />
+          if (!song) return null
+          return (
+            <div key={songId} className="mb-5 relative">
+              <div
+                className={
+                  editableSongs ? 'scale-95 mx-auto transition-transform' : ''
+                }
+              >
+                <SongCard song={song} />
+              </div>
+              {editableSongs && onRemoveSong && (
+                <button
+                  type="button"
+                  onClick={() => onRemoveSong(songId)}
+                  className="absolute top-0 right-0 w-10 h-10 rounded-full bg-white/20 text-white flex items-center justify-center backdrop-blur  z-10"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              )}
             </div>
-          ) : null
+          )
         })}
 
         {hw.comment && (

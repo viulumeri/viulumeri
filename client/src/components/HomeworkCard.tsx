@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Ellipsis, X } from 'lucide-react'
 import type { SongListItem, HomeworkListResponse } from '../../../shared/types'
 import SongCard from './SongCard'
@@ -13,10 +13,14 @@ type Props = {
   headingLabel?: string
   isMenuOpen?: boolean
   onToggleMenu?: (hwId: string | null) => void
+
   onEdit?: (hwId: string) => void
   onDelete?: (hwId: string) => void
   editableSongs?: boolean
   onRemoveSong?: (songId: string) => void
+  editableComment?: boolean
+  commentDraft?: string
+  onChangeComment?: (next: string) => void
 
   onPractice?: (hwId: string) => void
   practicePending?: boolean
@@ -35,9 +39,14 @@ export default function HomeworkCard({
   onPractice,
   practicePending,
   editableSongs = false,
-  onRemoveSong
+  onRemoveSong,
+  editableComment = false,
+  commentDraft,
+  onChangeComment
 }: Props) {
   const menuRef = useRef<HTMLDivElement | null>(null)
+
+  const [isCommentEditing, setIsCommentEditing] = useState(false)
 
   useEffect(() => {
     function onDocClick(e: MouseEvent) {
@@ -126,12 +135,38 @@ export default function HomeworkCard({
             </div>
           )
         })}
-
-        {hw.comment && (
-          <>
-            <h3 className="mt-5 mb-3">Opettajan kommentti</h3>
-            <p className="text-xs text-gray-300">{hw.comment}</p>
-          </>
+        {editableComment ? (
+          <div className="mt-5">
+            <h3 className="mb-3">Opettajan kommentti</h3>
+            {isCommentEditing ? (
+              <textarea
+                value={commentDraft ?? hw.comment ?? ''}
+                onChange={e => onChangeComment?.(e.target.value)}
+                onBlur={() => setIsCommentEditing(false)}
+                rows={4}
+                className="w-full p-3 rounded-lg bg-white/20 outline-none text-gray-300"
+                placeholder="Kirjoita kommentti"
+                autoFocus
+              />
+            ) : (
+              <button
+                type="button"
+                className="w-full text-left p-3 rounded-lg bg-white/15"
+                onClick={() => setIsCommentEditing(true)}
+              >
+                <h4 className="font-light text-gray-400">
+                  {(commentDraft ?? hw.comment) || 'Kirjoita kommentti'}
+                </h4>
+              </button>
+            )}
+          </div>
+        ) : (
+          hw.comment && (
+            <>
+              <h3 className="mt-5 mb-3">Opettajan kommentti</h3>
+              <p className="text-xs text-gray-300">{hw.comment}</p>
+            </>
+          )
         )}
 
         {mode === 'student' && isLatest && onPractice && (

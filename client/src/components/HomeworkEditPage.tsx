@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import { useSongsList } from '../hooks/useSongs'
 import {
@@ -27,6 +27,11 @@ export function HomeworkEditPage() {
 
   const [songIds, setSongIds] = useState<string[] | null>(null)
   const currentSongIds = songIds ?? editing?.songs ?? []
+  const [comment, setComment] = useState<string>('')
+
+  useEffect(() => {
+    setComment(editing?.comment ?? '')
+  }, [editing?.comment])
 
   const songMap = useMemo(() => {
     const m = new Map<string, SongListItem>()
@@ -55,7 +60,7 @@ export function HomeworkEditPage() {
     if (!homeworkId) return
     updateHomework.mutate({
       homeworkId,
-      body: { songs: currentSongIds }
+      body: { songs: currentSongIds, comment }
     })
   }
 
@@ -69,7 +74,7 @@ export function HomeworkEditPage() {
     )
   if (!editing) return <div className="p-4">Läksyä ei löytynyt</div>
 
-  const editedHw = { ...editing, songs: currentSongIds }
+  const editedHw = { ...editing, songs: currentSongIds, comment }
 
   return (
     <div className="flex flex-col overflow-x-hidden">
@@ -81,6 +86,9 @@ export function HomeworkEditPage() {
           editableSongs
           onRemoveSong={removeSong}
           headingLabel="Muokkaa tehtävää"
+          editableComment
+          commentDraft={comment}
+          onChangeComment={setComment}
         />
       </div>
 

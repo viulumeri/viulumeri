@@ -59,13 +59,17 @@ export function SelectSongsPage() {
       <Header
         left={
           <button onClick={() => navigate(-1)}>
-            <ArrowLeft className="w-6 h-6 text-gray-300 hover:text-white" />
+            <ArrowLeft className="w-6 h-6 text-gray-300" />
           </button>
         }
         center={<h2>Valitse kappaleita</h2>}
       />
 
-      <main className="flex-1 overflow-y-auto pb-24">
+      <main
+        className="overflow-y-auto"
+        style={{ maxHeight: 'calc(100dvh - 150px)' }}
+      >
+        {' '}
         <Songslist
           songs={list}
           playedSet={playedSet}

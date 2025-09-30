@@ -121,10 +121,6 @@ const App = () => {
                   path="homework/:homeworkId/edit"
                   element={<HomeworkEditPage />}
                 />
-                <Route
-                  path="homework/:homeworkId/select-songs"
-                  element={<SelectSongsPage />}
-                />
               </Route>
 
               <Route
@@ -132,6 +128,15 @@ const App = () => {
                 element={
                   <AppLayout>
                     <CreateHomeworkPage />
+                  </AppLayout>
+                }
+              />
+
+              <Route
+                path="/teacher/students/:studentId/homework/:homeworkId/select-songs"
+                element={
+                  <AppLayout showNavbar={false}>
+                    <SelectSongsPage />
                   </AppLayout>
                 }
               />

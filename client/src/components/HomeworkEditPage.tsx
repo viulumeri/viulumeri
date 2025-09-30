@@ -80,10 +80,10 @@ export function HomeworkEditPage() {
   }
 
   const goToPicker = () => {
-    navigate('../select-songs', {
-      relative: 'path',
-      state: { preselected: currentSongIds }
-    })
+    navigate(
+      `/teacher/students/${studentId}/homework/${homeworkId}/select-songs`,
+      { state: { preselected: currentSongIds } }
+    )
   }
 
   if (hwQ.isPending || songsQ.isPending)

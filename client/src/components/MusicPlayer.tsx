@@ -7,6 +7,16 @@ import {
   fetchSlowSongTracks,
   type AudioTracks
 } from '../services/audio'
+import {
+  ArrowLeft,
+  Play,
+  Pause,
+  Rewind,
+  StepForward,
+  Repeat,
+  Guitar,
+  Snail
+} from 'lucide-react'
 
 export const MusicPlayer = () => {
   const { songId } = useParams<{ songId: string }>()
@@ -205,9 +215,7 @@ export const MusicPlayer = () => {
     return `${mins}:${secs.toString().padStart(2, '0')}`
   }
 
-  const displayTime = isDragging
-    ? (dragPosition / 100) * duration
-    : currentTime
+  const displayTime = isDragging ? (dragPosition / 100) * duration : currentTime
 
   useEffect(() => {
     loadSongTracks()
@@ -257,68 +265,116 @@ export const MusicPlayer = () => {
   }
 
   return (
-    <div>
-      <button onClick={() => navigate(-1)}>← takaisin</button>
+    <div className="min-h-screen flex flex-col">
+      <button
+        onClick={() => navigate(-1)}
+        className="absolute left-4 top-4 z-10"
+      >
+        <ArrowLeft className="w-8 h-8 text-white" />
+      </button>
 
       {song && (
-        <div>
-          {song.metadata.imgurl && (
-            <img
-              src={song.metadata.imgurl}
-              alt={`Cover art for ${song.title}`}
-              style={{ maxWidth: '300px', height: 'auto' }}
-            />
-          )}
-          <h1>{song.title}</h1>
-          {song.metadata.composer && <p>säveltäjä {song.metadata.composer}</p>}
+        <div
+          className="relative flex flex-col justify-end h-[80vh] px-6"
+          style={{
+            backgroundImage: song?.metadata?.imgurl
+              ? `url("${song.metadata.imgurl}")`
+              : undefined,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundColor: '#171717'
+          }}
+        >
+          <div className="absolute inset-x-0 bottom-0 h-30 bg-gradient-to-t from-neutral-900 via-neutral-900/70 to-transparent z-0" />
+          <div className="pb-6 pl-3 realtive z-10">
+            <h1 className="text-4xl">{song.title}</h1>
+          </div>
         </div>
       )}
 
       {isLoading && <p>Ladataan ääniraitoja...</p>}
+      <div>
+        <div className="w-full px-4">
+          {tracksLoaded && (
+            <div className="w-full">
+              <input
+                className="w-full accent-white"
+                type="range"
+                min="0"
+                max="100"
+                step="0.1"
+                value={
+                  isDragging
+                    ? dragPosition
+                    : duration > 0
+                      ? (currentTime / duration) * 100
+                      : 0
+                }
+                onChange={handleSliderChange}
+                onMouseUp={handleSliderRelease}
+                onTouchEnd={handleSliderRelease}
+                disabled={!tracksLoaded}
+              />
+              <div className="flex justify-between w-full px-2 text-gray-400">
+                <span>{formatTime(Math.floor(displayTime))}</span>
+                <span>{formatTime(Math.floor(duration))}</span>
+              </div>
+            </div>
+          )}
+        </div>
 
-      <div>
-        {!isPlaying && (
-          <button onClick={startPlayback} disabled={isLoading || !tracksLoaded}>
-            Toista
-          </button>
-        )}
-        {isPlaying && <button onClick={pausePlayback}>Pysäytä</button>}
-        <button onClick={rewindToStart} disabled={!tracksLoaded}>
-          {isPlaying ? 'Toista alusta' : 'Kelaa alkuun'}
-        </button>
-        {tracksLoaded && audioTracksRef.current?.melody && (
-          <button onClick={toggleMelodyMute}>
-            {isMelodyMuted ? 'Melodia päälle' : 'Melodia pois'}
-          </button>
-        )}
-        {tracksLoaded && (
-          <button onClick={toggleLoop}>
-            {isLooping ? 'Toisto: PÄÄLLÄ' : 'Toisto: POIS'}
-          </button>
-        )}
-        <button onClick={togglePracticeTempo}>
-          {isPracticeTempo ? 'Harjoitustempo: PÄÄLLÄ' : 'Harjoitustempo: POIS'}
-        </button>
-      </div>
-      <div>
-        {tracksLoaded && (
-          <div>
-            <input
-              type="range"
-              min="0"
-              max="100"
-              step="0.1"
-              value={isDragging ? dragPosition : (duration > 0 ? (currentTime / duration) * 100 : 0)}
-              onChange={handleSliderChange}
-              onMouseUp={handleSliderRelease}
-              onTouchEnd={handleSliderRelease}
-              disabled={!tracksLoaded}
-            />
-            <p>
-              {formatTime(Math.floor(displayTime))} / {formatTime(Math.floor(duration))}
-            </p>
+        <div className="w-full px-10 py-5">
+          <div className="relative flex items-center justify-between">
+            <div className="w-16 flex items-center">
+              {tracksLoaded && audioTracksRef.current?.melody && (
+                <button onClick={toggleMelodyMute}>
+                  <Guitar
+                    className={`w-6 h-6 ${isMelodyMuted ? 'text-yellow-400' : 'text-white'}`}
+                  />
+                </button>
+              )}
+            </div>
+
+            <div className="flex items-center gap-12">
+              <button onClick={rewindToStart} disabled={!tracksLoaded}>
+                {isPlaying ? (
+                  <StepForward className="w-8 h-8 text-white" />
+                ) : (
+                  <Rewind className="w-8 h-8 text-white" />
+                )}
+              </button>
+
+              {!isPlaying ? (
+                <button
+                  onClick={startPlayback}
+                  disabled={isLoading || !tracksLoaded}
+                >
+                  <Play className="w-10 h-10 text-white" />
+                </button>
+              ) : (
+                <button onClick={pausePlayback}>
+                  <Pause className="w-10 h-10 text-white" />
+                </button>
+              )}
+
+              {tracksLoaded && (
+                <button onClick={toggleLoop}>
+                  <Repeat
+                    className={`w-8 h-8 ${isLooping ? 'text-yellow-400' : 'text-white'}`}
+                  />
+                </button>
+              )}
+            </div>
+
+            <div className="w-16 flex items-center justify-end">
+              <button onClick={togglePracticeTempo}>
+                <Snail
+                  className={`w-5 h-5 ${isPracticeTempo ? 'text-yellow-400' : 'text-white'}`}
+                />
+              </button>
+            </div>
           </div>
-        )}
+        </div>
       </div>
       {audioError && <p>Virhe: {audioError}</p>}
     </div>

@@ -326,13 +326,20 @@ export const MusicPlayer = () => {
         <div className="w-full px-10 py-5">
           <div className="relative flex items-center justify-between">
             <div className="w-16 flex items-center">
-              {tracksLoaded && audioTracksRef.current?.melody && (
-                <button onClick={toggleMelodyMute}>
-                  <Guitar
-                    className={`w-6 h-6 ${isMelodyMuted ? 'text-yellow-400' : 'text-white'}`}
-                  />
-                </button>
-              )}
+              <button
+                onClick={toggleMelodyMute}
+                disabled={!(tracksLoaded && audioTracksRef.current?.melody)}
+              >
+                <Guitar
+                  className={`w-6 h-6 ${
+                    tracksLoaded && audioTracksRef.current?.melody
+                      ? isMelodyMuted
+                        ? 'text-yellow-400'
+                        : 'text-white'
+                      : 'text-gray-500'
+                  }`}
+                />
+              </button>
             </div>
 
             <div className="flex items-center gap-12">

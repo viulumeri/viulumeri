@@ -98,7 +98,7 @@ export const HomeworkCarousel = ({
     <div className="flex flex-col">
       <div
         ref={scrollRef}
-        className="overflow-x-auto snap-x snap-mandatory scroll-smooth"
+        className="overflow-x-auto snap-x snap-mandatory scroll-smooth scrollbar-hide"
       >
         <div className="flex gap-4">
           <div className="w-[5vw] flex-shrink-0" />

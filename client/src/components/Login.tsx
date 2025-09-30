@@ -52,10 +52,10 @@ export const Login = () => {
       <h2>Login</h2>
       <form onSubmit={handleLogin}>
         <div>
-          email <input {...email.props} />
+          email <input {...email.props} autoComplete="email" />
         </div>
         <div>
-          password <input {...password.props} />
+          password <input {...password.props} autoComplete="current-password" />
         </div>
         <button type="submit" disabled={loginMutation.isPending}>
           {loginMutation.isPending ? 'Logging in..' : 'Log in'}

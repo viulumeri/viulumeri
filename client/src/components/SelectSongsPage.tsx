@@ -80,7 +80,11 @@ export function SelectSongsPage() {
         />
       </main>
 
-      <FloatingActionButton onClick={confirm} icon="check" />
+      <FloatingActionButton
+        onClick={confirm}
+        icon="check"
+        className="!bottom-8"
+      />
     </div>
   )
 }

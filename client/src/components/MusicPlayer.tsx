@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useParams, useNavigate } from 'react-router-dom'
 import * as Tone from 'tone'
 import { useSongById } from '../hooks/useSongs'
 import {
@@ -10,6 +10,7 @@ import {
 
 export const MusicPlayer = () => {
   const { songId } = useParams<{ songId: string }>()
+  const navigate = useNavigate()
   const { data: song, isPending, isError, error } = useSongById(songId)
   const [isLoading, setIsLoading] = useState(false)
   const [isPlaying, setIsPlaying] = useState(false)
@@ -20,6 +21,8 @@ export const MusicPlayer = () => {
   const [isPracticeTempo, setIsPracticeTempo] = useState(false)
   const [currentTime, setCurrentTime] = useState(0)
   const [duration, setDuration] = useState(0)
+  const [isDragging, setIsDragging] = useState(false)
+  const [dragPosition, setDragPosition] = useState(0)
   const playersRef = useRef<Tone.Players | null>(null)
   const audioTracksRef = useRef<AudioTracks | null>(null)
 
@@ -143,11 +146,16 @@ export const MusicPlayer = () => {
     Tone.Transport.position = 0
   }
 
-  const stopPlayback = () => {
+  const pausePlayback = () => {
     if (playersRef.current) {
-      Tone.Transport.stop()
-      Tone.Transport.position = 0
+      Tone.Transport.pause()
       setIsPlaying(false)
+    }
+  }
+
+  const rewindToStart = () => {
+    if (playersRef.current) {
+      Tone.Transport.position = 0
       setCurrentTime(0)
     }
   }
@@ -174,11 +182,32 @@ export const MusicPlayer = () => {
     setTracksLoaded(false)
   }
 
+  const handleSliderChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (!tracksLoaded) return
+
+    const percentage = parseFloat(event.target.value)
+    setIsDragging(true)
+    setDragPosition(percentage)
+  }
+
+  const handleSliderRelease = () => {
+    if (!playersRef.current || !tracksLoaded || !isDragging) return
+
+    const seekTime = (dragPosition / 100) * duration
+    Tone.Transport.position = seekTime
+    setCurrentTime(seekTime)
+    setIsDragging(false)
+  }
+
   const formatTime = (seconds: number): string => {
     const mins = Math.floor(seconds / 60)
     const secs = Math.floor(seconds % 60)
     return `${mins}:${secs.toString().padStart(2, '0')}`
   }
+
+  const displayTime = isDragging
+    ? (dragPosition / 100) * duration
+    : currentTime
 
   useEffect(() => {
     loadSongTracks()
@@ -229,7 +258,7 @@ export const MusicPlayer = () => {
 
   return (
     <div>
-      <Link to="/songslist">← takaisin</Link>
+      <button onClick={() => navigate(-1)}>← takaisin</button>
 
       {song && (
         <div>
@@ -253,7 +282,10 @@ export const MusicPlayer = () => {
             Toista
           </button>
         )}
-        {isPlaying && <button onClick={stopPlayback}>Pysäytä</button>}
+        {isPlaying && <button onClick={pausePlayback}>Pysäytä</button>}
+        <button onClick={rewindToStart} disabled={!tracksLoaded}>
+          {isPlaying ? 'Toista alusta' : 'Kelaa alkuun'}
+        </button>
         {tracksLoaded && audioTracksRef.current?.melody && (
           <button onClick={toggleMelodyMute}>
             {isMelodyMuted ? 'Melodia päälle' : 'Melodia pois'}
@@ -270,9 +302,22 @@ export const MusicPlayer = () => {
       </div>
       <div>
         {tracksLoaded && (
-          <p>
-            {formatTime(Math.floor(currentTime))} / {formatTime(Math.floor(duration))}
-          </p>
+          <div>
+            <input
+              type="range"
+              min="0"
+              max="100"
+              step="0.1"
+              value={isDragging ? dragPosition : (duration > 0 ? (currentTime / duration) * 100 : 0)}
+              onChange={handleSliderChange}
+              onMouseUp={handleSliderRelease}
+              onTouchEnd={handleSliderRelease}
+              disabled={!tracksLoaded}
+            />
+            <p>
+              {formatTime(Math.floor(displayTime))} / {formatTime(Math.floor(duration))}
+            </p>
+          </div>
         )}
       </div>
       {audioError && <p>Virhe: {audioError}</p>}

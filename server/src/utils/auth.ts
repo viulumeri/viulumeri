@@ -105,6 +105,11 @@ Jos et pyytänyt tilin poistamista, voit jättää tämän viestin huomioimatta.
   },
   emailVerification: {
     sendVerificationEmail: async ({ user, url }) => {
+      logger.info('Sending verification email', {
+        userId: user.id,
+        email: user.email,
+        verificationUrl: url
+      })
       await sendEmail({
         to: user.email,
         subject: 'Vahvista sähköpostiosoitteesi - Viulumeri',
@@ -114,6 +119,16 @@ Klikkaa alla olevaa linkkiä vahvistaaksesi sähköpostiosoitteesi:
 ${url}
 
 Jos et rekisteröitynyt Viulumeri-palveluun, voit jättää tämän viestin huomioimatta.`
+      })
+      logger.info('Verification email sent successfully', { userId: user.id, email: user.email })
+    },
+    async afterEmailVerification(user, request) {
+      logger.info('Email verification completed successfully', {
+        userId: user.id,
+        email: user.email,
+        emailVerified: user.emailVerified,
+        requestUrl: request?.url,
+        requestHeaders: request?.headers
       })
     }
   },

@@ -7,7 +7,7 @@ export const InviteAccept = () => {
   const { token } = useParams<{ token: string }>()
   const navigate = useNavigate()
   const { data: session, isPending: sessionPending } = useSession()
-  const { data, isPending: invitePending, isError } = useInviteDetails(token!)
+  const { data, isPending: invitePending, isError } = useInviteDetails(token!, !!session)
 
   const accept = useAcceptInvite({
     onSuccess: response => {
@@ -21,7 +21,7 @@ export const InviteAccept = () => {
     onError: error => console.error('Accept invite failed:', error)
   })
 
-  if (sessionPending || invitePending) return <div>Ladataan…</div>
+  if (sessionPending) return <div>Ladataan…</div>
 
   if (!session) {
     return (
@@ -33,6 +33,8 @@ export const InviteAccept = () => {
       </div>
     )
   }
+
+  if (invitePending) return <div>Ladataan…</div>
 
   if (!token) return <div>Virheellinen kutsulinkki.</div>
 

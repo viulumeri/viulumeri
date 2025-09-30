@@ -4,13 +4,14 @@ kind: Kustomization
 namespace: viulumeri-staging
 
 images:
-  - name: jayzstep/viulumeri
-    newTag: latest
+- name: jayzstep/viulumeri
+  newName: jayzstep/viulumeri
+  newTag: e2d4d67f54d2702a9ad60904abc82b81913879a7
 
 resources:
-  - namespace.yaml
-  - ../base
-  - ingress.yaml
+- namespace.yaml
+- ../base
+- ingress.yaml
 
 patches:
-  - path: viulumeri-configmap-patch.yaml
+- path: viulumeri-configmap-patch.yaml

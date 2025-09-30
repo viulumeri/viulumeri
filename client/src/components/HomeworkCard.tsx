@@ -21,6 +21,7 @@ type Props = {
   editableComment?: boolean
   commentDraft?: string
   onChangeComment?: (next: string) => void
+  onAddSong?: () => void
 
   onPractice?: (hwId: string) => void
   practicePending?: boolean
@@ -42,7 +43,8 @@ export default function HomeworkCard({
   onRemoveSong,
   editableComment = false,
   commentDraft,
-  onChangeComment
+  onChangeComment,
+  onAddSong
 }: Props) {
   const menuRef = useRef<HTMLDivElement | null>(null)
 
@@ -127,7 +129,7 @@ export default function HomeworkCard({
                 <button
                   type="button"
                   onClick={() => onRemoveSong(songId)}
-                  className="absolute top-0 right-0 w-10 h-10 rounded-full bg-white/20 text-white flex items-center justify-center backdrop-blur  z-10"
+                  className="absolute top-0 right-0 w-10 h-10 rounded-full bg-white/30 text-white flex items-center justify-center backdrop-blur  z-10"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -135,6 +137,18 @@ export default function HomeworkCard({
             </div>
           )
         })}
+
+        {editableSongs && onAddSong && (
+          <div className="mb-6 flex justify-center">
+            <button
+              type="button"
+              onClick={onAddSong}
+              className="button-basic bg-white/20 text-white"
+            >
+              Lisää uusi kappale
+            </button>
+          </div>
+        )}
         {editableComment ? (
           <div className="mt-5">
             <h3 className="mb-3">Opettajan kommentti</h3>

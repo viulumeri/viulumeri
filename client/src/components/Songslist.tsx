@@ -37,7 +37,7 @@ export const Songslist = ({
                 type="button"
                 onClick={() => onToggleSelect?.(song.id)}
                 className={`w-full text-left flex items-center gap-4 p-3 rounded-lg ${
-                  isSelected ? 'bg-white/10' : 'hover:bg-white/5'
+                  isSelected ? 'bg-white/10' : ''
                 }`}
               >
                 {showPlayed && !canToggle && (
@@ -47,23 +47,6 @@ export const Songslist = ({
                     ) : null}
                   </span>
                 )}
-                {showPlayed && canToggle && (
-                  <button
-                    type="button"
-                    onClick={e => {
-                      e.stopPropagation()
-                      onTogglePlayed?.(song.id)
-                    }}
-                    className="w-5 h-5 flex items-center justify-center"
-                  >
-                    {isPlayed ? (
-                      <CheckCircle className="w-5 h-5 text-emerald-500" />
-                    ) : (
-                      <span className="w-5 h-5 rounded-full border border-white/40" />
-                    )}
-                  </button>
-                )}
-
                 <img
                   src={song.metadata.imgurl}
                   alt={song.title}
@@ -73,9 +56,6 @@ export const Songslist = ({
                 />
                 <div className="flex items-center flex-1 min-w-0">
                   <h3 className="flex-1 min-w-0 truncate">{song.title}</h3>
-                  {isSelected && (
-                    <span className="ml-2 text-xs opacity-80">valittu</span>
-                  )}
                 </div>
               </button>
             </li>

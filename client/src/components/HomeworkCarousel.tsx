@@ -64,7 +64,11 @@ export const HomeworkCarousel = ({
     navigate(`/teacher/students/${studentId}/homework/${hwId}/edit`, { state })
   }
 
-  const practice = usePracticeOnce()
+  const practice = usePracticeOnce({
+    onSuccess: () => {
+      navigate('/student/homework', { state: { justPracticed: true } })
+    }
+  })
   const handlePractice = (homeworkId: string) => practice.mutate(homeworkId)
 
   const scrollRef = useRef<HTMLDivElement | null>(null)

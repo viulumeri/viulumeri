@@ -1,6 +1,6 @@
 import { useSession } from '../auth-client'
-import { useNavigate } from 'react-router-dom'
-import { useEffect } from 'react'
+import { useNavigate, useLocation } from 'react-router-dom'
+import { useEffect, useState } from 'react'
 import { useStudentHomework } from '../hooks/useHomework.ts'
 import { useTeacher } from '../hooks/useTeacher.ts'
 import { useOwnPlayedSongs } from '../hooks/usePlayedSongs.ts'
@@ -15,16 +15,28 @@ export const StudentStartPage = () => {
     isError: isPlayedError
   } = useOwnPlayedSongs()
   const navigate = useNavigate()
+  const location = useLocation()
+  const [previousCount, setPreviousCount] = useState<number>(0)
+  const [showGlow, setShowGlow] = useState(false)
 
   useEffect(() => {
     localStorage.setItem('studentLastHomeworkRoute', '/student/homework')
   }, [])
 
+  const latestHomework = homeworkData?.homework?.[0]
+  const practiceCount = latestHomework?.practiceCount ?? 0
+
+  useEffect(() => {
+    if (location.state?.justPracticed && practiceCount > previousCount) {
+      setShowGlow(true)
+      setTimeout(() => setShowGlow(false), 500)
+    }
+    setPreviousCount(practiceCount)
+  }, [practiceCount, location.state?.justPracticed, previousCount])
+
   if (isPending) return <div>Ladataan...</div>
   if (!session?.user?.name) return <div>Kirjaudu sisään</div>
 
-  const latestHomework = homeworkData?.homework?.[0]
-  const practiceCount = latestHomework?.practiceCount ?? 0
   const teacherName = teacherData?.teacher?.name ?? '–'
   const teacherDisplay = isTeacherPending ? 'Ladataan…' : teacherName
   const playedCount = isPlayedPending
@@ -72,7 +84,15 @@ export const StudentStartPage = () => {
         <div className="flex gap-4">
           <div className="flex-1 h-28 flex flex-col justify-between items-center text-center">
             <p className="text-sm text-gray-400 px-1">Harjoituskerrat</p>
-            <div className="text-xl font-bold pb-8">{practiceCount}</div>
+            <div
+              className={`text-xl font-bold pb-8 transition-all duration-300 ${
+                showGlow
+                  ? 'text-orange-400 drop-shadow-lg transform scale-110'
+                  : 'text-neutral-100'
+              }`}
+            >
+              {practiceCount}
+            </div>
           </div>
 
           <div className="flex-1 h-28 flex flex-col justify-between items-center text-center border-l border-gray-700 pl-3">

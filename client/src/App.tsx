@@ -78,7 +78,7 @@ const App = () => {
           <Route
             path="/player/:songId"
             element={
-              <AppLayout>
+              <AppLayout showNavbar={false}>
                 <MusicPlayer />
               </AppLayout>
             }

@@ -15,6 +15,7 @@ import { TeacherStudentSongsPage } from './components/TeacherStudentSongsPage'
 import { TeacherStudentLayout } from './components/TeacherStudentLayout'
 import { SongslistPage } from './components/SongslistPage'
 import { HomeworkEditPage } from './components/HomeworkEditPage'
+import { SelectSongsPage } from './components/SelectSongsPage'
 
 import { AppLayout } from './components/AppLayout'
 import PublicLayout from './components/PublicLayout'
@@ -119,6 +120,10 @@ const App = () => {
                 <Route
                   path="homework/:homeworkId/edit"
                   element={<HomeworkEditPage />}
+                />
+                <Route
+                  path="homework/:homeworkId/select-songs"
+                  element={<SelectSongsPage />}
                 />
               </Route>
 

@@ -33,6 +33,21 @@ export function HomeworkEditPage() {
     setComment(editing?.comment ?? '')
   }, [editing?.comment])
 
+  useEffect(() => {
+    const addSongs = (location.state as any)?.addSongs as string[] | undefined
+    if (addSongs?.length) {
+      setSongIds(prev => {
+        const base = prev ?? editing?.songs ?? []
+        const merged = Array.from(new Set([...base, ...addSongs]))
+        return merged
+      })
+      navigate('.', {
+        replace: true,
+        state: { ...(location.state as any), addSongs: undefined }
+      })
+    }
+  }, [location.state, navigate, editing?.songs])
+
   const songMap = useMemo(() => {
     const m = new Map<string, SongListItem>()
     ;(songsQ.data ?? []).forEach((s: SongListItem) => m.set(s.id, s))
@@ -64,6 +79,13 @@ export function HomeworkEditPage() {
     })
   }
 
+  const goToPicker = () => {
+    navigate('../select-songs', {
+      relative: 'path',
+      state: { preselected: currentSongIds }
+    })
+  }
+
   if (hwQ.isPending || songsQ.isPending)
     return <div className="p-4">Ladataan…</div>
   if (hwQ.isError)
@@ -89,6 +111,7 @@ export function HomeworkEditPage() {
           editableComment
           commentDraft={comment}
           onChangeComment={setComment}
+          onAddSong={goToPicker}
         />
       </div>
 

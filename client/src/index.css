@@ -2,6 +2,9 @@
 @import url('https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap');
 
 @layer base {
+  html {
+    background-color: theme('colors.neutral.900');
+  }
   h1 {
     font-family: 'Playfair Display', serif;
     font-weight: 550;

@@ -7,6 +7,7 @@ import {
 } from '../hooks/useHomework'
 import type { SongListItem } from '../../../shared/types'
 import HomeworkCard from './HomeworkCard'
+import { FloatingActionButton } from '../components/FloatingActionButton'
 
 export function HomeworkEditPage() {
   const { studentId, homeworkId } = useParams<{
@@ -82,6 +83,8 @@ export function HomeworkEditPage() {
           headingLabel="Muokkaa tehtävää"
         />
       </div>
+
+      <FloatingActionButton onClick={handleSave} icon="check" />
     </div>
   )
 }

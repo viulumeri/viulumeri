@@ -64,8 +64,8 @@ export default function HomeworkCard({
   }, [isMenuOpen, onToggleMenu])
 
   return (
-    <div className="snap-center w-[90vw] max-w-4xl flex-shrink-0 rounded-lg pt-4 pb-4 px-8 relative">
-      <div className="overflow-y-auto overflow-x-hidden max-h-[calc(100dvh-220px)] pt-0 pb-4 relative scrollbar-hide">
+    <div className="snap-center w-[90vw] max-w-4xl flex-shrink-0 rounded-lg pt-4 pb-4 px-8 relative ">
+      <div className="overflow-y-auto overflow-x-hidden max-h-[calc(100dvh-140px)] pt-0 pb-10 relative scrollbar-hide">
         {mode === 'teacher' && onToggleMenu && (
           <>
             <button

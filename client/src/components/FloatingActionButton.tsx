@@ -26,14 +26,14 @@ export const FloatingActionButton = ({
       {to ? (
         <Link
           to={to}
-          className="bg-white text-black rounded-full w-13 h-13 flex items-center justify-center border-black border-4"
+          className="bg-white text-black rounded-full w-13 h-13 flex items-center justify-center border-black border-1"
         >
           <Icon size={28} strokeWidth={2.5} />
         </Link>
       ) : (
         <button
           onClick={onClick}
-          className="bg-white text-black rounded-full w-13 h-13 flex items-center justify-center  border-black border-4"
+          className="bg-white text-black rounded-full w-13 h-13 flex items-center justify-center  border-black border-1"
         >
           <Icon size={28} strokeWidth={2.5} />
         </button>

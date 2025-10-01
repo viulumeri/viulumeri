@@ -14,6 +14,8 @@ import { StudentStartPage } from './components/StudentStartPage'
 import { TeacherStudentSongsPage } from './components/TeacherStudentSongsPage'
 import { TeacherStudentLayout } from './components/TeacherStudentLayout'
 import { SongslistPage } from './components/SongslistPage'
+import { HomeworkEditPage } from './components/HomeworkEditPage'
+import { SelectSongsPage } from './components/SelectSongsPage'
 
 import { AppLayout } from './components/AppLayout'
 import PublicLayout from './components/PublicLayout'
@@ -76,7 +78,7 @@ const App = () => {
           <Route
             path="/player/:songId"
             element={
-              <AppLayout>
+              <AppLayout showNavbar={false}>
                 <MusicPlayer />
               </AppLayout>
             }
@@ -115,6 +117,10 @@ const App = () => {
                   element={<TeacherStudentHomeworkPage />}
                 />
                 <Route path="songs" element={<TeacherStudentSongsPage />} />
+                <Route
+                  path="homework/:homeworkId/edit"
+                  element={<HomeworkEditPage />}
+                />
               </Route>
 
               <Route
@@ -122,6 +128,15 @@ const App = () => {
                 element={
                   <AppLayout>
                     <CreateHomeworkPage />
+                  </AppLayout>
+                }
+              />
+
+              <Route
+                path="/teacher/students/:studentId/homework/:homeworkId/select-songs"
+                element={
+                  <AppLayout showNavbar={false}>
+                    <SelectSongsPage />
                   </AppLayout>
                 }
               />

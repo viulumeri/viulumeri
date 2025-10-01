@@ -5,17 +5,19 @@ import { useSignUp } from '../hooks/useAuth'
 export const Signup = () => {
   const email = useField('email')
   const password = useField('password')
-  const name = useField('text')
+  const firstName = useField('text')
+  const lastName = useField('text')
   const [userType, setUserType] = useState<'teacher' | 'student'>('student')
   const [messageStatus, setMessageStatus] = useState<'success' | 'error' | null>(null)
 
   const signUpMutation = useSignUp({
     onSuccess: () => {
-      console.log(`Sign up successful for ${name.value}`)
+      console.log(`Sign up successful for ${firstName.value} ${lastName.value}`)
       setMessageStatus('success')
       email.reset()
       password.reset()
-      name.reset()
+      firstName.reset()
+      lastName.reset()
       setUserType('student')
     },
     onError: error => {
@@ -30,7 +32,7 @@ export const Signup = () => {
     signUpMutation.mutate({
       email: email.value,
       password: password.value,
-      name: name.value,
+      name: `${firstName.value} ${lastName.value}`.trim(),
       userType: userType,
       callbackURL: `${window.location.origin}/email-verified`
     })
@@ -48,8 +50,12 @@ export const Signup = () => {
           <input id="password" {...password.props} required />
         </div>
         <div>
-          <label htmlFor="name">Nimi:</label>
-          <input id="name" {...name.props} required />
+          <label htmlFor="firstName">Etunimi:</label>
+          <input id="firstName" {...firstName.props} required />
+        </div>
+        <div>
+          <label htmlFor="lastName">Sukunimi:</label>
+          <input id="lastName" {...lastName.props} required />
         </div>
         <fieldset>
           <legend>Olen:</legend>

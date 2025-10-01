@@ -65,7 +65,7 @@ export default function HomeworkCard({
 
   return (
     <div className="snap-center w-[90vw] max-w-4xl flex-shrink-0 rounded-lg pt-4 pb-4 px-8 relative ">
-      <div className="overflow-y-auto overflow-x-hidden max-h-[calc(100dvh-140px)] pt-0 pb-10 relative scrollbar-hide">
+      <div className="overflow-y-auto overflow-x-hidden max-h-[calc(100dvh-140px)] pt-0 pb-8 relative scrollbar-hide">
         {mode === 'teacher' && onToggleMenu && (
           <>
             <button
@@ -178,7 +178,9 @@ export default function HomeworkCard({
           hw.comment && (
             <>
               <h3 className="mt-5 mb-3">Opettajan kommentti</h3>
-              <p className="text-xs text-gray-300">{hw.comment}</p>
+              <div className="px-3">
+                <p className="text-[14px] text-gray-400">{hw.comment}</p>
+              </div>
             </>
           )
         )}

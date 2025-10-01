@@ -9,11 +9,13 @@ import { InviteAccept } from './components/InviteAccept'
 import { TeacherStudentsPage } from './components/TeacherStudentsPage'
 import { StudentHomeworkPage } from './components/StudentHomeworkPage'
 import { TeacherStudentHomeworkPage } from './components/TeacherStudentHomeworkPage.tsx'
-import { CreateHomeworkPage } from './components/CreateHomeworkPage'
+import { HomeworkCreatePage } from './components/HomeworkCreatePage'
 import { StudentStartPage } from './components/StudentStartPage'
 import { TeacherStudentSongsPage } from './components/TeacherStudentSongsPage'
 import { TeacherStudentLayout } from './components/TeacherStudentLayout'
 import { SongslistPage } from './components/SongslistPage'
+import { HomeworkEditPage } from './components/HomeworkEditPage'
+import { SelectSongsPage } from './components/SelectSongsPage'
 
 import { AppLayout } from './components/AppLayout'
 import PublicLayout from './components/PublicLayout'
@@ -76,7 +78,7 @@ const App = () => {
           <Route
             path="/player/:songId"
             element={
-              <AppLayout>
+              <AppLayout showNavbar={false}>
                 <MusicPlayer />
               </AppLayout>
             }
@@ -115,13 +117,30 @@ const App = () => {
                   element={<TeacherStudentHomeworkPage />}
                 />
                 <Route path="songs" element={<TeacherStudentSongsPage />} />
+                <Route
+                  path="homework/:homeworkId/edit"
+                  element={<HomeworkEditPage />}
+                />
+                <Route
+                  path="homework/create"
+                  element={<HomeworkCreatePage />}
+                />
               </Route>
 
               <Route
-                path="/teacher/students/:studentId/homework/create"
+                path="/teacher/students/:studentId/homework/create/select-songs"
                 element={
-                  <AppLayout>
-                    <CreateHomeworkPage />
+                  <AppLayout showNavbar={false}>
+                    <SelectSongsPage />
+                  </AppLayout>
+                }
+              />
+
+              <Route
+                path="/teacher/students/:studentId/homework/:homeworkId/select-songs"
+                element={
+                  <AppLayout showNavbar={false}>
+                    <SelectSongsPage />
                   </AppLayout>
                 }
               />

@@ -11,9 +11,11 @@ export const AppLayout = ({
   const { data: session } = useSession()
 
   return (
-    <div className="min-h-screen bg-neutral-900 text-gray-100 flex flex-col">
-      <div className="w-full flex flex-col flex-grow relative">{children}</div>
-      {session && showNavbar && <Navbar />}
+    <div className="min-h-screen bg-neutral-900 text-gray-100 flex justify-center">
+      <div className="w-full max-w-4xl flex flex-col flex-grow relative">
+        {children}
+        {session && showNavbar && <Navbar />}
+      </div>
     </div>
   )
 }

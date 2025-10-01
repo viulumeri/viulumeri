@@ -2,21 +2,42 @@ import { Link } from 'react-router-dom'
 import { Plus, Check } from 'lucide-react'
 
 type Props = {
-  to: string
+  to?: string
+  onClick?: () => void
   icon?: 'plus' | 'check'
+  className?: string
 }
 
-export const FloatingActionButton = ({ to, icon = 'plus' }: Props) => {
+export const FloatingActionButton = ({
+  to,
+  onClick,
+  icon = 'plus',
+  className = ''
+}: Props) => {
   const Icon = icon === 'check' ? Check : Plus
-
   return (
-    <div className="fixed bottom-13 left-0 w-full h-16 bg-neutral-900 z-40 flex items-center justify-center pb-10">
-      <Link
-        to={to}
-        className="bg-white text-black rounded-full w-12 h-12 flex items-center justify-center"
-      >
-        <Icon size={28} strokeWidth={2.5} />
-      </Link>
+    <div
+      className={[
+        'fixed left-0 right-0 z-40 flex items-center justify-center',
+        'bottom-18',
+        className
+      ].join(' ')}
+    >
+      {to ? (
+        <Link
+          to={to}
+          className="bg-white text-black rounded-full w-13 h-13 flex items-center justify-center border-black border-1"
+        >
+          <Icon size={28} strokeWidth={2.5} />
+        </Link>
+      ) : (
+        <button
+          onClick={onClick}
+          className="bg-white text-black rounded-full w-13 h-13 flex items-center justify-center  border-black border-1"
+        >
+          <Icon size={28} strokeWidth={2.5} />
+        </button>
+      )}
     </div>
   )
 }

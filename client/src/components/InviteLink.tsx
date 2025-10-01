@@ -1,6 +1,9 @@
 import { useState } from 'react'
 import { useSession } from '../auth-client'
 import { useGenerateInviteLink } from '../hooks/useInvite'
+import { QRCodeSVG } from 'qrcode.react'
+
+// qr code component from: https://www.npmjs.com/package/qrcode.react
 
 export const InviteLink = () => {
   const { data: session, isPending } = useSession()
@@ -46,6 +49,16 @@ export const InviteLink = () => {
           >
             {copied ? 'Kopioitu' : 'Kopioi linkki'}
           </button>
+          <div style={{ marginTop: '1rem', textAlign: 'center' }}>
+            <div style={{
+              display: 'inline-block',
+              padding: '16px',
+              backgroundColor: 'white',
+              borderRadius: '4px'
+            }}>
+              <QRCodeSVG value={url} size={128} />
+            </div>
+          </div>
         </div>
       )}
       {gen.isError && <div style={{ color: 'red' }}>Virhe</div>}

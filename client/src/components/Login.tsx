@@ -1,6 +1,6 @@
 import { useField } from '../hooks/useField'
 import { useLogin } from '../hooks/useAuth'
-import { useNavigate, Link } from 'react-router-dom'
+import { useNavigate, Link, useSearchParams } from 'react-router-dom'
 import { useSession } from '../auth-client'
 import { useEffect, useState } from 'react'
 import { ResendVerification } from './ResendVerification'
@@ -9,6 +9,7 @@ export const Login = () => {
   const email = useField('text')
   const password = useField('password')
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const { data: session } = useSession()
   const [showResend, setShowResend] = useState(false)
 
@@ -33,9 +34,10 @@ export const Login = () => {
 
   useEffect(() => {
     if (session) {
-      navigate('/', { replace: true })
+      const nextPath = searchParams.get('next') || '/'
+      navigate(nextPath, { replace: true })
     }
-  }, [session, navigate])
+  }, [session, navigate, searchParams])
 
   const handleLogin = (event: React.FormEvent) => {
     event.preventDefault()
@@ -50,10 +52,10 @@ export const Login = () => {
       <h2>Login</h2>
       <form onSubmit={handleLogin}>
         <div>
-          email <input {...email.props} />
+          email <input {...email.props} autoComplete="email" />
         </div>
         <div>
-          password <input {...password.props} />
+          password <input {...password.props} autoComplete="current-password" />
         </div>
         <button type="submit" disabled={loginMutation.isPending}>
           {loginMutation.isPending ? 'Logging in..' : 'Log in'}

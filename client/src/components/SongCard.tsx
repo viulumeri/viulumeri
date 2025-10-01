@@ -10,7 +10,7 @@ export default function SongCard({ song }: Props) {
   return (
     <Link
       to={`/player/${song.id}`}
-      className="relative block w-full overflow-hidden rounded-md group"
+      className="relative block w-full max-w-md mx-auto overflow-hidden rounded-md group"
     >
       <img
         src={song.metadata.imgurl}

@@ -10,7 +10,7 @@ export const ForgotPassword = () => {
       email.reset()
       alert('Salasanan palautuslinkki lähetetty sähköpostiin!')
     },
-    onError: (error) => {
+    onError: error => {
       alert(`Virhe: ${error.message}`)
     }
   })
@@ -21,7 +21,6 @@ export const ForgotPassword = () => {
       alert('Syötä sähköpostiosoite')
       return
     }
-    
     requestReset.mutate({
       email: email.value,
       redirectTo: `${window.location.origin}/reset-password`
@@ -30,33 +29,47 @@ export const ForgotPassword = () => {
 
   return (
     <div>
-      <h2>Unohdin salasanani</h2>
-      <form onSubmit={handleSubmit}>
+      <h2 className="mb-3">Unohdin salasanani</h2>
+
+      <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label htmlFor="email">Sähköpostiosoite:</label>
-          <input id="email" {...email.props} required />
+          <input
+            {...email.props}
+            placeholder="Sähköpostiosoite"
+            autoComplete="email"
+            className="w-full rounded-lg text-gray-100 px-3 py-2 border border-gray-400
+                     focus:bg-white/10 placeholder-gray-400"
+            required
+          />
         </div>
-        <button type="submit" disabled={requestReset.isPending}>
-          {requestReset.isPending ? 'Lähetetään...' : 'Lähetä palautuslinkki'}
+
+        <button
+          type="submit"
+          disabled={requestReset.isPending}
+          className="button-basic block mx-auto"
+        >
+          {requestReset.isPending ? 'Lähetetään…' : 'Lähetä palautuslinkki'}
         </button>
       </form>
-      
+
       {requestReset.isError && (
-        <div style={{ color: 'red' }}>
+        <div className="mt-3 text-sm text-red-300">
           {requestReset.error instanceof Error
             ? requestReset.error.message
             : 'Salasanan palautus epäonnistui'}
         </div>
       )}
-      
+
       {requestReset.isSuccess && (
-        <div style={{ color: 'green' }}>
+        <div className="mt-4 text-sm text-green-300">
           Palautuslinkki lähetetty sähköpostiin
         </div>
       )}
-      
-      <div>
-        <Link to="/login">Takaisin kirjautumiseen</Link>
+
+      <div className="mt-3 flex justify-center">
+        <Link to="/login" className=" text-gray-300 hover:text-white underline">
+          Takaisin kirjautumiseen
+        </Link>
       </div>
     </div>
   )

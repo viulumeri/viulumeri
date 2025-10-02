@@ -9,7 +9,7 @@ import { InviteAccept } from './components/InviteAccept'
 import { TeacherStudentsPage } from './components/TeacherStudentsPage'
 import { StudentHomeworkPage } from './components/StudentHomeworkPage'
 import { TeacherStudentHomeworkPage } from './components/TeacherStudentHomeworkPage.tsx'
-import { CreateHomeworkPage } from './components/CreateHomeworkPage'
+import { HomeworkCreatePage } from './components/HomeworkCreatePage'
 import { StudentStartPage } from './components/StudentStartPage'
 import { TeacherStudentSongsPage } from './components/TeacherStudentSongsPage'
 import { TeacherStudentLayout } from './components/TeacherStudentLayout'
@@ -121,13 +121,17 @@ const App = () => {
                   path="homework/:homeworkId/edit"
                   element={<HomeworkEditPage />}
                 />
+                <Route
+                  path="homework/create"
+                  element={<HomeworkCreatePage />}
+                />
               </Route>
 
               <Route
-                path="/teacher/students/:studentId/homework/create"
+                path="/teacher/students/:studentId/homework/create/select-songs"
                 element={
-                  <AppLayout>
-                    <CreateHomeworkPage />
+                  <AppLayout showNavbar={false}>
+                    <SelectSongsPage />
                   </AppLayout>
                 }
               />

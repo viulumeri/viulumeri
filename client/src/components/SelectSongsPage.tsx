@@ -41,10 +41,15 @@ export function SelectSongsPage() {
   }
 
   const confirm = () => {
-    navigate(`/teacher/students/${studentId}/homework/${homeworkId}/edit`, {
-      replace: true,
-      state: { addSongs: Array.from(selected) }
-    })
+    navigate(
+      homeworkId
+        ? `/teacher/students/${studentId}/homework/${homeworkId}/edit`
+        : `/teacher/students/${studentId}/homework/create`,
+      {
+        replace: true,
+        state: { addSongs: Array.from(selected) }
+      }
+    )
   }
 
   if (songs.isPending || played.isPending)

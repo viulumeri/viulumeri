@@ -29,9 +29,9 @@ export const ForgotPassword = () => {
 
   return (
     <div>
-      <h2 className="mb-3">Unohdin salasanani</h2>
+      <h2 className="mb-4">Unohdin salasanani</h2>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-5">
         <div>
           <input
             {...email.props}
@@ -61,12 +61,12 @@ export const ForgotPassword = () => {
       )}
 
       {requestReset.isSuccess && (
-        <div className="mt-4 text-sm text-green-300">
+        <div className="mt-3 text-sm text-green-300">
           Palautuslinkki lähetetty sähköpostiin
         </div>
       )}
 
-      <div className="mt-3 flex justify-center">
+      <div className="mt-4 flex justify-center">
         <Link to="/login" className=" text-gray-300 hover:text-white underline">
           Takaisin kirjautumiseen
         </Link>

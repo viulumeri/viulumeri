@@ -18,7 +18,7 @@ const PublicLayout = ({ children }: { children: React.ReactNode }) => (
         <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-b from-transparent to-neutral-900 z-10" />
       </div>
 
-      <div className="w-full bg-neutral-900">
+      <div className="w-full bg-neutral-900 -mt-px">
         <div className="mx-auto w-full max-w-md px-4">
           <div className="p-6">{children}</div>
         </div>

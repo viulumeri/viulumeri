@@ -9,7 +9,7 @@ const PublicLayout = ({ children }: { children: React.ReactNode }) => (
         }}
       />
       <header className="relative z-10 pt-8">
-        <h1 className=" text-5xl text-center">Viulumeri</h1>
+        <h1 className=" text-6xl font-semibold text-center">Viulumeri</h1>
       </header>
       <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-b from-transparent to-neutral-900 z-10" />
     </div>

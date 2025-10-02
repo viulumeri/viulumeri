@@ -15,7 +15,7 @@ const PublicLayout = ({ children }: { children: React.ReactNode }) => (
     </div>
 
     <div className="w-full">
-      <div className="mx-auto w-full max-w-md px-4 pb-6">
+      <div className="mx-auto w-full max-w-md px-4 pb-2">
         <div className="p-6">{children}</div>
       </div>
     </div>

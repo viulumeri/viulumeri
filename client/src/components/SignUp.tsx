@@ -1,24 +1,20 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useField } from '../hooks/useField'
 import { useSignUp } from '../hooks/useAuth'
 
 export const Signup = () => {
+  const navigate = useNavigate()
   const email = useField('email')
   const password = useField('password')
   const firstName = useField('text')
   const lastName = useField('text')
   const [userType, setUserType] = useState<'teacher' | 'student'>('student')
-  const [messageStatus, setMessageStatus] = useState<'success' | 'error' | null>(null)
+  const [messageStatus, setMessageStatus] = useState<'error' | null>(null)
 
   const signUpMutation = useSignUp({
     onSuccess: () => {
-      console.log(`Sign up successful for ${firstName.value} ${lastName.value}`)
-      setMessageStatus('success')
-      email.reset()
-      password.reset()
-      firstName.reset()
-      lastName.reset()
-      setUserType('student')
+      navigate('/signup-success')
     },
     onError: error => {
       console.error(error instanceof Error ? error.message : 'Sign up failed.')
@@ -28,6 +24,11 @@ export const Signup = () => {
 
   const handleSignUp = (event: React.FormEvent) => {
     event.preventDefault()
+
+    if (signUpMutation.isPending) {
+      return
+    }
+
     setMessageStatus(null)
     signUpMutation.mutate({
       email: email.value,
@@ -93,11 +94,6 @@ export const Signup = () => {
           {signUpMutation.error instanceof Error
             ? signUpMutation.error.message
             : 'Sign up failed'}
-        </div>
-      )}
-      {messageStatus === 'success' && (
-        <div style={{ color: 'green' }}>
-          Käyttäjän lisäys onnistui. Vahvistuspyyntö on lähetetty sähköpostiisi.
         </div>
       )}
     </div>

@@ -1,5 +1,6 @@
 import { Login } from './components/Login.tsx'
 import { Signup } from './components/SignUp.tsx'
+import { SignupSuccess } from './components/SignupSuccess'
 import { ForgotPassword } from './components/ForgotPassword'
 import { ResetPassword } from './components/ResetPassword'
 import { EmailVerified } from './components/EmailVerified'
@@ -49,6 +50,14 @@ const App = () => {
         element={
           <PublicLayout>
             <Signup />
+          </PublicLayout>
+        }
+      />
+      <Route
+        path="/signup-success"
+        element={
+          <PublicLayout>
+            <SignupSuccess />
           </PublicLayout>
         }
       />

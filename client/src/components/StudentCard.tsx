@@ -1,4 +1,5 @@
 import { getColorForStudent } from '../utils/studentcolors'
+import { parseFirstLastName } from '../utils/nameUtils'
 import { Link } from 'react-router-dom'
 
 type Props = {
@@ -8,9 +9,7 @@ type Props = {
 
 export const StudentCard = ({ id, name }: Props) => {
   const bgColor = getColorForStudent(id)
-  const spaceIndex = name.indexOf(' ')
-  const firstName = spaceIndex !== -1 ? name.substring(0, spaceIndex) : name
-  const lastName = spaceIndex !== -1 ? name.substring(spaceIndex + 1) : ''
+  const { firstName, lastName } = parseFirstLastName(name)
 
   return (
     <Link

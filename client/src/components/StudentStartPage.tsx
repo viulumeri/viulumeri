@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useStudentHomework } from '../hooks/useHomework.ts'
 import { useTeacher } from '../hooks/useTeacher.ts'
 import { useOwnPlayedSongs } from '../hooks/usePlayedSongs.ts'
+import { parseFirstLastName } from '../utils/nameUtils'
 
 export const StudentStartPage = () => {
   const { data: session, isPending } = useSession()
@@ -38,7 +39,11 @@ export const StudentStartPage = () => {
   if (!session?.user?.name) return <div>Kirjaudu sisään</div>
 
   const teacherName = teacherData?.teacher?.name ?? '–'
-  const teacherDisplay = isTeacherPending ? 'Ladataan…' : teacherName
+  const teacherDisplay = isTeacherPending
+    ? 'Ladataan…'
+    : teacherName === '–'
+      ? '–'
+      : parseFirstLastName(teacherName).firstName
   const playedCount = isPlayedPending
     ? 'Ladataan…'
     : isPlayedError
@@ -60,7 +65,7 @@ export const StudentStartPage = () => {
 
         <header className="absolute top-0 px-10 pt-6">
           <h1 className="bg-transparent font-semibold">
-            Hei {session.user.name}
+            Hei {parseFirstLastName(session.user.name).firstName}
           </h1>
         </header>
 

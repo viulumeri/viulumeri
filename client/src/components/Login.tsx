@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react'
 import { ResendVerification } from './ResendVerification'
 
 export const Login = () => {
-  const email = useField('text')
+  const email = useField('email')
   const password = useField('password')
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()

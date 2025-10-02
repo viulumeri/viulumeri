@@ -83,3 +83,17 @@ jobs:
         with:
           add: 'manifests/staging/kustomization.yaml'
           message: 'Deploy to staging: ${{ github.sha }}'
+
+      # Update production Kustomization for releases
+      - name: Update production image tag
+        if: github.event_name == 'release'
+        run: |
+          cd manifests/production
+          kustomize edit set image jayzstep/viulumeri=jayzstep/viulumeri:${{ github.event.release.tag_name }}
+
+      - name: Commit production kustomization.yaml
+        if: github.event_name == 'release'
+        uses: EndBug/add-and-commit@v9
+        with:
+          add: 'manifests/production/kustomization.yaml'
+          message: 'Deploy to production: ${{ github.event.release.tag_name }}'

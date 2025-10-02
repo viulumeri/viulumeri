@@ -57,6 +57,7 @@ export const Login = () => {
             placeholder="Sähköpostiosoite"
             className="w-full rounded-lg text-gray-100 px-3 py-2 border-1 border-gray-400
                     focus:bg-white/5 placeholder-gray-400"
+            required
           />
         </div>
 
@@ -67,6 +68,7 @@ export const Login = () => {
             placeholder="Salasana"
             className="w-full rounded-lg text-gray-100 px-3 py-2 border-1 border-gray-400
                     focus:bg-white/5 placeholder-gray-400"
+            required
           />
         </div>
 

@@ -14,11 +14,6 @@ export const Login = () => {
   const [showResend, setShowResend] = useState(false)
 
   const loginMutation = useLogin({
-    onSuccess: () => {
-      console.log(`Login successful for ${email.value}`)
-      email.reset()
-      password.reset()
-    },
     onError: error => {
       console.error(error instanceof Error ? error.message : 'Login failed.')
       password.reset()

@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react'
 import { ResendVerification } from './ResendVerification'
 
 export const Login = () => {
-  const email = useField('text')
+  const email = useField('email')
   const password = useField('password')
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
@@ -14,11 +14,6 @@ export const Login = () => {
   const [showResend, setShowResend] = useState(false)
 
   const loginMutation = useLogin({
-    onSuccess: () => {
-      console.log(`Login successful for ${email.value}`)
-      email.reset()
-      password.reset()
-    },
     onError: error => {
       console.error(error instanceof Error ? error.message : 'Login failed.')
       password.reset()
@@ -49,33 +44,69 @@ export const Login = () => {
 
   return (
     <div>
-      <h2>Login</h2>
-      <form onSubmit={handleLogin}>
+      <form onSubmit={handleLogin} className="space-y-4">
         <div>
-          email <input {...email.props} autoComplete="email" />
+          <input
+            {...email.props}
+            autoComplete="email"
+            placeholder="Sähköpostiosoite"
+            className="w-full rounded-lg text-gray-100 px-3 py-2 border-1 border-gray-400
+                    focus:bg-white/5 placeholder-gray-400"
+            required
+          />
         </div>
+
         <div>
-          password <input {...password.props} autoComplete="current-password" />
+          <input
+            {...password.props}
+            autoComplete="current-password"
+            placeholder="Salasana"
+            className="w-full rounded-lg text-gray-100 px-3 py-2 border-1 border-gray-400
+                    focus:bg-white/5 placeholder-gray-400"
+            required
+          />
         </div>
-        <button type="submit" disabled={loginMutation.isPending}>
-          {loginMutation.isPending ? 'Logging in..' : 'Log in'}
+
+        <button
+          type="submit"
+          disabled={loginMutation.isPending}
+          className="button-basic block mx-auto"
+        >
+          {loginMutation.isPending ? 'Kirjaudutaan…' : 'Kirjaudu sisään'}
         </button>
       </form>
+
       {loginMutation.isError && (
-        <div style={{ color: 'red' }}>
+        <div className="mt-3 text-sm text-red-300">
           {loginMutation.error instanceof Error
             ? loginMutation.error.message
-            : 'Login failed'}
+            : 'Kirjautuminen epäonnistui'}
         </div>
       )}
+
       {loginMutation.isSuccess && (
-        <div style={{ color: 'green' }}>Login successful</div>
+        <div className="mt-3 text-sm text-green-300">
+          Kirjautuminen onnistui
+        </div>
       )}
-      <div>
-        <Link to="/forgot-password">Unohdin salasanani</Link>
+
+      <div className="mt-6 flex items-center justify-between text-sm">
+        <Link
+          to="/forgot-password"
+          className="text-gray-300 hover:text-white underline"
+        >
+          Unohdin salasanani
+        </Link>
+        <Link to="/signup" className="text-gray-300 hover:text-white underline">
+          Luo uusi käyttäjä
+        </Link>
       </div>
 
-      {showResend && <ResendVerification email={email.value} />}
+      {showResend && (
+        <div className="mt-4">
+          <ResendVerification email={email.value} />
+        </div>
+      )}
     </div>
   )
 }

@@ -19,21 +19,21 @@ export const FloatingActionButton = ({
     <div
       className={[
         'fixed left-0 right-0 z-40 flex items-center justify-center',
-        'bottom-20',
+        'bottom-18',
         className
       ].join(' ')}
     >
       {to ? (
         <Link
           to={to}
-          className="bg-white text-black rounded-full w-12 h-12 flex items-center justify-center shadow-lg"
+          className="bg-white text-black rounded-full w-13 h-13 flex items-center justify-center border-black border-1"
         >
           <Icon size={28} strokeWidth={2.5} />
         </Link>
       ) : (
         <button
           onClick={onClick}
-          className="bg-white text-black rounded-full w-12 h-12 flex items-center justify-center shadow-lg"
+          className="bg-white text-black rounded-full w-13 h-13 flex items-center justify-center  border-black border-1"
         >
           <Icon size={28} strokeWidth={2.5} />
         </button>

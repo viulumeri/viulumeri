@@ -64,8 +64,8 @@ export default function HomeworkCard({
   }, [isMenuOpen, onToggleMenu])
 
   return (
-    <div className="snap-center w-[90vw] max-w-4xl flex-shrink-0 rounded-lg pt-4 pb-4 px-8 relative">
-      <div className="overflow-y-auto overflow-x-hidden max-h-[calc(100dvh-220px)] pt-0 pb-4 relative scrollbar-hide">
+    <div className="snap-center w-[90vw] max-w-4xl flex-shrink-0 rounded-lg pt-4 pb-4 px-8 relative ">
+      <div className="overflow-y-auto overflow-x-hidden max-h-[calc(100dvh-140px)] pt-0 pb-16 relative scrollbar-hide">
         {mode === 'teacher' && onToggleMenu && (
           <>
             <button
@@ -157,8 +157,8 @@ export default function HomeworkCard({
                 value={commentDraft ?? hw.comment ?? ''}
                 onChange={e => onChangeComment?.(e.target.value)}
                 onBlur={() => setIsCommentEditing(false)}
-                rows={4}
-                className="w-full p-3 rounded-lg bg-white/20 outline-none text-gray-300"
+                rows={8}
+                className="w-full p-3 rounded-lg bg-white/20 outline-none text-gray-300 min-h-[120px] max-h-[300px] resize-y"
                 placeholder="Kirjoita kommentti"
                 autoFocus
               />
@@ -168,7 +168,7 @@ export default function HomeworkCard({
                 className="w-full text-left p-3 rounded-lg bg-white/15"
                 onClick={() => setIsCommentEditing(true)}
               >
-                <h4 className="font-light text-gray-400">
+                <h4 className="font-light text-gray-400 whitespace-pre-wrap">
                   {(commentDraft ?? hw.comment) || 'Kirjoita kommentti'}
                 </h4>
               </button>
@@ -178,7 +178,9 @@ export default function HomeworkCard({
           hw.comment && (
             <>
               <h3 className="mt-5 mb-3">Opettajan kommentti</h3>
-              <p className="text-xs text-gray-300">{hw.comment}</p>
+              <div className="px-3">
+                <p className="text-[14px] text-gray-400 whitespace-pre-wrap">{hw.comment}</p>
+              </div>
             </>
           )
         )}

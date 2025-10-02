@@ -10,12 +10,7 @@ export const InviteAccept = () => {
   const { data, isPending: invitePending, isError } = useInviteDetails(token!, !!session)
 
   const accept = useAcceptInvite({
-    onSuccess: response => {
-      const name = response?.teacher?.name ?? data?.teacher.name
-      console.log('Linked to teacher', {
-        teacherName: name,
-        changed: response?.changed
-      })
+    onSuccess: () => {
       navigate('/')
     },
     onError: error => console.error('Accept invite failed:', error)

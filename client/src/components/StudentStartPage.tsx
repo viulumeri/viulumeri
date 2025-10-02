@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useStudentHomework } from '../hooks/useHomework.ts'
 import { useTeacher } from '../hooks/useTeacher.ts'
 import { useOwnPlayedSongs } from '../hooks/usePlayedSongs.ts'
+import { parseFirstLastName } from '../utils/nameUtils'
 
 export const StudentStartPage = () => {
   const { data: session, isPending } = useSession()
@@ -38,7 +39,11 @@ export const StudentStartPage = () => {
   if (!session?.user?.name) return <div>Kirjaudu sisään</div>
 
   const teacherName = teacherData?.teacher?.name ?? '–'
-  const teacherDisplay = isTeacherPending ? 'Ladataan…' : teacherName
+  const teacherDisplay = isTeacherPending
+    ? 'Ladataan…'
+    : teacherName === '–'
+      ? '–'
+      : parseFirstLastName(teacherName).firstName
   const playedCount = isPlayedPending
     ? 'Ladataan…'
     : isPlayedError
@@ -60,7 +65,7 @@ export const StudentStartPage = () => {
 
         <header className="absolute top-0 px-10 pt-6">
           <h1 className="bg-transparent font-semibold">
-            Hei {session.user.name}
+            Hei {parseFirstLastName(session.user.name).firstName}
           </h1>
         </header>
 
@@ -81,8 +86,8 @@ export const StudentStartPage = () => {
       </div>
 
       <div className="h-[30vh] bg-neutral-900 text-neutral-100 px-6 pt-12">
-        <div className="flex gap-4">
-          <div className="flex-1 h-28 flex flex-col justify-between items-center text-center">
+        <div className="flex gap-2">
+          <div className="flex-1 h-28 flex flex-col justify-between items-center text-center overflow-hidden">
             <p className="text-sm text-gray-400 px-1">Harjoituskerrat</p>
             <div
               className={`text-xl font-bold pb-8 transition-all duration-300 ${

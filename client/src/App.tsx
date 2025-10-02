@@ -1,5 +1,6 @@
 import { Login } from './components/Login.tsx'
 import { Signup } from './components/SignUp.tsx'
+import { SignupSuccess } from './components/SignupSuccess'
 import { ForgotPassword } from './components/ForgotPassword'
 import { ResetPassword } from './components/ResetPassword'
 import { EmailVerified } from './components/EmailVerified'
@@ -9,7 +10,7 @@ import { InviteAccept } from './components/InviteAccept'
 import { TeacherStudentsPage } from './components/TeacherStudentsPage'
 import { StudentHomeworkPage } from './components/StudentHomeworkPage'
 import { TeacherStudentHomeworkPage } from './components/TeacherStudentHomeworkPage.tsx'
-import { CreateHomeworkPage } from './components/CreateHomeworkPage'
+import { HomeworkCreatePage } from './components/HomeworkCreatePage'
 import { StudentStartPage } from './components/StudentStartPage'
 import { TeacherStudentSongsPage } from './components/TeacherStudentSongsPage'
 import { TeacherStudentLayout } from './components/TeacherStudentLayout'
@@ -53,6 +54,14 @@ const App = () => {
         }
       />
       <Route
+        path="/signup-success"
+        element={
+          <PublicLayout>
+            <SignupSuccess />
+          </PublicLayout>
+        }
+      />
+      <Route
         path="/invite/:token"
         element={
           <PublicLayout>
@@ -68,7 +77,14 @@ const App = () => {
           </PublicLayout>
         }
       />
-      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route
+        path="/forgot-password"
+        element={
+          <PublicLayout>
+            <ForgotPassword />
+          </PublicLayout>
+        }
+      />
       <Route path="/reset-password" element={<ResetPassword />} />
 
       {/* Protected routes */}
@@ -121,13 +137,17 @@ const App = () => {
                   path="homework/:homeworkId/edit"
                   element={<HomeworkEditPage />}
                 />
+                <Route
+                  path="homework/create"
+                  element={<HomeworkCreatePage />}
+                />
               </Route>
 
               <Route
-                path="/teacher/students/:studentId/homework/create"
+                path="/teacher/students/:studentId/homework/create/select-songs"
                 element={
-                  <AppLayout>
-                    <CreateHomeworkPage />
+                  <AppLayout showNavbar={false}>
+                    <SelectSongsPage />
                   </AppLayout>
                 }
               />

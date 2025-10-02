@@ -1,24 +1,20 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useField } from '../hooks/useField'
 import { useSignUp } from '../hooks/useAuth'
 
 export const Signup = () => {
+  const navigate = useNavigate()
   const email = useField('email')
   const password = useField('password')
   const firstName = useField('text')
   const lastName = useField('text')
   const [userType, setUserType] = useState<'teacher' | 'student'>('student')
-  const [messageStatus, setMessageStatus] = useState<'success' | 'error' | null>(null)
+  const [messageStatus, setMessageStatus] = useState<'error' | null>(null)
 
   const signUpMutation = useSignUp({
     onSuccess: () => {
-      console.log(`Sign up successful for ${firstName.value} ${lastName.value}`)
-      setMessageStatus('success')
-      email.reset()
-      password.reset()
-      firstName.reset()
-      lastName.reset()
-      setUserType('student')
+      navigate('/signup-success')
     },
     onError: error => {
       console.error(error instanceof Error ? error.message : 'Sign up failed.')
@@ -28,6 +24,11 @@ export const Signup = () => {
 
   const handleSignUp = (event: React.FormEvent) => {
     event.preventDefault()
+
+    if (signUpMutation.isPending) {
+      return
+    }
+
     setMessageStatus(null)
     signUpMutation.mutate({
       email: email.value,
@@ -39,27 +40,57 @@ export const Signup = () => {
   }
   return (
     <div>
-      <h2>Luo uusi tunnus</h2>
-      <form onSubmit={handleSignUp}>
+      <form onSubmit={handleSignUp} className="space-y-3">
         <div>
-          <label htmlFor="email">Email:</label>
-          <input id="email" {...email.props} required />
+          <input
+            {...firstName.props}
+            placeholder="Etunimi"
+            autoComplete="given-name"
+            className="w-full rounded-lg text-gray-100 px-3 py-2 border border-gray-400
+                     focus:bg-white/10 placeholder-gray-400"
+            required
+          />
         </div>
+
         <div>
-          <label htmlFor="password">Salasana:</label>
-          <input id="password" {...password.props} required />
+          <input
+            {...lastName.props}
+            placeholder="Sukunimi"
+            autoComplete="family-name"
+            className="w-full rounded-lg text-gray-100 px-3 py-2 border border-gray-400
+                     focus:bg-white/10 placeholder-gray-400"
+            required
+          />
         </div>
+
         <div>
-          <label htmlFor="firstName">Etunimi:</label>
-          <input id="firstName" {...firstName.props} required />
+          <input
+            {...email.props}
+            type="email"
+            inputMode="email"
+            placeholder="Sähköpostiosoite"
+            autoComplete="email"
+            className="w-full rounded-lg text-gray-100 px-3 py-2 border border-gray-400
+                     focus:bg-white/10 placeholder-gray-400"
+            required
+          />
         </div>
+
         <div>
-          <label htmlFor="lastName">Sukunimi:</label>
-          <input id="lastName" {...lastName.props} required />
+          <input
+            {...password.props}
+            type="password"
+            placeholder="Salasana"
+            autoComplete="new-password"
+            className="w-full rounded-lg text-gray-100 px-3 py-2 border border-gray-400
+                     focus:bg-white/10 placeholder-gray-400"
+            required
+          />
         </div>
-        <fieldset>
-          <legend>Olen:</legend>
-          <label>
+
+        <fieldset className="mt-2 ml-2 flex items-center gap-4 text-sm">
+          <div className="text-gray-300">Olen:</div>
+          <label className="flex items-center gap-2">
             <input
               type="radio"
               name="userType"
@@ -68,10 +99,11 @@ export const Signup = () => {
               onChange={e =>
                 setUserType(e.target.value as 'teacher' | 'student')
               }
+              className="accent-sky-400"
             />
             Oppilas
           </label>
-          <label>
+          <label className="flex items-center gap-2">
             <input
               type="radio"
               name="userType"
@@ -80,24 +112,26 @@ export const Signup = () => {
               onChange={e =>
                 setUserType(e.target.value as 'teacher' | 'student')
               }
+              className="accent-sky-400"
             />
             Opettaja
           </label>
         </fieldset>
-        <button type="submit" disabled={signUpMutation.isPending}>
-          {signUpMutation.isPending ? 'Signing up...' : 'Sign Up'}
+
+        <button
+          type="submit"
+          disabled={signUpMutation.isPending}
+          className="button-basic block mx-auto"
+        >
+          {signUpMutation.isPending ? 'Luodaan…' : 'Luo uusi käyttäjä'}
         </button>
       </form>
+
       {messageStatus === 'error' && (
-        <div style={{ color: 'red' }}>
+        <div className="mt-3 text-sm text-red-300">
           {signUpMutation.error instanceof Error
             ? signUpMutation.error.message
-            : 'Sign up failed'}
-        </div>
-      )}
-      {messageStatus === 'success' && (
-        <div style={{ color: 'green' }}>
-          Käyttäjän lisäys onnistui. Vahvistuspyyntö on lähetetty sähköpostiisi.
+            : 'Rekisteröityminen epäonnistui'}
         </div>
       )}
     </div>

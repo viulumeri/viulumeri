@@ -16,8 +16,11 @@ export function TeacherStudentLayout() {
   const location = useLocation()
 
   const studentName =
-    (location.state as { studentName?: string } | undefined)?.studentName ??
-    'Oppilas'
+    (location.state as { studentName?: string } | undefined)?.studentName ?? ''
+
+  const spaceIndex = studentName.indexOf(' ')
+  const firstName =
+    spaceIndex !== -1 ? studentName.substring(0, spaceIndex) : studentName
 
   const color = studentId ? getColorForStudent(studentId) : '#ccc'
   const onSongs = !!useMatch('/teacher/students/:studentId/songs')
@@ -39,7 +42,7 @@ export function TeacherStudentLayout() {
               className="w-8 h-8 rounded-full"
               style={{ backgroundColor: color }}
             />
-            <h2>{studentName}</h2>
+            <h2>{firstName}</h2>
           </div>
         }
         right={

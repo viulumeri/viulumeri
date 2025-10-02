@@ -5,6 +5,7 @@ import { useCreateHomework } from '../hooks/useHomework'
 import type { SongListItem, HomeworkListResponse } from '../../../shared/types'
 import HomeworkCard from './HomeworkCard'
 import { FloatingActionButton } from '../components/FloatingActionButton'
+import { X } from 'lucide-react'
 
 type HomeworkItem = HomeworkListResponse['homework'][number]
 
@@ -82,7 +83,14 @@ export function HomeworkCreatePage() {
     )
 
   return (
-    <div className="flex flex-col overflow-x-hidden">
+    <div className="flex flex-col overflow-x-hidden relative">
+      <button
+        type="button"
+        onClick={() => navigate(-1)}
+        className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/20 text-white flex items-center justify-center z-50"
+      >
+        <X className="w-5 h-5" />
+      </button>
       <div className="px-[5vw]">
         <HomeworkCard
           mode="teacher"

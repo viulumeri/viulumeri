@@ -40,7 +40,7 @@ export const Signup = () => {
   }
   return (
     <div>
-      <form onSubmit={handleSignUp} className="space-y-4">
+      <form onSubmit={handleSignUp} className="space-y-3">
         <div>
           <input
             {...firstName.props}
@@ -66,6 +66,8 @@ export const Signup = () => {
         <div>
           <input
             {...email.props}
+            type="email"
+            inputMode="email"
             placeholder="Sähköpostiosoite"
             autoComplete="email"
             className="w-full rounded-lg text-gray-100 px-3 py-2 border border-gray-400
@@ -77,6 +79,7 @@ export const Signup = () => {
         <div>
           <input
             {...password.props}
+            type="password"
             placeholder="Salasana"
             autoComplete="new-password"
             className="w-full rounded-lg text-gray-100 px-3 py-2 border border-gray-400
@@ -85,7 +88,7 @@ export const Signup = () => {
           />
         </div>
 
-        <fieldset className="mt-2 flex items-center gap-4 text-sm">
+        <fieldset className="mt-2 ml-2 flex items-center gap-4 text-sm">
           <div className="text-gray-300">Olen:</div>
           <label className="flex items-center gap-2">
             <input

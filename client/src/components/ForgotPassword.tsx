@@ -8,7 +8,6 @@ export const ForgotPassword = () => {
   const requestReset = useRequestPasswordReset({
     onSuccess: () => {
       email.reset()
-      alert('Salasanan palautuslinkki lähetetty sähköpostiin!')
     },
     onError: error => {
       alert(`Virhe: ${error.message}`)

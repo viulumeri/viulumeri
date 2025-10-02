@@ -40,27 +40,54 @@ export const Signup = () => {
   }
   return (
     <div>
-      <h2>Luo uusi tunnus</h2>
-      <form onSubmit={handleSignUp}>
+      <form onSubmit={handleSignUp} className="space-y-4">
         <div>
-          <label htmlFor="email">Email:</label>
-          <input id="email" {...email.props} required />
+          <input
+            {...firstName.props}
+            placeholder="Etunimi"
+            autoComplete="given-name"
+            className="w-full rounded-lg text-gray-100 px-3 py-2 border border-gray-400
+                     focus:bg-white/10 placeholder-gray-400"
+            required
+          />
         </div>
+
         <div>
-          <label htmlFor="password">Salasana:</label>
-          <input id="password" {...password.props} required />
+          <input
+            {...lastName.props}
+            placeholder="Sukunimi"
+            autoComplete="family-name"
+            className="w-full rounded-lg text-gray-100 px-3 py-2 border border-gray-400
+                     focus:bg-white/10 placeholder-gray-400"
+            required
+          />
         </div>
+
         <div>
-          <label htmlFor="firstName">Etunimi:</label>
-          <input id="firstName" {...firstName.props} required />
+          <input
+            {...email.props}
+            placeholder="Sähköpostiosoite"
+            autoComplete="email"
+            className="w-full rounded-lg text-gray-100 px-3 py-2 border border-gray-400
+                     focus:bg-white/10 placeholder-gray-400"
+            required
+          />
         </div>
+
         <div>
-          <label htmlFor="lastName">Sukunimi:</label>
-          <input id="lastName" {...lastName.props} required />
+          <input
+            {...password.props}
+            placeholder="Salasana"
+            autoComplete="new-password"
+            className="w-full rounded-lg text-gray-100 px-3 py-2 border border-gray-400
+                     focus:bg-white/10 placeholder-gray-400"
+            required
+          />
         </div>
-        <fieldset>
-          <legend>Olen:</legend>
-          <label>
+
+        <fieldset className="mt-2 flex items-center gap-4 text-sm">
+          <div className="text-gray-300">Olen:</div>
+          <label className="flex items-center gap-2">
             <input
               type="radio"
               name="userType"
@@ -69,10 +96,11 @@ export const Signup = () => {
               onChange={e =>
                 setUserType(e.target.value as 'teacher' | 'student')
               }
+              className="accent-sky-400"
             />
             Oppilas
           </label>
-          <label>
+          <label className="flex items-center gap-2">
             <input
               type="radio"
               name="userType"
@@ -81,19 +109,26 @@ export const Signup = () => {
               onChange={e =>
                 setUserType(e.target.value as 'teacher' | 'student')
               }
+              className="accent-sky-400"
             />
             Opettaja
           </label>
         </fieldset>
-        <button type="submit" disabled={signUpMutation.isPending}>
-          {signUpMutation.isPending ? 'Signing up...' : 'Sign Up'}
+
+        <button
+          type="submit"
+          disabled={signUpMutation.isPending}
+          className="button-basic block mx-auto"
+        >
+          {signUpMutation.isPending ? 'Luodaan…' : 'Luo uusi käyttäjä'}
         </button>
       </form>
+
       {messageStatus === 'error' && (
-        <div style={{ color: 'red' }}>
+        <div className="mt-3 text-sm text-red-300">
           {signUpMutation.error instanceof Error
             ? signUpMutation.error.message
-            : 'Sign up failed'}
+            : 'Rekisteröityminen epäonnistui'}
         </div>
       )}
     </div>

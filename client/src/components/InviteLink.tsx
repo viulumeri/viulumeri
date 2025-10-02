@@ -21,47 +21,63 @@ export const InviteLink = () => {
   if (!session) return <div>Kirjaudu</div>
 
   return (
-    <div>
-      <h3>Lisää uusi oppilas</h3>
-      <button onClick={() => gen.mutate()} disabled={gen.isPending}>
-        {gen.isPending ? 'Luodaan…' : 'Luo kutsulinkki'}
-      </button>
+    <div className="space-y-6 p-6 pb-24">
+      <h2 className="text-xl font-semibold">Lisää uusi oppilas</h2>
+
+      <div className="flex justify-center">
+        <button
+          onClick={() => gen.mutate()}
+          disabled={gen.isPending}
+          className="button-basic disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {gen.isPending ? 'Luodaan…' : 'Luo kutsulinkki'}
+        </button>
+      </div>
+
       {url && (
-        <div style={{ marginTop: '1rem' }}>
-          <label style={{ display: 'block' }}>Linkki:</label>
-          <input
-            readOnly
-            value={url}
-            style={{ width: '100%', padding: '8px', fontSize: '0.9rem' }}
-          />
-          <button
-            onClick={() => {
-              navigator.clipboard.writeText(url)
-              setCopied(true)
-            }}
-            disabled={copied}
-            style={{
-              padding: '6px 12px',
-              backgroundColor: copied ? '#b0b0b0' : '#ffffff',
-              color: copied ? '#333333' : '#000000',
-              borderRadius: '4px'
-            }}
-          >
-            {copied ? 'Kopioitu' : 'Kopioi linkki'}
-          </button>
-          <div style={{ marginTop: '1rem', textAlign: 'center' }}>
-            <div style={{
-              display: 'inline-block',
-              padding: '16px',
-              backgroundColor: 'white',
-              borderRadius: '4px'
-            }}>
-              <QRCodeSVG value={url} size={128} />
+        <div className="bg-neutral-900 rounded-lg p-6 space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">
+              Kutsulinkki:
+            </label>
+            <input
+              readOnly
+              value={url}
+              className="w-full bg-neutral-700 border border-neutral-600 rounded-md px-3 py-2 text-gray-100 text-sm"
+            />
+          </div>
+
+          <div className="flex justify-center">
+            <button
+              onClick={() => {
+                navigator.clipboard.writeText(url)
+                setCopied(true)
+                setTimeout(() => setCopied(false), 2000)
+              }}
+              disabled={copied}
+              className={`px-4 py-2 rounded-md font-medium transition-colors ${
+                copied
+                  ? 'bg-gray-500 text-gray-300 cursor-not-allowed'
+                  : 'bg-white text-black hover:bg-gray-100'
+              }`}
+            >
+              {copied ? 'Kopioitu' : 'Kopioi linkki'}
+            </button>
+          </div>
+
+          <div className="flex justify-center">
+            <div className="bg-white p-4 rounded-lg">
+              <QRCodeSVG value={url} size={320} />
             </div>
           </div>
         </div>
       )}
-      {gen.isError && <div style={{ color: 'red' }}>Virhe</div>}
+
+      {gen.isError && (
+        <div className="text-red-400 text-center">
+          Virhe kutsulinkin luomisessa
+        </div>
+      )}
     </div>
   )
 }

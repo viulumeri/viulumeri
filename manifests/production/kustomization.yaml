@@ -4,10 +4,11 @@ kind: Kustomization
 namespace: viulumeri-production
 
 images:
-  - name: jayzstep/viulumeri
-    newTag: v0.0.1
+- name: jayzstep/viulumeri
+  newName: jayzstep/viulumeri
+  newTag: v1.0.1
 
 resources:
-  - namespace.yaml
-  - ../base
-  - ingress.yaml
+- namespace.yaml
+- ../base
+- ingress.yaml

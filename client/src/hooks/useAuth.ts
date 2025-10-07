@@ -77,7 +77,7 @@ export const useLogin = (
         } else if (errorMessage.includes('User not found')) {
           errorMessage = 'Käyttäjää ei löydy'
         } else if (errorMessage.includes('Email not verified')) {
-          errorMessage = 'Sähköposti ei ole vahvistettu'
+          errorMessage = 'Sähköposti ei ole vahvistettu. Lähetimme uuden vahvistuslinkin sähköpostiisi.'
         }
         
         throw new Error(errorMessage)

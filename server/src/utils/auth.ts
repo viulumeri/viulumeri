@@ -106,6 +106,7 @@ Jos et pyytänyt tilin poistamista, voit jättää tämän viestin huomioimatta.
   emailVerification: {
     sendOnSignUp: true,
     sendOnSignIn: true,
+    autoSignInAfterVerification: true,
     sendVerificationEmail: async ({ user, url }) => {
       logger.info('Sending verification email', {
         userId: user.id,

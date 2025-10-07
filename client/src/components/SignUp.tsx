@@ -34,8 +34,7 @@ export const Signup = () => {
       email: email.value,
       password: password.value,
       name: `${firstName.value} ${lastName.value}`.trim(),
-      userType: userType,
-      callbackURL: `${window.location.origin}/email-verified`
+      userType: userType
     })
   }
   return (

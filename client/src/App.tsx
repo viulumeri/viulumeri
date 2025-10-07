@@ -30,10 +30,6 @@ const App = () => {
   const { data: session, isPending } = useSession()
   const userType = (session?.user as AppSessionUser | undefined)?.userType
 
-  if (isPending) {
-    return <div>Ladataan...</div>
-  }
-
   return (
     <Routes>
       {/* Public routes */}
@@ -86,6 +82,8 @@ const App = () => {
         }
       />
       <Route path="/reset-password" element={<ResetPassword />} />
+
+      {isPending && <Route path="*" element={<div>Ladataan...</div>} />}
 
       {/* Protected routes */}
       {session && (
@@ -222,22 +220,24 @@ const App = () => {
         }
       />
 
-      {/* Fallback */}
-      <Route
-        path="*"
-        element={
-          <Navigate
-            to={
-              userType === 'teacher'
-                ? '/teacher/students'
-                : userType === 'student'
-                  ? '/student/homework'
-                  : '/login'
-            }
-            replace
-          />
-        }
-      />
+      {/* Catch-all for unknown routes when session is loaded. */}
+      {!isPending && (
+        <Route
+          path="*"
+          element={
+            <Navigate
+              to={
+                userType === 'teacher'
+                  ? '/teacher/students'
+                  : userType === 'student'
+                    ? '/student/homework'
+                    : '/login'
+              }
+              replace
+            />
+          }
+        />
+      )}
     </Routes>
   )
 }

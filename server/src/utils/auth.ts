@@ -104,7 +104,11 @@ Jos et pyytänyt tilin poistamista, voit jättää tämän viestin huomioimatta.
     }
   },
   emailVerification: {
-    sendVerificationEmail: async ({ user, url }) => {
+    sendOnSignUp: process.env.NODE_ENV !== 'test',
+    sendOnSignIn: process.env.NODE_ENV !== 'test',
+    autoSignInAfterVerification: true,
+    sendVerificationEmail: process.env.NODE_ENV !== 'test'
+      ? async ({ user, url }) => {
       logger.info('Sending verification email', {
         userId: user.id,
         email: user.email,
@@ -121,7 +125,8 @@ ${url}
 Jos et rekisteröitynyt Viulumeri-palveluun, voit jättää tämän viestin huomioimatta.`
       })
       logger.info('Verification email sent successfully', { userId: user.id, email: user.email })
-    },
+    }
+      : undefined,
     async afterEmailVerification(user, request) {
       logger.info('Email verification completed successfully', {
         userId: user.id,

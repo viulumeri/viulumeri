@@ -2,8 +2,7 @@ import { useField } from '../hooks/useField'
 import { useLogin } from '../hooks/useAuth'
 import { useNavigate, Link, useSearchParams } from 'react-router-dom'
 import { useSession } from '../auth-client'
-import { useEffect, useState } from 'react'
-import { ResendVerification } from './ResendVerification'
+import { useEffect } from 'react'
 
 export const Login = () => {
   const email = useField('email')
@@ -11,19 +10,11 @@ export const Login = () => {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const { data: session } = useSession()
-  const [showResend, setShowResend] = useState(false)
 
   const loginMutation = useLogin({
     onError: error => {
       console.error(error instanceof Error ? error.message : 'Login failed.')
       password.reset()
-
-      if (
-        error instanceof Error &&
-        error.message.includes('Sähköposti ei ole vahvistettu')
-      ) {
-        setShowResend(true)
-      }
     }
   })
 
@@ -101,12 +92,6 @@ export const Login = () => {
           Luo uusi käyttäjä
         </Link>
       </div>
-
-      {showResend && (
-        <div className="mt-4">
-          <ResendVerification email={email.value} />
-        </div>
-      )}
     </div>
   )
 }

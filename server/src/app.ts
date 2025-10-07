@@ -25,7 +25,7 @@ if (process.env.NODE_ENV === 'development') {
   app.use(requestLogger)
 }
 
-app.all('/api/auth/*splat', toNodeHandler(auth))
+app.all('/api/auth/{*splat}', toNodeHandler(auth))
 
 app.use(express.json())
 app.use('/api/songs', songsRouter)

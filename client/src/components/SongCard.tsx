@@ -6,7 +6,7 @@ type Props = {
   song: SongListItem
 }
 
-export default function SongCard({ song }: Props) {
+const SongCard = ({ song }: Props) => {
   return (
     <Link
       to={`/player/${song.id}`}
@@ -29,3 +29,5 @@ export default function SongCard({ song }: Props) {
     </Link>
   )
 }
+
+export default SongCard

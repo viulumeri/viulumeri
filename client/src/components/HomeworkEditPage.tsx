@@ -9,7 +9,7 @@ import type { SongListItem } from '../../../shared/types'
 import HomeworkCard from './HomeworkCard'
 import { FloatingActionButton } from '../components/FloatingActionButton'
 
-export function HomeworkEditPage() {
+export const HomeworkEditPage = () => {
   const { studentId, homeworkId } = useParams<{
     studentId: string
     homeworkId: string

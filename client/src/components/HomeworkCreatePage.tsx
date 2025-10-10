@@ -9,7 +9,7 @@ import { X } from 'lucide-react'
 
 type HomeworkItem = HomeworkListResponse['homework'][number]
 
-export function HomeworkCreatePage() {
+export const HomeworkCreatePage = () => {
   const { studentId } = useParams<{ studentId: string }>()
   const navigate = useNavigate()
   const location = useLocation()

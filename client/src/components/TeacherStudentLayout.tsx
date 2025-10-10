@@ -10,7 +10,7 @@ import { Header } from './Header'
 import { ArrowLeft } from 'lucide-react'
 import { getColorForStudent } from '../utils/studentcolors'
 
-export function TeacherStudentLayout() {
+export const TeacherStudentLayout = () => {
   const { studentId } = useParams()
   const navigate = useNavigate()
   const location = useLocation()

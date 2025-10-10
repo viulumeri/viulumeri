@@ -8,7 +8,7 @@ import {
 } from '../hooks/usePlayedSongs'
 import { Songslist } from '../components/Songslist'
 
-export function TeacherStudentSongsPage() {
+export const TeacherStudentSongsPage = () => {
   const { studentId } = useParams<{ studentId: string }>()
   const qc = useQueryClient()
 

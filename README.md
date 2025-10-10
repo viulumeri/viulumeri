@@ -1,5 +1,10 @@
 # Viulumeri app
 
+## Known bugs:
+
+- SignUp might not succeed
+- User Deletion might not succeed
+
 Viulumeri-nuottikirjan digitaalinen kumppani säestysraitojen toistamiseen ja harjoitteluun.
 
 ## Ohjeet
@@ -10,11 +15,11 @@ Opettajana näet oppilaslistan ja oppilasnäkymän, jossa voit antaa kotitehtäv
 
 Oppilaana näet nykyisen (ja vanhat) kotitehtävät ja voit klikata 'harjoittelin'-nappulaa, joka mahdollistaa harjoituskertojen helpon kirjaamisen.
 
-Kotitehtävän näkymästä pääset kuuntelemaan kappaleen säestysraitoja. 
+Kotitehtävän näkymästä pääset kuuntelemaan kappaleen säestysraitoja.
 
-Soittimessa on mahdollista loopata kappaletta, laittaa avustava melodiaraita päälle tai pois, sekä vaihtaa kappaleen tempoa. 
+Soittimessa on mahdollista loopata kappaletta, laittaa avustava melodiaraita päälle tai pois, sekä vaihtaa kappaleen tempoa.
 
-Lopulta opettajana voit merkata kappaleen oppilaskohtaisesti soitetuksi. 
+Lopulta opettajana voit merkata kappaleen oppilaskohtaisesti soitetuksi.
 
 Kappaleet-näkymässä voit selata ja toistaa kaikkia Viulumeren kappaleita, sekä nähdä onko kappale merkattu soitetuksi.
 

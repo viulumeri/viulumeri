@@ -32,4 +32,4 @@ Tuotanto:
 
 Staging:
 
-[staging.viulumeri.fi](https.//staging.viulumeri.fi)
+[staging.viulumeri.fi](https://staging.viulumeri.fi)

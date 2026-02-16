@@ -8,7 +8,7 @@ import { Header } from './Header'
 import { ArrowLeft } from 'lucide-react'
 import { Songslist } from './Songslist'
 
-export function SelectSongsPage() {
+export const SelectSongsPage = () => {
   const { studentId, homeworkId } = useParams<{
     studentId: string
     homeworkId: string

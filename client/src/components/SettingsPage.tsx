@@ -66,7 +66,7 @@ export const SettingsPage = () => {
       )
     ) {
       setIsDeleting(true)
-      deleteUser.mutate({ callbackURL: '/login' })
+      deleteUser.mutate()
     }
   }
 

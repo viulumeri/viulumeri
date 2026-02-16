@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from 'react'
 import { Ellipsis, X } from 'lucide-react'
 import type { SongListItem, HomeworkListResponse } from '../../../shared/types'
 import SongCard from './SongCard'
-
 type HomeworkItem = HomeworkListResponse['homework'][number]
 
 type Props = {
@@ -27,7 +26,7 @@ type Props = {
   practicePending?: boolean
 }
 
-export default function HomeworkCard({
+const HomeworkCard = ({
   mode,
   hw,
   isLatest,
@@ -45,9 +44,8 @@ export default function HomeworkCard({
   commentDraft,
   onChangeComment,
   onAddSong
-}: Props) {
+}: Props) => {
   const menuRef = useRef<HTMLDivElement | null>(null)
-
   const [isCommentEditing, setIsCommentEditing] = useState(false)
 
   useEffect(() => {
@@ -65,7 +63,7 @@ export default function HomeworkCard({
 
   return (
     <div className="snap-center w-[90vw] max-w-4xl flex-shrink-0 rounded-lg pt-4 pb-4 px-8 relative ">
-      <div className="overflow-y-auto overflow-x-hidden max-h-[calc(100dvh-140px)] pt-0 pb-16 relative scrollbar-hide">
+      <div className="overflow-y-auto overflow-x-hidden max-h={[`calc(100dvh-140px)`]} pt-0 pb-16 relative scrollbar-hide">
         {mode === 'teacher' && onToggleMenu && (
           <>
             <button
@@ -149,6 +147,7 @@ export default function HomeworkCard({
             </button>
           </div>
         )}
+
         {editableComment ? (
           <div className="mt-5">
             <h3 className="mb-3">Opettajan kommentti</h3>
@@ -179,7 +178,9 @@ export default function HomeworkCard({
             <>
               <h3 className="mt-5 mb-3">Opettajan kommentti</h3>
               <div className="px-3">
-                <p className="text-[14px] text-gray-400 whitespace-pre-wrap">{hw.comment}</p>
+                <p className="text-[14px] text-gray-400 whitespace-pre-wrap">
+                  {hw.comment}
+                </p>
               </div>
             </>
           )
@@ -200,3 +201,5 @@ export default function HomeworkCard({
     </div>
   )
 }
+
+export default HomeworkCard

@@ -6,7 +6,7 @@ export type ToggleSwitchProps = {
   onChange: (next: ToggleSwitchValue) => void
 }
 
-export default function ToggleSwitch({ value, onChange }: ToggleSwitchProps) {
+const ToggleSwitch = ({ value, onChange }: ToggleSwitchProps) => {
   const isSongs = value === 'songs'
   const toggle = () => {
     onChange(isSongs ? 'homework' : 'songs')
@@ -32,3 +32,5 @@ export default function ToggleSwitch({ value, onChange }: ToggleSwitchProps) {
     </button>
   )
 }
+
+export default ToggleSwitch

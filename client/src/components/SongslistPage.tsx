@@ -5,7 +5,7 @@ import { useOwnPlayedSongs } from '../hooks/usePlayedSongs'
 import { useSession } from '../auth-client'
 import type { AppSessionUser } from '../../../shared/types'
 
-export function SongslistPage() {
+export const SongslistPage = () => {
   const { data: session } = useSession()
   const userType = (session?.user as AppSessionUser | undefined)?.userType
   const isStudent = userType === 'student'

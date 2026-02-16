@@ -18,7 +18,7 @@ export const studentColors = [
   '#A9D6E5'
 ]
 
-function hashString(str: string): number {
+const hashString = (str: string): number => {
   let hash = 0
   for (let i = 0; i < str.length; i++) {
     hash = (hash << 5) - hash + str.charCodeAt(i)
@@ -27,7 +27,7 @@ function hashString(str: string): number {
   return Math.abs(hash)
 }
 
-export function getColorForStudent(id: string): string {
+export const getColorForStudent = (id: string): string => {
   const index = hashString(id) % studentColors.length
   return studentColors[index]
 }

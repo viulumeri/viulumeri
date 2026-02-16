@@ -116,11 +116,11 @@ export const useChangePassword = (
 }
 
 export const useDeleteUser = (
-  options?: UseMutationOptions<any, Error, { callbackURL?: string }>
+  options?: UseMutationOptions<any, Error, void>
 ) => {
   return useMutation({
-    mutationFn: async (data: { callbackURL?: string } = {}) => {
-      return await authClient.deleteUser(data)
+    mutationFn: async () => {
+      return await authClient.deleteUser()
     },
     ...options
   })

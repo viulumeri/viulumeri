@@ -1,10 +1,12 @@
+/// <reference path="../types/express.d.ts" />
 import { Router } from 'express'
 import {
-  authenticateSession,
   requireTeacher,
   requireStudent,
-  validateTeacherProfile,
-  validateStudentProfile,
+  loadTeacherProfile,
+  loadStudentProfile
+} from '../utils/auth-middleware'
+import {
   validateTeacherStudentRelationship,
   validateHomeworkOwnershipByTeacher,
   validateHomeworkOwnershipByStudent
@@ -14,19 +16,14 @@ import Homework from '../models/homework'
 const homeworkRouter = Router()
 
 // POST /api/homework  (opettaja luo läksyn)
-homeworkRouter.post('/', async (request, response) => {
-  const session = await authenticateSession(request, response)
-  if (!session) return
-  if (!requireTeacher(session, response)) return
-
+homeworkRouter.post('/', requireTeacher, loadTeacherProfile, async (request, response) => {
   const { studentId, songs = [], comment = '' } = request.body ?? {}
   if (!studentId)
     return response.status(400).json({ error: 'studentId required' })
   if (!Array.isArray(songs))
     return response.status(400).json({ error: 'songs must be array' })
 
-  const teacher = await validateTeacherProfile(session, response)
-  if (!teacher) return
+  const teacher = request.teacherProfile!
 
   const student = await validateTeacherStudentRelationship(teacher, studentId, response)
   if (!student) return
@@ -43,13 +40,8 @@ homeworkRouter.post('/', async (request, response) => {
 })
 
 // GET /api/homework  (oppilas näkee omat)
-homeworkRouter.get('/', async (request, response) => {
-  const session = await authenticateSession(request, response)
-  if (!session) return
-  if (!requireStudent(session, response)) return
-
-  const student = await validateStudentProfile(session, response)
-  if (!student) return
+homeworkRouter.get('/', requireStudent, loadStudentProfile, async (request, response) => {
+  const student = request.studentProfile!
 
   const homeworks = await Homework.find({ student: student.id })
     .sort({ createdAt: -1 })
@@ -59,13 +51,8 @@ homeworkRouter.get('/', async (request, response) => {
 })
 
 // POST /api/homework/practice/:homeworkId  (oppilas kirjaa harjoituskerran)
-homeworkRouter.post('/practice/:homeworkId', async (request, response) => {
-  const session = await authenticateSession(request, response)
-  if (!session) return
-  if (!requireStudent(session, response)) return
-
-  const student = await validateStudentProfile(session, response)
-  if (!student) return
+homeworkRouter.post('/practice/:homeworkId', requireStudent, loadStudentProfile, async (request, response) => {
+  const student = request.studentProfile!
 
   const homework = await validateHomeworkOwnershipByStudent(student, request.params.homeworkId, response)
   if (!homework) return
@@ -76,13 +63,8 @@ homeworkRouter.post('/practice/:homeworkId', async (request, response) => {
 })
 
 // DELETE /api/homework/:homeworkId (opettaja poistaa läksyn)
-homeworkRouter.delete('/:homeworkId', async (request, response) => {
-  const session = await authenticateSession(request, response)
-  if (!session) return
-  if (!requireTeacher(session, response)) return
-
-  const teacher = await validateTeacherProfile(session, response)
-  if (!teacher) return
+homeworkRouter.delete('/:homeworkId', requireTeacher, loadTeacherProfile, async (request, response) => {
+  const teacher = request.teacherProfile!
 
   const homework = await validateHomeworkOwnershipByTeacher(teacher, request.params.homeworkId, response)
   if (!homework) return
@@ -92,24 +74,19 @@ homeworkRouter.delete('/:homeworkId', async (request, response) => {
 })
 
 // PUT /api/homework/:homeworkId (opettaja päivittää läksyn)
-homeworkRouter.put('/:homeworkId', async (request, response) => {
-  const session = await authenticateSession(request, response)
-  if (!session) return
-  if (!requireTeacher(session, response)) return
-
+homeworkRouter.put('/:homeworkId', requireTeacher, loadTeacherProfile, async (request, response) => {
   const { songs, comment } = request.body ?? {}
   if (songs !== undefined && !Array.isArray(songs))
     return response.status(400).json({ error: 'songs must be array' })
 
-  const teacher = await validateTeacherProfile(session, response)
-  if (!teacher) return
+  const teacher = request.teacherProfile!
 
   const homework = await validateHomeworkOwnershipByTeacher(teacher, request.params.homeworkId, response)
   if (!homework) return
 
   if (songs !== undefined) homework.songs = songs
   if (comment !== undefined) homework.comment = comment
-  
+
   await homework.save()
   response.json({ ...homework.toJSON() })
 })

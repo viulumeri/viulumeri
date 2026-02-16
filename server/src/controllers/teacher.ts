@@ -1,22 +1,16 @@
+/// <reference path="../types/express.d.ts" />
 import { Router } from 'express'
-import { 
-  requireStudent, 
-  authenticateSession,
-  validateStudentProfile 
-} from '../utils/session-helpers'
+import { requireStudent, loadStudentProfile } from '../utils/auth-middleware'
 import Teacher from '../models/teacher'
 
 const teacherRouter = Router()
 
+teacherRouter.use(requireStudent, loadStudentProfile)
+
 // Route for student to get their teacher info
 // GET /api/teacher
 teacherRouter.get('/', async (request, response) => {
-  const session = await authenticateSession(request, response)
-  if (!session) return
-  if (!requireStudent(session, response)) return
-
-  const student = await validateStudentProfile(session, response)
-  if (!student) return
+  const student = request.studentProfile!
 
   await student.populate('teacher', 'name')
 
@@ -35,18 +29,13 @@ teacherRouter.get('/', async (request, response) => {
 // Route for student to remove teacher
 // DELETE /api/teacher
 teacherRouter.delete('/', async (request, response) => {
-  const session = await authenticateSession(request, response)
-  if (!session) return
-  if (!requireStudent(session, response)) return
-
-  const student = await validateStudentProfile(session, response)
-  if (!student) return
+  const student = request.studentProfile!
 
   if (student.teacher) {
     const teacher = await Teacher.findById(student.teacher)
     if (teacher) {
       teacher.students = teacher.students.filter(
-        studentId => studentId.toString() !== student.id
+        (studentId: any) => studentId.toString() !== student.id
       )
       await teacher.save()
     }

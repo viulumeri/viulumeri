@@ -1,23 +1,15 @@
+/// <reference path="../types/express.d.ts" />
 import { Router } from 'express'
-import {
-  authenticateSession,
-  requireTeacher,
-  validateTeacherProfile,
-  validateStudentProfile
-} from '../utils/session-helpers'
+import { requireTeacher, loadTeacherProfile } from '../utils/auth-middleware'
+import { validateStudentProfile } from '../utils/session-helpers'
 import Teacher from '../models/teacher'
 import Student from '../models/student'
 import { generateInviteToken, verifyInviteToken } from '../utils/inviteToken'
 
 const inviteRouter = Router()
 
-inviteRouter.post('/', async (request, response) => {
-  const session = await authenticateSession(request, response)
-  if (!session) return
-  if (!requireTeacher(session, response)) return
-
-  const teacher = await validateTeacherProfile(session, response)
-  if (!teacher) return
+inviteRouter.post('/', requireTeacher, loadTeacherProfile, async (request, response) => {
+  const teacher = request.teacherProfile!
 
   const token = generateInviteToken(teacher._id.toString())
 
@@ -29,9 +21,6 @@ inviteRouter.post('/', async (request, response) => {
 })
 
 inviteRouter.get('/:token', async (request, response) => {
-  const session = await authenticateSession(request, response)
-  if (!session) return
-
   const payload = verifyInviteToken(request.params.token)
   if (!payload)
     return response.status(400).json({ error: 'Invalid or expired invitation' })
@@ -41,7 +30,7 @@ inviteRouter.get('/:token', async (request, response) => {
     return response.status(404).json({ error: 'Teacher not found' })
   }
 
-  const student = await Student.findOne({ userId: session.user.id }).populate(
+  const student = await Student.findOne({ userId: request.session!.user.id }).populate(
     'teacher',
     'name'
   )
@@ -56,9 +45,6 @@ inviteRouter.get('/:token', async (request, response) => {
 })
 
 inviteRouter.post('/:token/accept', async (request, response) => {
-  const session = await authenticateSession(request, response)
-  if (!session) return
-
   const payload = verifyInviteToken(request.params.token)
   if (!payload) {
     return response.status(400).json({ error: 'Invalid or expired invitation' })
@@ -67,7 +53,7 @@ inviteRouter.post('/:token/accept', async (request, response) => {
   const teacher = await Teacher.findById(payload.teacherId)
   if (!teacher) return response.status(404).json({ error: 'Teacher not found' })
 
-  const student = await validateStudentProfile(session, response)
+  const student = await validateStudentProfile(request.session, response)
   if (!student) return
 
   //

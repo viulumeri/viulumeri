@@ -1,25 +1,19 @@
+/// <reference path="../types/express.d.ts" />
 import { Router } from 'express'
-import { 
-  authenticateSession, 
-  requireTeacher,
-  validateTeacherProfile,
-  validateTeacherStudentRelationship
-} from '../utils/session-helpers'
+import { requireTeacher, loadTeacherProfile } from '../utils/auth-middleware'
+import { validateTeacherStudentRelationship } from '../utils/session-helpers'
 import Homework from '../models/homework'
 
 const studentsRouter = Router()
 
-studentsRouter.get('/', async (request, response) => {
-  const session = await authenticateSession(request, response)
-  if (!session) return
-  if (!requireTeacher(session, response)) return
+studentsRouter.use(requireTeacher, loadTeacherProfile)
 
-  const teacher = await validateTeacherProfile(session, response)
-  if (!teacher) return
+studentsRouter.get('/', async (request, response) => {
+  const teacher = request.teacherProfile!
 
   await teacher.populate('students', 'name')
 
-  const students = (teacher.students as any[]).map(s => ({
+  const students = (teacher.students as any[]).map((s: any) => ({
     id: s.id,
     name: s.name
   }))
@@ -29,12 +23,7 @@ studentsRouter.get('/', async (request, response) => {
 
 // DELETE /api/students/:studentId
 studentsRouter.delete('/:studentId', async (request, response) => {
-  const session = await authenticateSession(request, response)
-  if (!session) return
-  if (!requireTeacher(session, response)) return
-
-  const teacher = await validateTeacherProfile(session, response)
-  if (!teacher) return
+  const teacher = request.teacherProfile!
 
   const student = await validateTeacherStudentRelationship(
     teacher,
@@ -45,7 +34,7 @@ studentsRouter.delete('/:studentId', async (request, response) => {
 
   // Remove student from teacher's student list
   teacher.students = teacher.students.filter(
-    studentId => studentId.toString() !== student.id
+    (studentId: any) => studentId.toString() !== student.id
   )
   await teacher.save()
 
@@ -58,12 +47,7 @@ studentsRouter.delete('/:studentId', async (request, response) => {
 
 // GET /api/students/:studentId/homework
 studentsRouter.get('/:studentId/homework', async (request, response) => {
-  const session = await authenticateSession(request, response)
-  if (!session) return
-  if (!requireTeacher(session, response)) return
-
-  const teacher = await validateTeacherProfile(session, response)
-  if (!teacher) return
+  const teacher = request.teacherProfile!
 
   const student = await validateTeacherStudentRelationship(
     teacher,
@@ -83,12 +67,7 @@ studentsRouter.get('/:studentId/homework', async (request, response) => {
 
 // GET /api/students/:studentId/played-songs
 studentsRouter.get('/:studentId/played-songs', async (request, response) => {
-  const session = await authenticateSession(request, response)
-  if (!session) return
-  if (!requireTeacher(session, response)) return
-
-  const teacher = await validateTeacherProfile(session, response)
-  if (!teacher) return
+  const teacher = request.teacherProfile!
 
   const student = await validateTeacherStudentRelationship(
     teacher,
@@ -106,16 +85,11 @@ studentsRouter.get('/:studentId/played-songs', async (request, response) => {
 
 // POST /api/students/:studentId/played-songs
 studentsRouter.post('/:studentId/played-songs', async (request, response) => {
-  const session = await authenticateSession(request, response)
-  if (!session) return
-  if (!requireTeacher(session, response)) return
-
   const { songId } = request.body ?? {}
   if (!songId)
     return response.status(400).json({ error: 'songId required' })
 
-  const teacher = await validateTeacherProfile(session, response)
-  if (!teacher) return
+  const teacher = request.teacherProfile!
 
   const student = await validateTeacherStudentRelationship(
     teacher,
@@ -140,12 +114,7 @@ studentsRouter.post('/:studentId/played-songs', async (request, response) => {
 
 // DELETE /api/students/:studentId/played-songs/:songId
 studentsRouter.delete('/:studentId/played-songs/:songId', async (request, response) => {
-  const session = await authenticateSession(request, response)
-  if (!session) return
-  if (!requireTeacher(session, response)) return
-
-  const teacher = await validateTeacherProfile(session, response)
-  if (!teacher) return
+  const teacher = request.teacherProfile!
 
   const student = await validateTeacherStudentRelationship(
     teacher,
@@ -159,7 +128,7 @@ studentsRouter.delete('/:studentId/played-songs/:songId', async (request, respon
     return response.status(404).json({ error: 'Song not found in played songs' })
   }
 
-  student.playedSongs = student.playedSongs.filter(song => song !== songId)
+  student.playedSongs = student.playedSongs.filter((song: string) => song !== songId)
   await student.save()
 
   response.json({
@@ -170,4 +139,3 @@ studentsRouter.delete('/:studentId/played-songs/:songId', async (request, respon
 })
 
 export default studentsRouter
-

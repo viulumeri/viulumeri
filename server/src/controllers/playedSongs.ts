@@ -1,19 +1,13 @@
+/// <reference path="../types/express.d.ts" />
 import { Router } from 'express'
-import { 
-  authenticateSession, 
-  requireStudent,
-  validateStudentProfile 
-} from '../utils/session-helpers'
+import { requireStudent, loadStudentProfile } from '../utils/auth-middleware'
 
 const playedSongsRouter = Router()
 
-playedSongsRouter.get('/', async (request, response) => {
-  const session = await authenticateSession(request, response)
-  if (!session) return
-  if (!requireStudent(session, response)) return
+playedSongsRouter.use(requireStudent, loadStudentProfile)
 
-  const student = await validateStudentProfile(session, response)
-  if (!student) return
+playedSongsRouter.get('/', async (request, response) => {
+  const student = request.studentProfile!
 
   response.json({
     playedSongs: student.playedSongs
@@ -21,4 +15,3 @@ playedSongsRouter.get('/', async (request, response) => {
 })
 
 export default playedSongsRouter
-

@@ -1,21 +1,14 @@
 import { Router } from 'express'
 import path from 'path'
 import { musicService } from '../services/music'
-import { authenticateSession } from '../utils/session-helpers'
 
 const songsRouter = Router()
 
-songsRouter.get('/', async (request, response) => {
-  const session = await authenticateSession(request, response)
-  if (!session) return
-
+songsRouter.get('/', async (_request, response) => {
   response.status(200).send(musicService.getAllSongs())
 })
 
 songsRouter.get('/:id', async (request, response) => {
-  const session = await authenticateSession(request, response)
-  if (!session) return
-
   const song = musicService.getSongById(request.params.id)
 
   if (!song) {
@@ -26,9 +19,6 @@ songsRouter.get('/:id', async (request, response) => {
 })
 
 songsRouter.get('/:id/bundle', async (request, response) => {
-  const session = await authenticateSession(request, response)
-  if (!session) return
-
   const song = musicService.getSongById(request.params.id)
 
   if (!song) {
@@ -46,9 +36,6 @@ songsRouter.get('/:id/bundle', async (request, response) => {
 })
 
 songsRouter.get('/:id/bundle-slow', async (request, response) => {
-  const session = await authenticateSession(request, response)
-  if (!session) return
-
   const song = musicService.getSongById(request.params.id)
 
   if (!song) {

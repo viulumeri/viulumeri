@@ -5,6 +5,7 @@ import { toNodeHandler } from 'better-auth/node'
 import { auth } from './utils/auth'
 import { corsOrigin } from './utils/config'
 import { requestLogger } from './utils/middleware'
+import { authenticate } from './utils/auth-middleware'
 import songsRouter from './controllers/songs'
 import inviteRouter from './controllers/invite'
 import teacherRouter from './controllers/teacher'
@@ -28,6 +29,7 @@ if (process.env.NODE_ENV === 'development') {
 app.all('/api/auth/{*splat}', toNodeHandler(auth))
 
 app.use(express.json())
+app.use('/api', authenticate)
 app.use('/api/songs', songsRouter)
 app.use('/api/invites', inviteRouter)
 app.use('/api/teacher', teacherRouter)

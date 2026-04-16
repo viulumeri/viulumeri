@@ -23,11 +23,6 @@ Lopulta opettajana voit merkata kappaleen oppilaskohtaisesti soitetuksi.
 
 Kappaleet-näkymässä voit selata ja toistaa kaikkia Viulumeren kappaleita, sekä nähdä onko kappale merkattu soitetuksi.
 
-## Tuntikirjanpito
-
-[Jassen tuntikirjanpito](https://github.com/viulumeri/viulumeri/wiki/Jassen-tuntikirjanpito)
-
-[Iidan tuntikirjanpito](https://github.com/viulumeri/viulumeri/wiki/Iidan-tuntikirjanpito)
 
 ## App
 

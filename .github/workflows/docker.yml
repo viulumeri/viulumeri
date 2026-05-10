@@ -43,6 +43,7 @@ jobs:
           tags: |
             type=semver,pattern=v{{version}}
             type=semver,pattern=v{{major}}.{{minor}}
+            type=raw,value=${{ github.event.release.tag_name }},enable=${{ github.event_name == 'release' }}
 
       - name: Build and push Docker image (releases)
         if: github.event_name == 'release'
@@ -68,7 +69,7 @@ jobs:
 
       # Update staging Kustomization for main branch pushes
       - name: Set up Kustomize
-        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        if: (github.ref == 'refs/heads/main' && github.event_name == 'push') || github.event_name == 'release'
         uses: imranismail/setup-kustomize@v2
 
       - name: Update staging image tag

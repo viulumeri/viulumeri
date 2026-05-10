@@ -29,9 +29,13 @@ jobs:
       # Build and push with SHA tag for main branch deployments
       - name: Build and push Docker image (main branch)
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-        run: |
-          docker build --tag "jayzstep/viulumeri:$GITHUB_SHA" .
-          docker push "jayzstep/viulumeri:$GITHUB_SHA"
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: jayzstep/viulumeri:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
       # Build and push with version tags for releases
       - name: Extract metadata (releases)
@@ -50,7 +54,6 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
-          platforms: linux/amd64,linux/arm64
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}

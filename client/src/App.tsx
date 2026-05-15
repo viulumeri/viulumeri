@@ -24,6 +24,8 @@ import { SettingsPage } from './components/SettingsPage'
 import { Route, Routes, Navigate } from 'react-router-dom'
 import { useSession } from './auth-client'
 import type { AppSessionUser } from '../../shared/types'
+import { NotificationProvider } from './contexts/NotificationProvider'
+import { NotificationBanner } from './components/NotificationBanner'
 import './index.css'
 
 const App = () => {
@@ -31,6 +33,8 @@ const App = () => {
   const userType = (session?.user as AppSessionUser | undefined)?.userType
 
   return (
+    <NotificationProvider>
+      <NotificationBanner />
     <Routes>
       {/* Public routes */}
       <Route
@@ -243,6 +247,7 @@ const App = () => {
         />
       )}
     </Routes>
+    </NotificationProvider>
   )
 }
 

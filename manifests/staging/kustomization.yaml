@@ -6,7 +6,7 @@ namespace: viulumeri-staging
 images:
 - name: jayzstep/viulumeri
   newName: jayzstep/viulumeri
-  newTag: 448be0e2452d9fa573f4306114a9118ce8715d69
+  newTag: 78de02ddb3d71e742ccf53b140587e74ea1687f0
 
 resources:
 - namespace.yaml

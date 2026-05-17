@@ -34,7 +34,7 @@ export const TeacherStudentSongsPage = () => {
   const playedSet = new Set(played.data?.playedSongs ?? [])
   const onTogglePlayed = (songId: string) => {
     if (!studentId) return
-    if (playedSet.has(songId)){
+    if (playedSet.has(songId)) {
       unmark.mutate({ studentId, songId })
     } else {
       mark.mutate({ studentId, songId })

@@ -8,6 +8,7 @@ import {
 import type { SongListItem } from '../../../shared/types'
 import HomeworkCard from './HomeworkCard'
 import { FloatingActionButton } from '../components/FloatingActionButton'
+import { useNotification } from '../hooks/useNotification'
 
 export const HomeworkEditPage = () => {
   const { studentId, homeworkId } = useParams<{
@@ -54,14 +55,17 @@ export const HomeworkEditPage = () => {
     return m
   }, [songsQ.data])
 
+  const { showError, showSuccess } = useNotification()
+
   const updateHomework = useUpdateHomework({
     onSuccess: () => {
+      showSuccess('Läksy päivitetty onnistuneesti')
       navigate(`/teacher/students/${studentId}/homework`, {
         state: location.state,
         replace: true
       })
     },
-    onError: err => alert(err.message || 'Läksyn päivitys epäonnistui')
+    onError: err => showError(err.message || 'Läksyn päivitys epäonnistui')
   })
 
   const removeSong = (id: string) => {
@@ -88,12 +92,23 @@ export const HomeworkEditPage = () => {
 
   if (hwQ.isPending || songsQ.isPending)
     return <div className="p-4">Ladataan…</div>
-  if (hwQ.isError)
-    return <div className="p-4 text-red-300">Virhe: {hwQ.error?.message}</div>
-  if (songsQ.isError)
+
+  if (hwQ.isError || songsQ.isError) {
     return (
-      <div className="p-4 text-red-300">Virhe: {songsQ.error?.message}</div>
+      <div className="p-4">
+        <div className="text-red-600">
+          Virhe ladattaessa tietoja. Yritä myöhemmin uudelleen.
+        </div>
+        <button
+          onClick={() => navigate(-1)}
+          className="mt-4 px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
+        >
+          Takaisin
+        </button>
+      </div>
     )
+  }
+
   if (!editing) return <div className="p-4">Läksyä ei löytynyt</div>
 
   const editedHw = { ...editing, songs: currentSongIds, comment }

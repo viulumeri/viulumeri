@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, useRef, useMemo } from 'react'
 import type { ReactNode } from 'react'
 import { NotificationContext, type Notification, type NotificationType } from './NotificationContext'
 
@@ -8,21 +8,17 @@ interface NotificationProviderProps {
 
 export const NotificationProvider = ({ children }: NotificationProviderProps) => {
   const [notification, setNotification] = useState<Notification | null>(null)
-  const [timeoutId, setTimeoutId] = useState<NodeJS.Timeout | null>(null)
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const dismissNotification = useCallback(() => {
     setNotification(null)
-    if (timeoutId) {
-      clearTimeout(timeoutId)
-      setTimeoutId(null)
+    if (timeoutRef.current !== null) {
+      clearTimeout(timeoutRef.current)
+      timeoutRef.current = null
     }
-  }, [timeoutId])
+  }, [])
 
   const showNotification = useCallback((type: NotificationType, message: string) => {
-    if (timeoutId) {
-      clearTimeout(timeoutId)
-    }
-
     const newNotification: Notification = {
       id: Date.now().toString(),
       type,
@@ -30,29 +26,43 @@ export const NotificationProvider = ({ children }: NotificationProviderProps) =>
     }
 
     setNotification(newNotification)
+  }, [])
 
-    // Set auto-dismiss timer for 5 seconds
-    const newTimeoutId = setTimeout(() => {
+  // Auto-dismiss effect - runs when notification changes
+  useEffect(() => {
+    if (!notification) {
+      if (timeoutRef.current !== null) {
+        clearTimeout(timeoutRef.current)
+        timeoutRef.current = null
+      }
+      return
+    }
+
+    // Clear any existing timeout
+    if (timeoutRef.current !== null) {
+      clearTimeout(timeoutRef.current)
+    }
+
+    // Set new timeout for auto-dismiss after 5 seconds
+    timeoutRef.current = setTimeout(() => {
       setNotification(null)
-      setTimeoutId(null)
+      timeoutRef.current = null
     }, 5000)
 
-    setTimeoutId(newTimeoutId)
-  }, [timeoutId])
-
-  useEffect(() => {
+    // Cleanup function
     return () => {
-      if (timeoutId) {
-        clearTimeout(timeoutId)
+      if (timeoutRef.current !== null) {
+        clearTimeout(timeoutRef.current)
+        timeoutRef.current = null
       }
     }
-  }, [timeoutId])
+  }, [notification])
 
-  const value = {
+  const value = useMemo(() => ({
     notification,
     showNotification,
     dismissNotification
-  }
+  }), [notification, showNotification, dismissNotification])
 
   return (
     <NotificationContext.Provider value={value}>

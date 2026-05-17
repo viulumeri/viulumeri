@@ -1,4 +1,4 @@
-import { useContext } from 'react'
+import { useContext, useCallback } from 'react'
 import { NotificationContext } from '../contexts/NotificationContext'
 
 export const useNotification = () => {
@@ -10,10 +10,20 @@ export const useNotification = () => {
 
   const { showNotification, dismissNotification, notification } = context
 
+  const showSuccess = useCallback(
+    (message: string) => showNotification('success', message),
+    [showNotification]
+  )
+
+  const showError = useCallback(
+    (message: string) => showNotification('error', message),
+    [showNotification]
+  )
+
   return {
     notification,
-    showSuccess: (message: string) => showNotification('success', message),
-    showError: (message: string) => showNotification('error', message),
+    showSuccess,
+    showError,
     dismissNotification
   }
 }

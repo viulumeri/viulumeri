@@ -19,8 +19,8 @@ export const NotificationBanner = () => {
             ? 'bg-red-100 text-red-800 border-red-300'
             : ''
       }`}
-      role="alert"
-      aria-live="polite"
+      role={isError ? 'alert' : 'status'}
+      aria-live={isError ? undefined : 'polite'}
     >
       <div className="flex items-center gap-3 flex-1">
         {isSuccess && (

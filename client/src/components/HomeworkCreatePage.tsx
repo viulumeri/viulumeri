@@ -20,7 +20,7 @@ export const HomeworkCreatePage = () => {
   const [comment, setComment] = useState<string>('')
 
   useEffect(() => {
-    const ids: string[] = (location.state as any)?.addSongs ?? []
+    const ids: string[] = (location.state as { addSongs?: string[] })?.addSongs ?? []
     if (!ids.length) return
 
     setSongIds(prev => [...new Set([...prev, ...ids])])
@@ -64,7 +64,7 @@ export const HomeworkCreatePage = () => {
             replace: true
           })
         },
-        onError: (err: any) =>
+        onError: (err: { message?: string }) =>
           alert(err?.message || 'Läksyn luonti epäonnistui')
       }
     )

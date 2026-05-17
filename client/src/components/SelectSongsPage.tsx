@@ -19,7 +19,7 @@ export const SelectSongsPage = () => {
   const songs = useSongsList()
   const played = useStudentPlayedSongs(studentId!)
 
-  const preselected = (location.state as any)?.preselected as
+  const preselected = (location.state as { preselected?: string[] })?.preselected as
     | string[]
     | undefined
   const [selected, setSelected] = useState<Set<string>>(
@@ -35,7 +35,11 @@ export const SelectSongsPage = () => {
   const toggle = (id: string) => {
     setSelected(prev => {
       const next = new Set(prev)
-      next.has(id) ? next.delete(id) : next.add(id)
+      if (next.has(id)) {
+        next.delete(id)
+      } else {
+        next.add(id)
+      }
       return next
     })
   }

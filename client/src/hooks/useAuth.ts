@@ -31,7 +31,7 @@ interface ResetPasswordData {
 }
 
 export const useSignUp = (
-  options?: UseMutationOptions<any, Error, SignUpData>
+  options?: UseMutationOptions<unknown, Error, SignUpData>
 ) => {
   return useMutation({
     mutationFn: async (data: SignUpData) => {
@@ -61,7 +61,7 @@ export const useSignUp = (
 }
 
 export const useLogin = (
-  options?: UseMutationOptions<any, Error, LoginData>
+  options?: UseMutationOptions<unknown, Error, LoginData>
 ) => {
   return useMutation({
     mutationFn: async (data: LoginData) => {
@@ -90,7 +90,7 @@ export const useLogin = (
 }
 
 export const useChangePassword = (
-  options?: UseMutationOptions<any, Error, ChangePasswordData>
+  options?: UseMutationOptions<unknown, Error, ChangePasswordData>
 ) => {
   return useMutation({
     mutationFn: async (data: ChangePasswordData) => {
@@ -116,7 +116,7 @@ export const useChangePassword = (
 }
 
 export const useDeleteUser = (
-  options?: UseMutationOptions<any, Error, void>
+  options?: UseMutationOptions<unknown, Error, void>
 ) => {
   return useMutation({
     mutationFn: async () => {
@@ -127,7 +127,7 @@ export const useDeleteUser = (
 }
 
 export const useRequestPasswordReset = (
-  options?: UseMutationOptions<any, Error, RequestPasswordResetData>
+  options?: UseMutationOptions<unknown, Error, RequestPasswordResetData>
 ) => {
   return useMutation({
     mutationFn: async (data: RequestPasswordResetData) => {
@@ -152,7 +152,7 @@ export const useRequestPasswordReset = (
 }
 
 export const useResetPassword = (
-  options?: UseMutationOptions<any, Error, ResetPasswordData>
+  options?: UseMutationOptions<unknown, Error, ResetPasswordData>
 ) => {
   return useMutation({
     mutationFn: async (data: ResetPasswordData) => {
@@ -177,7 +177,7 @@ export const useResetPassword = (
 }
 
 export const useLogout = (
-  options?: UseMutationOptions<any, Error, void>
+  options?: UseMutationOptions<unknown, Error, void>
 ) => {
   return useMutation({
     mutationFn: async () => {

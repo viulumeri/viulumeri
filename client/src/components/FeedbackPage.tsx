@@ -103,13 +103,13 @@ export const FeedbackPage = () => {
           </div>
 
           {/* Honeypot spam trap*/}
-          <div className="hidden">
-            <label htmlFor="website">Website</label>
+          <div className="hidden" aria-hidden="true">
+            <label htmlFor="feedback-reference-code">Reference code</label>
             <input
-              id="website"
+              id="feedback-reference-code"
               value={website}
               onChange={event => setWebsite(event.target.value)}
-              autoComplete="off"
+              autoComplete="new-password"
               tabIndex={-1}
             />
           </div>

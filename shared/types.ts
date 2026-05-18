@@ -93,5 +93,5 @@ export interface SubmitFeedbackBody {
 }
 
 export interface SubmitFeedbackResponse {
-  ok: true
+  ok: boolean
 }

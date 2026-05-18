@@ -217,6 +217,8 @@ export const SettingsPage = () => {
           </p>
         </div>
       </div>
+
+      <p className="text-right text-xs text-gray-500">Versio {__APP_VERSION__}</p> {/* Näytä (clientin) versio asetuksissa */}
     </div>
   )
 }

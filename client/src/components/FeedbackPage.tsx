@@ -1,9 +1,8 @@
-import { useRef, useState } from 'react'
+import { useState } from 'react'
 import { useSubmitFeedback } from '../hooks/useFeedback'
 import type { FeedbackCategory } from '../../../shared/types'
 
 export const FeedbackPage = () => {
-  const loadedAt = useRef(Date.now())
   const [title, setTitle] = useState('')
   const [message, setMessage] = useState('')
   const [category, setCategory] = useState<FeedbackCategory>('bug')
@@ -16,7 +15,6 @@ export const FeedbackPage = () => {
       setMessage('')
       setCategory('bug')
       setWebsite('')
-      loadedAt.current = Date.now()
     },
     onError: error => {
       alert(`Palautteen lähetys epäonnistui: ${error.message}`)
@@ -48,14 +46,8 @@ export const FeedbackPage = () => {
 
     // Lightweight spam prevention:
     // - Honeypot field (website) should stay empty
-    // - Bots often submit instantly; require a tiny minimum time on page
     if (website.trim()) {
       alert('Lähetys epäonnistui')
-      return
-    }
-    const secondsOnPage = (Date.now() - loadedAt.current) / 1000
-    if (secondsOnPage < 2) {
-      alert('Odota hetki ja yritä uudelleen')
       return
     }
 

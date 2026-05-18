@@ -217,6 +217,9 @@ const App = () => {
       <Route
         path="/"
         element={
+          isPending ? (
+      <div>Loading...</div>
+    ) : (
           <Navigate
             to={
               userType === 'teacher'
@@ -227,6 +230,7 @@ const App = () => {
             }
             replace
           />
+          )
         }
       />
 

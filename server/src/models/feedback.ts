@@ -4,13 +4,13 @@ const feedbackSchema = new mongoose.Schema(
   {
     userId: { type: String, required: true, index: true },
     userType: { type: String, required: true },
-    title: { type: String, required: true },
+    title: { type: String, required: true, maxlength: 200 },
     category: {
       type: String,
       required: true,
       enum: ['bug', 'feature', 'other']
     },
-    message: { type: String, required: true },
+    message: { type: String, required: true, minlength: 5, maxlength: 4000 },
     ip: { type: String, required: false },
     userAgent: { type: String, required: false }
   },

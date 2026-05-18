@@ -1,6 +1,7 @@
 import { Link, useParams, useNavigate, useLocation } from 'react-router-dom'
 import { useInviteDetails, useAcceptInvite } from '../hooks/useInvite'
 import { useSession } from '../auth-client'
+import { useNotification } from '../hooks/useNotification'
 
 export const InviteAccept = () => {
   const location = useLocation()
@@ -8,12 +9,17 @@ export const InviteAccept = () => {
   const navigate = useNavigate()
   const { data: session, isPending: sessionPending } = useSession()
   const { data, isPending: invitePending, isError } = useInviteDetails(token!, !!session)
+  const { showError, showSuccess } = useNotification()
 
   const accept = useAcceptInvite({
     onSuccess: () => {
+      showSuccess('Linkitys onnistui!')
       navigate('/')
     },
-    onError: error => console.error('Accept invite failed:', error)
+    onError: error => {
+      showError('Linkitys epäonnistui.')
+      console.error('Accept invite failed:', error)
+    }
   })
 
   if (sessionPending) return <div>Ladataan…</div>
@@ -57,6 +63,7 @@ export const InviteAccept = () => {
             disabled={accept.isPending}
             >
             {accept.isPending ? 'Vaihdetaan…' : 'Vahvista'}
+<<<<<<< HEAD
             </button>
             <button 
               className="button-basic-small block mx-auto mt-4 bg-red-600 hover:bg-red-700 text-white rounded-full px-6 py-2 text-xl font-semibold"
@@ -68,6 +75,10 @@ export const InviteAccept = () => {
           {accept.isError && (
             <p style={{ color: 'red' }}>Linkitys epäonnistui.</p>
           )}
+=======
+          </button>
+          <button onClick={() => navigate('/')}>Peruuta</button>
+>>>>>>> main
         </>
       ) : (
         <>
@@ -78,9 +89,6 @@ export const InviteAccept = () => {
           >
             {accept.isPending ? 'Liitetään…' : 'Vahvista'}
           </button>
-          {accept.isError && (
-            <p style={{ color: 'red' }}>Linkitys epäonnistui.</p>
-          )}
         </>
       )}
     </div>

@@ -1,26 +1,35 @@
+import { useEffect } from 'react'
 import { useSongsList } from '../hooks/useSongs'
 import { Songslist } from './Songslist'
 import { Header } from './Header'
 import { useOwnPlayedSongs } from '../hooks/usePlayedSongs'
 import { useSession } from '../auth-client'
 import type { AppSessionUser } from '../../../shared/types'
+import { useNotification } from '../hooks/useNotification'
 
 export const SongslistPage = () => {
   const { data: session } = useSession()
   const userType = (session?.user as AppSessionUser | undefined)?.userType
   const isStudent = userType === 'student'
+  const { showError } = useNotification()
 
   const songs = useSongsList()
   const played = useOwnPlayedSongs({ enabled: isStudent })
 
+  useEffect(() => {
+    if (songs.isError) {
+      showError(`Virhe: ${songs.error.message}`)
+    }
+  }, [songs.isError, songs.error, showError])
+
+  useEffect(() => {
+    if (isStudent && played.isError) {
+      showError(`Virhe: ${played.error.message}`)
+    }
+  }, [isStudent, played.isError, played.error, showError])
+
   if (songs.isPending || (isStudent && played.isPending)) {
     return <div className="p-4">Ladataan…</div>
-  }
-  if (songs.isError) {
-    return <div className="p-4 text-red-300">Virhe: {songs.error.message}</div>
-  }
-  if (isStudent && played.isError) {
-    return <div className="p-4 text-red-300">Virhe: {played.error.message}</div>
   }
 
   const playedSet = isStudent

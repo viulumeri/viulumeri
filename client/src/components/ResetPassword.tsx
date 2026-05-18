@@ -1,48 +1,59 @@
 import { useField } from '../hooks/useField'
 import { useResetPassword } from '../hooks/useAuth'
 import { useNavigate, useSearchParams, Link } from 'react-router-dom'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
+import { useNotification } from '../hooks/useNotification'
 
 export const ResetPassword = () => {
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
   const [token, setToken] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const { showError, showSuccess } = useNotification()
+  const hasShownError = useRef(false)
   
   const newPassword = useField('password')
 
   useEffect(() => {
+    if (hasShownError.current) return
+    
     const urlToken = searchParams.get('token')
     const urlError = searchParams.get('error')
     
     if (urlError === 'INVALID_TOKEN') {
-      setError('Linkki on vanhentunut tai virheellinen')
+      const errorMessage = 'Linkki on vanhentunut tai virheellinen'
+      showError(errorMessage)
+      setError(errorMessage)
+      hasShownError.current = true
     } else if (urlToken) {
       setToken(urlToken)
-    } else {
-      setError('Virheellinen linkki')
+    } else if (!urlToken) {
+      const errorMessage = 'Virheellinen linkki'
+      showError(errorMessage)
+      setError(errorMessage)
+      hasShownError.current = true
     }
-  }, [searchParams])
+  }, [searchParams, showError])
 
   const resetPassword = useResetPassword({
     onSuccess: () => {
       newPassword.reset()
-      alert('Salasana vaihdettu onnistuneesti!')
+      showSuccess('Salasana vaihdettu onnistuneesti!')
       navigate('/login')
     },
     onError: (error) => {
-      alert(`Virhe: ${error.message}`)
+      showError(`Virhe: ${error.message}`)
     }
   })
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault()
     if (!newPassword.value) {
-      alert('Syötä uusi salasana')
+      showError('Syötä uusi salasana')
       return
     }
     if (!token) {
-      alert('Virheellinen linkki')
+      showError('Virheellinen linkki')
       return
     }
     
@@ -88,14 +99,7 @@ export const ResetPassword = () => {
           {resetPassword.isPending ? 'Vaihdetaan...' : 'Vaihda salasana'}
         </button>
       </form>
-
-      {resetPassword.isError && (
-        <div className="mt-3 text-sm text-red-300">
-          {resetPassword.error instanceof Error
-            ? resetPassword.error.message
-            : 'Salasanan vaihto epäonnistui'}
-        </div>
-      )}
+      
 
       <div className="mt-4 flex justify-center">
         <Link to="/login" className="text-gray-300 hover:text-white underline">

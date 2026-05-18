@@ -1,18 +1,21 @@
 import { useState } from 'react'
 import { useTeacherStudents, useDeleteStudent } from '../hooks/useStudents'
 import { Users, Trash2 } from 'lucide-react'
+import { useNotification } from '../hooks/useNotification'
 
 export const TeacherSettings = () => {
   const { data: studentsData, isLoading, isError } = useTeacherStudents()
   const [deletingId, setDeletingId] = useState<string | null>(null)
+  const { showError, showSuccess } = useNotification()
 
   const deleteStudent = useDeleteStudent({
     onSuccess: () => {
       setDeletingId(null)
+      showSuccess('Oppilas poistettu onnistuneesti')
     },
     onError: error => {
       setDeletingId(null)
-      alert(`Virhe oppilaan poistamisessa: ${error.message}`)
+      showError(`Virhe oppilaan poistamisessa: ${error.message}`)
     }
   })
 

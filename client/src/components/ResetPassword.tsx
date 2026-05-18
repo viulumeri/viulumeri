@@ -58,10 +58,10 @@ export const ResetPassword = () => {
         <h2 className="mb-4">Salasanan vaihto</h2>
         <div className="text-sm text-red-300 mb-4">{error}</div>
         <div className="space-y-2">
-          <Link to="/forgot-password" className="text-gray-300 hover:text-white underline">
+          <Link to="/forgot-password" className="block text-gray-300 hover:text-white underline">
             Pyydä uusi palautuslinkki
           </Link>
-          <Link to="/login" className="text-gray-300 hover:text-white underline">
+          <Link to="/login" className="block text-gray-300 hover:text-white underline">
             Takaisin kirjautumiseen
           </Link>
         </div>

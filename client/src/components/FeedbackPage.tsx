@@ -79,6 +79,7 @@ export const FeedbackPage = () => {
               onChange={event => setTitle(event.target.value)}
               className="w-full bg-neutral-700 border border-neutral-600 rounded-md px-3 py-2 text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               placeholder="Esim. 'Musiikkisoitin ei toimi'"
+              maxLength={200}
               required
             />
           </div>
@@ -128,6 +129,7 @@ export const FeedbackPage = () => {
               rows={6}
               className="w-full bg-neutral-700 border border-neutral-600 rounded-md px-3 py-2 text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               placeholder="Kirjoita palaute tähän..."
+              maxLength={4000}
               required
             />
           </div>

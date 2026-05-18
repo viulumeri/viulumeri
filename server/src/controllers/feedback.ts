@@ -1,17 +1,14 @@
 import express from 'express'
 import Feedback from '../models/feedback'
+import RateLimit from '../models/rateLimit'
 import type { SubmitFeedbackBody, FeedbackCategory, SubmitFeedbackResponse } from '../../../shared/types'
 
 const router = express.Router()
 
-type RateKey = string
-type RateEntry = { count: number; resetAt: number }
-
-// Simple in-memory rate limit to reduce spam:
-// 5 submissions / 10 minutes per user+ip.
+// MongoDB-backed rate limit: 5 submissions / 10 minutes per user+ip.
+// Persisted in the database so limits are shared across all server instances.
 const rateWindowMs = 10 * 60 * 1000
 const rateMax = 5
-const rateMap = new Map<RateKey, RateEntry>()
 
 const isValidCategory = (value: unknown): value is FeedbackCategory =>
   value === 'bug' || value === 'feature' || value === 'other'
@@ -50,17 +47,19 @@ router.post('/', async (req, res) => {
   }
 
   const ip = req.ip
-  const key: RateKey = `${userId}:${ip}`
-  const now = Date.now()
-  const entry = rateMap.get(key)
-  if (!entry || entry.resetAt <= now) {
-    rateMap.set(key, { count: 1, resetAt: now + rateWindowMs })
-  } else if (entry.count >= rateMax) {
+  const key = `${userId}:${ip}`
+  const now = new Date()
+  const resetAt = new Date(now.getTime() + rateWindowMs)
+
+  const rateEntry = await RateLimit.findOneAndUpdate(
+    { key, resetAt: { $gt: now } },
+    { $inc: { count: 1 }, $setOnInsert: { resetAt } },
+    { upsert: true, new: true }
+  )
+
+  if (rateEntry.count > rateMax) {
     res.status(429).json({ error: 'Too many requests' })
     return
-  } else {
-    entry.count += 1
-    rateMap.set(key, entry)
   }
 
   await Feedback.create({

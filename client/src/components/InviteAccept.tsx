@@ -22,11 +22,12 @@ export const InviteAccept = () => {
     return (
       <div>
         <p className="flex justify-center">Kirjaudu sisään vastataksesi kutsuun</p>
-        <button className="button-basic block mx-auto">
-          <Link to={`/login?next=${encodeURIComponent(location.pathname)}`}>
-            Kirjaudu
-          </Link>
-        </button>
+        <Link
+          className="button-basic block mx-auto"
+          to={`/login?next=${encodeURIComponent(location.pathname)}`}
+        >
+          Kirjaudu
+        </Link>
       </div>
     )
   }

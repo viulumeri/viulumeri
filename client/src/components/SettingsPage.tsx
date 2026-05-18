@@ -197,10 +197,6 @@ export const SettingsPage = () => {
       {userType === 'student' && <StudentSettings />}
 
       <div className="bg-neutral-900 rounded-lg p-6">
-        <h3 className="flex items-center gap-3 mb-4">
-          <Trash2 className="w-6 h-6 text-red-400" />
-          Poista käyttäjätili
-        </h3>
         <div className="space-y-4">
           <div className="flex justify-center">
             <button

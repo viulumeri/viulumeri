@@ -21,8 +21,11 @@ export const InviteAccept = () => {
   if (!session) {
     return (
       <div>
-        <p>Kirjaudu sisään vastataksesi kutsuun</p>
-        <Link to={`/login?next=${encodeURIComponent(location.pathname)}`}>
+        <p className="flex justify-center">Kirjaudu sisään vastataksesi kutsuun</p>
+        <Link
+          className="button-basic block mx-auto"
+          to={`/login?next=${encodeURIComponent(location.pathname)}`}
+        >
           Kirjaudu
         </Link>
       </div>

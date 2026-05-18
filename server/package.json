@@ -39,6 +39,6 @@
     "mongodb": "^6.18.0",
     "mongoose": "^8.16.5",
     "resend": "^6.0.0",
-    "uncrypto": "^1.0.0"
+    "uncrypto": "^0.1.3"
   }
 }

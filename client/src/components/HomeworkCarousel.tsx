@@ -5,6 +5,7 @@ import { useSongsList } from '../hooks/useSongs'
 import type { SongListItem, HomeworkListResponse } from '../../../shared/types'
 import { FloatingActionButton } from '../components/FloatingActionButton'
 import HomeworkCard from './HomeworkCard'
+import { useNotification } from '../hooks/useNotification'
 
 type HomeworkItem = HomeworkListResponse['homework'][number]
 
@@ -38,17 +39,18 @@ export const HomeworkCarousel = ({
 
   const [openMenuId, setOpenMenuId] = useState<string | null>(null)
   const [deletingId, setDeletingId] = useState<string | null>(null)
+  const { showError, showSuccess } = useNotification()
 
   const deleteHomework = useDeleteHomework({
     onSuccess: () => {
       setDeletingId(null)
-
+      showSuccess('Läksy poistettu onnistuneesti')
       setOpenMenuId(null)
       refetch()
     },
     onError: () => {
       setDeletingId(null)
-      alert('Läksyn poistaminen epäonnistui')
+      showError('Läksyn poistaminen epäonnistui')
     }
   })
 

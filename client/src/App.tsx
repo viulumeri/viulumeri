@@ -81,7 +81,14 @@ const App = () => {
           </PublicLayout>
         }
       />
-      <Route path="/reset-password" element={<ResetPassword />} />
+      <Route
+        path="/reset-password"
+        element={
+          <PublicLayout>
+            <ResetPassword />
+          </PublicLayout>
+        }
+      />
 
       {isPending && <Route path="*" element={<div>Ladataan...</div>} />}
 

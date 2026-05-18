@@ -55,15 +55,15 @@ export const ResetPassword = () => {
   if (error) {
     return (
       <div>
-        <h2>Salasanan vaihto</h2>
-        <div style={{ color: 'red' }}>
-          {error}
-        </div>
-        <div>
-          <Link to="/forgot-password">Pyydä uusi palautuslinkki</Link>
-        </div>
-        <div>
-          <Link to="/login">Takaisin kirjautumiseen</Link>
+        <h2 className="mb-4">Salasanan vaihto</h2>
+        <div className="text-sm text-red-300 mb-4">{error}</div>
+        <div className="space-y-2">
+          <Link to="/forgot-password" className="text-gray-300 hover:text-white underline">
+            Pyydä uusi palautuslinkki
+          </Link>
+          <Link to="/login" className="text-gray-300 hover:text-white underline">
+            Takaisin kirjautumiseen
+          </Link>
         </div>
       </div>
     )
@@ -71,27 +71,36 @@ export const ResetPassword = () => {
 
   return (
     <div>
-      <h2>Aseta uusi salasana</h2>
-      <form onSubmit={handleSubmit}>
+      <h2 className="mb-4">Aseta uusi salasana</h2>
+      <form onSubmit={handleSubmit} className="space-y-5">
         <div>
-          <label htmlFor="new-password">Uusi salasana:</label>
-          <input id="new-password" {...newPassword.props} required />
+          <label htmlFor="new-password" className="block mb-2 text-sm text-gray-300">
+            Uusi salasana:
+          </label>
+          <input
+            id="new-password"
+            {...newPassword.props}
+            required
+            className="w-full rounded-lg text-gray-100 px-3 py-2 border border-gray-400 focus:bg-white/10 placeholder-gray-400"
+          />
         </div>
-        <button type="submit" disabled={resetPassword.isPending}>
+        <button type="submit" disabled={resetPassword.isPending} className="button-basic block mx-auto">
           {resetPassword.isPending ? 'Vaihdetaan...' : 'Vaihda salasana'}
         </button>
       </form>
-      
+
       {resetPassword.isError && (
-        <div style={{ color: 'red' }}>
+        <div className="mt-3 text-sm text-red-300">
           {resetPassword.error instanceof Error
             ? resetPassword.error.message
             : 'Salasanan vaihto epäonnistui'}
         </div>
       )}
-      
-      <div>
-        <Link to="/login">Takaisin kirjautumiseen</Link>
+
+      <div className="mt-4 flex justify-center">
+        <Link to="/login" className="text-gray-300 hover:text-white underline">
+          Takaisin kirjautumiseen
+        </Link>
       </div>
     </div>
   )

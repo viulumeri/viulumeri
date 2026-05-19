@@ -35,7 +35,7 @@ export const HomeworkEditPage = () => {
   }, [editing?.comment])
 
   useEffect(() => {
-    const addSongs = (location.state as any)?.addSongs as string[] | undefined
+    const addSongs = (location.state as { addSongs?: string[] })?.addSongs as string[] | undefined
     if (addSongs?.length) {
       setSongIds(prev => {
         const base = prev ?? editing?.songs ?? []
@@ -44,7 +44,7 @@ export const HomeworkEditPage = () => {
       })
       navigate('.', {
         replace: true,
-        state: { ...(location.state as any), addSongs: undefined }
+        state: { ...(location.state as { addSongs?: string[] }), addSongs: undefined }
       })
     }
   }, [location.state, navigate, editing?.songs])

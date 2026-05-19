@@ -1,23 +1,25 @@
 import { useState } from 'react'
 import { useSubmitFeedback } from '../hooks/useFeedback'
 import type { FeedbackCategory } from '../../../shared/types'
+import { useNotification } from '../hooks/useNotification'
 
 export const FeedbackPage = () => {
   const [title, setTitle] = useState('')
   const [message, setMessage] = useState('')
   const [category, setCategory] = useState<FeedbackCategory>('bug')
   const [website, setWebsite] = useState('')
+  const { showError, showSuccess } = useNotification()
 
   const submitFeedback = useSubmitFeedback({
     onSuccess: () => {
-      alert('Kiitos palautteesta!')
+      showSuccess('Kiitos palautteesta!')
       setTitle('')
       setMessage('')
       setCategory('bug')
       setWebsite('')
     },
     onError: error => {
-      alert(`Palautteen lähetys epäonnistui: ${error.message}`)
+      showError(`Palautteen lähetys epäonnistui: ${error.message}`)
     }
   })
 
@@ -26,28 +28,28 @@ export const FeedbackPage = () => {
 
     const trimmedTitle = title.trim()
     if (!trimmedTitle) {
-      alert('Kirjoita otsikko ennen lähettämistä')
+      showError('Kirjoita otsikko ennen lähettämistä')
       return
     }
     if (trimmedTitle.length > 200) {
-      alert('Otsikko voi olla enintään 200 merkkiä')
+      showError('Otsikko voi olla enintään 200 merkkiä')
       return
     }
 
     const trimmedMessage = message.trim()
     if (!trimmedMessage) {
-      alert('Kirjoita palaute ennen lähettämistä')
+      showError('Kirjoita palaute ennen lähettämistä')
       return
     }
     if (trimmedMessage.length < 5) {
-      alert('Kirjoita vähintään 5 merkkiä')
+      showError('Kirjoita vähintään 5 merkkiä palautteeseen')
       return
     }
 
     // Lightweight spam prevention:
     // - Honeypot field (website) should stay empty
     if (website.trim()) {
-      alert('Lähetys epäonnistui')
+      showError('Lähetys epäonnistui')
       return
     }
 
@@ -79,8 +81,6 @@ export const FeedbackPage = () => {
               onChange={event => setTitle(event.target.value)}
               className="w-full bg-neutral-700 border border-neutral-600 rounded-md px-3 py-2 text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               placeholder="Esim. 'Musiikkisoitin ei toimi'"
-              maxLength={200}
-              required
             />
           </div>
 
@@ -129,8 +129,6 @@ export const FeedbackPage = () => {
               rows={6}
               className="w-full bg-neutral-700 border border-neutral-600 rounded-md px-3 py-2 text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               placeholder="Kirjoita palaute tähän..."
-              maxLength={4000}
-              required
             />
           </div>
 

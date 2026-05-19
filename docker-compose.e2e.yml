@@ -1,0 +1,38 @@
+services:
+  mongodb:
+    image: mongo:8
+    container_name: viulumeri-e2e-mongodb
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password
+      MONGO_INITDB_DATABASE: viulumeri
+    networks:
+      - viulumeri-e2e-network
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: viulumeri-e2e-app
+    restart: on-failure
+    ports:
+      - '3001:3001'
+    environment:
+      NODE_ENV: production
+      MONGODB_URI: mongodb://admin:password@mongodb:27017/viulumeri?authSource=admin
+      BETTER_AUTH_SECRET: e2e-test-secret-key-for-ci-only
+      BETTER_AUTH_URL: http://localhost:3001
+      PRODUCTION_URL: http://localhost:3001
+      RESEND_API_KEY: re_placeholder_not_used_in_e2e
+      FROM_EMAIL: noreply@example.com
+      MUSIC_DIR: /tmp/music
+    tmpfs:
+      - /tmp/music
+    depends_on:
+      - mongodb
+    networks:
+      - viulumeri-e2e-network
+
+networks:
+  viulumeri-e2e-network:
+    driver: bridge

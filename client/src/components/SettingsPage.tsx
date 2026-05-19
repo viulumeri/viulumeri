@@ -8,6 +8,7 @@ import { TeacherSettings } from './TeacherSettings'
 import { User, Key, Settings, LogOut, Trash2 } from 'lucide-react'
 import { useNotification } from '../hooks/useNotification'
 
+import { Link } from 'react-router-dom'
 export const SettingsPage = () => {
   const { data: session, isPending } = useSession()
   const [isDeleting, setIsDeleting] = useState(false)

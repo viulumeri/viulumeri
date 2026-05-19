@@ -75,7 +75,7 @@ export const HomeworkCreatePage = () => {
             replace: true
           })
         },
-        onError: (err: { message=: string}) =>
+        onError: (err: { message?: string }) =>
           showError(err?.message || 'Läksyn luonti epäonnistui')
       }
     )

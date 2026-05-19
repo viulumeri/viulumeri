@@ -6,7 +6,7 @@ import type { AppSessionUser } from '../../../shared/types'
 import { StudentSettings } from './StudentSettings'
 import { TeacherSettings } from './TeacherSettings'
 import { User, Key, Settings, LogOut, Trash2 } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { useNotification } from '../hooks/useNotification'
 
 export const SettingsPage = () => {
   const { data: session, isPending } = useSession()
@@ -14,17 +14,18 @@ export const SettingsPage = () => {
   const currentPassword = useField('password')
   const newPassword = useField('password')
   const confirmPassword = useField('password')
+  const { showError, showSuccess } = useNotification()
 
   const deleteUser = useDeleteUser({
     onSuccess: () => {
       setIsDeleting(false)
-      alert(
+      showSuccess(
         'Vahvistussähköposti lähetetty. Tarkista sähköpostisi viimeistelläksesi tilin poistamisen.'
       )
     },
     onError: error => {
       setIsDeleting(false)
-      alert(`Virhe tilin poistamisessa: ${error.message}`)
+      showError(`Virhe tilin poistamisessa: ${error.message}`)
     }
   })
 
@@ -33,10 +34,10 @@ export const SettingsPage = () => {
       currentPassword.reset()
       newPassword.reset()
       confirmPassword.reset()
-      alert('Salasana vaihdettu onnistuneesti!')
+      showSuccess('Salasana vaihdettu onnistuneesti!')
     },
     onError: error => {
-      alert(`Virhe salasanan vaihdossa: ${error.message}`)
+      showError(`Virhe salasanan vaihdossa: ${error.message}`)
     }
   })
 
@@ -46,7 +47,7 @@ export const SettingsPage = () => {
       window.location.href = '/login'
     },
     onError: error => {
-      alert(`Virhe uloskirjautumisessa: ${error.message}`)
+      showError(`Virhe uloskirjautumisessa: ${error.message}`)
     }
   })
 
@@ -78,11 +79,11 @@ export const SettingsPage = () => {
       !newPassword.value ||
       !confirmPassword.value
     ) {
-      alert('Täytä kaikki salasanakentät')
+      showError('Täytä kaikki salasanakentät')
       return
     }
     if (newPassword.value !== confirmPassword.value) {
-      alert('Uudet salasanat eivät täsmää')
+      showError('Uudet salasanat eivät täsmää')
       return
     }
     changePassword.mutate({
@@ -207,10 +208,6 @@ export const SettingsPage = () => {
       {userType === 'student' && <StudentSettings />}
 
       <div className="bg-neutral-900 rounded-lg p-6">
-        <h3 className="flex items-center gap-3 mb-4">
-          <Trash2 className="w-6 h-6 text-red-400" />
-          Poista käyttäjätili
-        </h3>
         <div className="space-y-4">
           <div className="flex justify-center">
             <button
@@ -227,6 +224,8 @@ export const SettingsPage = () => {
           </p>
         </div>
       </div>
+
+      <p className="text-right text-xs text-gray-500">Versio {__APP_VERSION__}</p> {/* Näytä (clientin) versio asetuksissa */}
     </div>
   )
 }

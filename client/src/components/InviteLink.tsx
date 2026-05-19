@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useSession } from '../auth-client'
 import { useGenerateInviteLink } from '../hooks/useInvite'
 import { QRCodeSVG } from 'qrcode.react'
+import { useNotification } from '../hooks/useNotification'
 
 // qr code component from: https://www.npmjs.com/package/qrcode.react
 
@@ -9,12 +10,17 @@ export const InviteLink = () => {
   const { data: session, isPending } = useSession()
   const [url, setUrl] = useState('')
   const [copied, setCopied] = useState(false)
+  const { showError, showSuccess } = useNotification()
 
   const gen = useGenerateInviteLink({
     onSuccess: data => {
       setUrl(data.inviteUrl)
+      showSuccess('Kutsulinkki luotu onnistuneesti')
     },
-    onError: error => console.error('Generate invite failed:', error)
+    onError: error => {
+      showError('Virhe kutsulinkin luomisessa')
+      console.error('Generate invite failed:', error)
+    }
   })
 
   if (isPending) return <div>Ladataan...</div>
@@ -70,12 +76,6 @@ export const InviteLink = () => {
               <QRCodeSVG value={url} size={320} />
             </div>
           </div>
-        </div>
-      )}
-
-      {gen.isError && (
-        <div className="text-red-400 text-center">
-          Virhe kutsulinkin luomisessa
         </div>
       )}
     </div>

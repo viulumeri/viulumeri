@@ -3,6 +3,7 @@ import { useLogin } from '../hooks/useAuth'
 import { useNavigate, Link, useSearchParams } from 'react-router-dom'
 import { useSession } from '../auth-client'
 import { useEffect } from 'react'
+import { useNotification } from '../hooks/useNotification'
 
 export const Login = () => {
   const email = useField('email')
@@ -10,10 +11,15 @@ export const Login = () => {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const { data: session } = useSession()
+  const { showError, showSuccess } = useNotification()
 
   const loginMutation = useLogin({
+    onSuccess: () => {
+      showSuccess('Kirjautuminen onnistui')
+    },
     onError: error => {
-      console.error(error instanceof Error ? error.message : 'Login failed.')
+      const message = error instanceof Error ? error.message : 'Kirjautuminen epäonnistui'
+      showError(message)
       password.reset()
     }
   })
@@ -66,20 +72,6 @@ export const Login = () => {
           {loginMutation.isPending ? 'Kirjaudutaan…' : 'Kirjaudu sisään'}
         </button>
       </form>
-
-      {loginMutation.isError && (
-        <div className="mt-3 text-sm text-red-300">
-          {loginMutation.error instanceof Error
-            ? loginMutation.error.message
-            : 'Kirjautuminen epäonnistui'}
-        </div>
-      )}
-
-      {loginMutation.isSuccess && (
-        <div className="mt-3 text-sm text-green-300">
-          Kirjautuminen onnistui
-        </div>
-      )}
 
       <div className="mt-6 flex items-center justify-between text-sm">
         <Link

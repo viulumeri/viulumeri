@@ -2,21 +2,23 @@ import { useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { useTeacher, useRemoveTeacher } from '../hooks/useTeacher'
 import { UserCheck, UserX } from 'lucide-react'
+import { useNotification } from '../hooks/useNotification'
 
 export const TeacherManagement = () => {
   const [isDeleting, setIsDeleting] = useState(false)
   const queryClient = useQueryClient()
   const { data: teacherData } = useTeacher()
+  const { showError, showSuccess } = useNotification()
   
   const removeTeacher = useRemoveTeacher({
     onSuccess: () => {
       setIsDeleting(false)
       queryClient.invalidateQueries({ queryKey: ['teacher'] })
-      alert('Opettaja poistettu onnistuneesti!')
+      showSuccess('Opettaja poistettu onnistuneesti!')
     },
     onError: error => {
       setIsDeleting(false)
-      alert(`Virhe opettajan poistossa: ${error.message}`)
+      showError(`Virhe opettajan poistossa: ${error.message}`)
     }
   })
 

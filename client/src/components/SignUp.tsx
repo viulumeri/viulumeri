@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useField } from '../hooks/useField'
 import { useSignUp } from '../hooks/useAuth'
+import { useNotification } from '../hooks/useNotification'
 
 export const Signup = () => {
   const navigate = useNavigate()
@@ -10,15 +11,16 @@ export const Signup = () => {
   const firstName = useField('text')
   const lastName = useField('text')
   const [userType, setUserType] = useState<'teacher' | 'student'>('student')
-  const [messageStatus, setMessageStatus] = useState<'error' | null>(null)
+  const { showError, showSuccess } = useNotification()
 
   const signUpMutation = useSignUp({
     onSuccess: () => {
-      navigate('/signup-success')
+      showSuccess('Lähetimme vahvistusviestin sähköpostiisi. Tarkista sähköpostisi ja klikkaa vahvistuslinkkiä aktivoidaksesi tilisi.')
+      navigate('/login')
     },
     onError: error => {
-      console.error(error instanceof Error ? error.message : 'Sign up failed.')
-      setMessageStatus('error')
+      const message = error instanceof Error ? error.message : 'Rekisteröityminen epäonnistui'
+      showError(message)
     }
   })
 
@@ -29,7 +31,6 @@ export const Signup = () => {
       return
     }
 
-    setMessageStatus(null)
     signUpMutation.mutate({
       email: email.value,
       password: password.value,
@@ -125,14 +126,6 @@ export const Signup = () => {
           {signUpMutation.isPending ? 'Luodaan…' : 'Luo uusi käyttäjä'}
         </button>
       </form>
-
-      {messageStatus === 'error' && (
-        <div className="mt-3 text-sm text-red-300">
-          {signUpMutation.error instanceof Error
-            ? signUpMutation.error.message
-            : 'Rekisteröityminen epäonnistui'}
-        </div>
-      )}
     </div>
   )
 }

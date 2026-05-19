@@ -20,9 +20,11 @@ export const InviteAccept = () => {
 
   if (!session) {
     return (
-      <div>
-        <p>Kirjaudu sisään vastataksesi kutsuun</p>
-        <Link to={`/login?next=${encodeURIComponent(location.pathname)}`}>
+      <div className="space-y-4">
+        <p className="flex justify-center">Kirjaudu sisään vastataksesi kutsuun</p>
+        <Link className="flex justify-center text-gray-300 hover:text-white underline"
+          to={`/login?next=${encodeURIComponent(location.pathname)}`}
+        >
           Kirjaudu
         </Link>
       </div>
@@ -47,13 +49,21 @@ export const InviteAccept = () => {
         <>
           <h2>Nykyinen opettajasi on {currentTeacher.name}.</h2>
           <p>Haluatko vaihtaa opettajaksi {teacher.name}?</p>
-          <button
+          <div className="inline-flex gap-6 mt-4">
+            <button 
+            className="button-basic block mx-auto "
             onClick={() => accept.mutate(token!)}
             disabled={accept.isPending}
-          >
+            >
             {accept.isPending ? 'Vaihdetaan…' : 'Vahvista'}
-          </button>
-          <button onClick={() => navigate('/')}>Peruuta</button>
+            </button>
+            <button 
+              className="button-basic block mx-auto "
+              onClick={() => navigate('/')}>
+              Peruuta
+            </button>
+
+          </div>
           {accept.isError && (
             <p style={{ color: 'red' }}>Linkitys epäonnistui.</p>
           )}

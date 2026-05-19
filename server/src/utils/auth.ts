@@ -26,7 +26,7 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: process.env.NODE_ENV !== 'test', // Disable email verification in tests
-    sendResetPassword: process.env.NODE_ENV !== 'test' 
+    sendResetPassword: process.env.NODE_ENV !== 'test'
       ? async ({ user, url }) => {
           await sendEmail({
             to: user.email,
@@ -40,7 +40,7 @@ Jos et pyytänyt salasanan palautusta, voit jättää tämän viestin huomioimat
           })
         }
       : undefined,
-    onPasswordReset: async ({ user }) => {
+    onPasswordReset: async ({ user }: { user: any }) => {
       logger.info('Password reset completed', { userId: user.id, email: user.email })
     }
   },
@@ -127,16 +127,16 @@ Jos et rekisteröitynyt Viulumeri-palveluun, voit jättää tämän viestin huom
       logger.info('Verification email sent successfully', { userId: user.id, email: user.email })
     }
       : undefined,
-    async afterEmailVerification(user, request) {
-      logger.info('Email verification completed successfully', {
-        userId: user.id,
-        email: user.email,
-        emailVerified: user.emailVerified,
-        requestUrl: request?.url,
-        requestHeaders: request?.headers
-      })
-    }
-  },
+    async afterEmailVerification(user: any, request: any) {
+  logger.info('Email verification completed successfully', {
+    userId: user.id,
+    email: user.email,
+    emailVerified: user.emailVerified,
+    requestUrl: request?.url,
+    requestHeaders: request?.headers
+  })
+  }
+},
   databaseHooks: {
     user: {
       create: {

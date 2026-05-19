@@ -1,23 +1,26 @@
 import { useField } from '../hooks/useField'
 import { useRequestPasswordReset } from '../hooks/useAuth'
 import { Link } from 'react-router-dom'
+import { useNotification } from '../hooks/useNotification'
 
 export const ForgotPassword = () => {
   const email = useField('email')
+  const { showError, showSuccess } = useNotification()
 
   const requestReset = useRequestPasswordReset({
     onSuccess: () => {
       email.reset()
+      showSuccess('Palautuslinkki lähetetty sähköpostiin')
     },
     onError: error => {
-      alert(`Virhe: ${error.message}`)
+      showError(`Virhe: ${error.message}`)
     }
   })
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault()
     if (!email.value) {
-      alert('Syötä sähköpostiosoite')
+      showError('Syötä sähköpostiosoite')
       return
     }
     requestReset.mutate({
@@ -50,20 +53,6 @@ export const ForgotPassword = () => {
           {requestReset.isPending ? 'Lähetetään…' : 'Lähetä palautuslinkki'}
         </button>
       </form>
-
-      {requestReset.isError && (
-        <div className="mt-3 text-sm text-red-300">
-          {requestReset.error instanceof Error
-            ? requestReset.error.message
-            : 'Salasanan palautus epäonnistui'}
-        </div>
-      )}
-
-      {requestReset.isSuccess && (
-        <div className="mt-3 text-sm text-green-300">
-          Palautuslinkki lähetetty sähköpostiin
-        </div>
-      )}
 
       <div className="mt-4 flex justify-center">
         <Link to="/login" className=" text-gray-300 hover:text-white underline">

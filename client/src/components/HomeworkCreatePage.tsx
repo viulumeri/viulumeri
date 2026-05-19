@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { useSongsList } from '../hooks/useSongs'
 import { useCreateHomework } from '../hooks/useHomework'
@@ -6,6 +6,7 @@ import type { SongListItem, HomeworkListResponse } from '../../../shared/types'
 import HomeworkCard from './HomeworkCard'
 import { FloatingActionButton } from '../components/FloatingActionButton'
 import { X } from 'lucide-react'
+import { useNotification } from '../hooks/useNotification'
 
 type HomeworkItem = HomeworkListResponse['homework'][number]
 
@@ -48,6 +49,15 @@ export const HomeworkCreatePage = () => {
   )
 
   const createHw = useCreateHomework()
+  const { showError, showSuccess } = useNotification()
+
+  const errorShownRef = useRef(false)
+  useEffect(() => {
+    if (songsQ.isError && !errorShownRef.current) {
+      showError('Kappaleiden lataus epäonnistui. Yritä päivittää sivu.')
+      errorShownRef.current = true
+    }
+  }, [songsQ.isError, showError])
 
   const handleCreate = () => {
     if (!studentId) return
@@ -59,13 +69,14 @@ export const HomeworkCreatePage = () => {
       },
       {
         onSuccess: () => {
+          showSuccess('Läksy luotu onnistuneesti')
           navigate(`/teacher/students/${studentId}/homework`, {
             state: location.state,
             replace: true
           })
         },
-        onError: (err: { message?: string }) =>
-          alert(err?.message || 'Läksyn luonti epäonnistui')
+        onError: (err: { message=: string}) =>
+          showError(err?.message || 'Läksyn luonti epäonnistui')
       }
     )
   }
@@ -79,7 +90,17 @@ export const HomeworkCreatePage = () => {
   if (songsQ.isPending) return <div className="p-4">Ladataan…</div>
   if (songsQ.isError)
     return (
-      <div className="p-4 text-red-300">Virhe: {songsQ.error?.message}</div>
+      <div className="p-4 text-center">
+        <p className="text-red-500 mb-4">
+          Kappaleiden lataus epäonnistui
+        </p>
+        <button
+          onClick={() => window.location.reload()}
+          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+        >
+          Päivitä sivu
+        </button>
+      </div>
     )
 
   return (

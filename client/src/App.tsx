@@ -1,6 +1,5 @@
 import { Login } from './components/Login.tsx'
 import { Signup } from './components/SignUp.tsx'
-import { SignupSuccess } from './components/SignupSuccess'
 import { ForgotPassword } from './components/ForgotPassword'
 import { ResetPassword } from './components/ResetPassword'
 import { EmailVerified } from './components/EmailVerified'
@@ -24,6 +23,8 @@ import { SettingsPage } from './components/SettingsPage'
 import { Route, Routes, Navigate } from 'react-router-dom'
 import { useSession } from './auth-client'
 import type { AppSessionUser } from '../../shared/types'
+import { NotificationProvider } from './contexts/NotificationProvider'
+import { NotificationBanner } from './components/NotificationBanner'
 import './index.css'
 
 const App = () => {
@@ -31,7 +32,9 @@ const App = () => {
   const userType = (session?.user as AppSessionUser | undefined)?.userType
 
   return (
-    <Routes>
+    <NotificationProvider>
+      <NotificationBanner />
+      <Routes>
       {/* Public routes */}
       <Route
         path="/login"
@@ -46,14 +49,6 @@ const App = () => {
         element={
           <PublicLayout>
             <Signup />
-          </PublicLayout>
-        }
-      />
-      <Route
-        path="/signup-success"
-        element={
-          <PublicLayout>
-            <SignupSuccess />
           </PublicLayout>
         }
       />
@@ -81,7 +76,14 @@ const App = () => {
           </PublicLayout>
         }
       />
-      <Route path="/reset-password" element={<ResetPassword />} />
+      <Route
+        path="/reset-password"
+        element={
+          <PublicLayout>
+            <ResetPassword />
+          </PublicLayout>
+        }
+      />
 
       {isPending && <Route path="*" element={<div>Ladataan...</div>} />}
 
@@ -242,7 +244,8 @@ const App = () => {
           }
         />
       )}
-    </Routes>
+      </Routes>
+    </NotificationProvider>
   )
 }
 

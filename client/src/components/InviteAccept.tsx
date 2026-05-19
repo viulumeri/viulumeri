@@ -20,10 +20,9 @@ export const InviteAccept = () => {
 
   if (!session) {
     return (
-      <div>
+      <div className="space-y-4">
         <p className="flex justify-center">Kirjaudu sisään vastataksesi kutsuun</p>
-        <Link
-          className="button-basic block mx-auto"
+        <Link className="flex justify-center text-gray-300 hover:text-white underline"
           to={`/login?next=${encodeURIComponent(location.pathname)}`}
         >
           Kirjaudu
@@ -50,16 +49,16 @@ export const InviteAccept = () => {
         <>
           <h2>Nykyinen opettajasi on {currentTeacher.name}.</h2>
           <p>Haluatko vaihtaa opettajaksi {teacher.name}?</p>
-          <div className="inline-flex gap-4 mt-4">
+          <div className="inline-flex gap-6 mt-4">
             <button 
-            className="button-basic-small block mx-auto mt-4 hover:bg-grey-700 rounded-full px-6 py-2 text-xl font-semibold"
+            className="button-basic block mx-auto "
             onClick={() => accept.mutate(token!)}
             disabled={accept.isPending}
             >
             {accept.isPending ? 'Vaihdetaan…' : 'Vahvista'}
             </button>
             <button 
-              className="button-basic-small block mx-auto mt-4 bg-red-600 hover:bg-red-700 text-white rounded-full px-6 py-2 text-xl font-semibold"
+              className="button-basic block mx-auto "
               onClick={() => navigate('/')}>
               Peruuta
             </button>

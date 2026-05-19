@@ -33,9 +33,6 @@
   .button-basic {
     @apply bg-neutral-100 text-black rounded-full px-6 py-2 text-xl;
   }
-  .button-basic-small {
-    @apply bg-neutral-100 text-black rounded-full px-4 py-1 text-sm;
-  }
   .scrollbar-hide {
     -ms-overflow-style: none;
     scrollbar-width: none;

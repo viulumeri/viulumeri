@@ -8,10 +8,14 @@ export const Signup = () => {
   const navigate = useNavigate()
   const email = useField('email')
   const password = useField('password')
+  const confirmPassword = useField('password')
+  const passwordsMatch = password.value === confirmPassword.value
   const firstName = useField('text')
   const lastName = useField('text')
   const [userType, setUserType] = useState<'teacher' | 'student'>('student')
   const { showError, showSuccess } = useNotification()
+  const confirmTouched = confirmPassword.value.length > 0
+  const showPasswordMismatch = confirmTouched && !passwordsMatch
 
   const signUpMutation = useSignUp({
     onSuccess: () => {
@@ -28,6 +32,10 @@ export const Signup = () => {
     event.preventDefault()
 
     if (signUpMutation.isPending) {
+      return
+    }
+    if (!passwordsMatch) {
+      showError('Salasanat eivät täsmää')
       return
     }
 
@@ -88,6 +96,29 @@ export const Signup = () => {
           />
         </div>
 
+        <div>
+          <input
+            {...confirmPassword.props}
+            type="password"
+            placeholder="Vahvista salasana"
+            autoComplete="new-password"
+            className={`w-full rounded-lg text-gray-100 px-3 py-2 border
+              ${
+                confirmTouched && !passwordsMatch
+                  ? 'border-red-500'
+                  : 'border-gray-400'
+              }
+              focus:bg-white/10 placeholder-gray-400`}
+            required
+          />
+
+          {showPasswordMismatch && (
+            <p className="mt-1 text-sm text-red-400">
+              Salasanat eivät täsmää
+            </p>
+          )}
+        </div>
+
         <fieldset className="mt-2 ml-2 flex items-center gap-4 text-sm">
           <div className="text-gray-300">Olen:</div>
           <label className="flex items-center gap-2">
@@ -120,7 +151,7 @@ export const Signup = () => {
 
         <button
           type="submit"
-          disabled={signUpMutation.isPending}
+          disabled={signUpMutation.isPending || !passwordsMatch || !password.value || !confirmPassword.value}
           className="button-basic block mx-auto"
         >
           {signUpMutation.isPending ? 'Luodaan…' : 'Luo uusi käyttäjä'}

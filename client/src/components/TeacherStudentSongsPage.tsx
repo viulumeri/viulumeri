@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 import { useQueryClient } from '@tanstack/react-query'
 import { useSongsList } from '../hooks/useSongs'
@@ -7,13 +8,27 @@ import {
   useUnmarkSongPlayed
 } from '../hooks/usePlayedSongs'
 import { Songslist } from '../components/Songslist'
+import { useNotification } from '../hooks/useNotification'
 
 export const TeacherStudentSongsPage = () => {
   const { studentId } = useParams<{ studentId: string }>()
   const qc = useQueryClient()
+  const { showError } = useNotification()
 
   const songs = useSongsList()
   const played = useStudentPlayedSongs(studentId!)
+
+  useEffect(() => {
+    if (songs.isError) {
+      showError(`Virhe: ${songs.error.message}`)
+    }
+  }, [songs.isError, songs.error, showError])
+
+  useEffect(() => {
+    if (played.isError) {
+      showError(`Virhe: ${played.error.message}`)
+    }
+  }, [played.isError, played.error, showError])
 
   const mark = useMarkSongPlayed({
     onSuccess: () =>
@@ -26,17 +41,15 @@ export const TeacherStudentSongsPage = () => {
 
   if (songs.isPending || played.isPending)
     return <div className="p-4">Ladataan…</div>
-  if (songs.isError)
-    return <div className="p-4 text-red-300">Virhe: {songs.error.message}</div>
-  if (played.isError)
-    return <div className="p-4 text-red-300">Virhe: {played.error.message}</div>
 
   const playedSet = new Set(played.data?.playedSongs ?? [])
   const onTogglePlayed = (songId: string) => {
     if (!studentId) return
-    playedSet.has(songId)
-      ? unmark.mutate({ studentId, songId })
-      : mark.mutate({ studentId, songId })
+    if (playedSet.has(songId)) {
+      unmark.mutate({ studentId, songId })
+    } else {
+      mark.mutate({ studentId, songId })
+    }
   }
 
   return (

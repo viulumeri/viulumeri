@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { useSongsList } from '../hooks/useSongs'
 import { useStudentPlayedSongs } from '../hooks/usePlayedSongs'
@@ -7,6 +7,7 @@ import { FloatingActionButton } from '../components/FloatingActionButton'
 import { Header } from './Header'
 import { ArrowLeft } from 'lucide-react'
 import { Songslist } from './Songslist'
+import { useNotification } from '../hooks/useNotification'
 
 export const SelectSongsPage = () => {
   const { studentId, homeworkId } = useParams<{
@@ -18,8 +19,21 @@ export const SelectSongsPage = () => {
 
   const songs = useSongsList()
   const played = useStudentPlayedSongs(studentId!)
+  const { showError } = useNotification()
 
-  const preselected = (location.state as any)?.preselected as
+  useEffect(() => {
+    if (songs.isError) {
+      showError(`Virhe: ${songs.error.message}`)
+    }
+  }, [songs.isError, songs.error, showError])
+
+  useEffect(() => {
+    if (played.isError) {
+      showError(`Virhe: ${played.error.message}`)
+    }
+  }, [played.isError, played.error, showError])
+
+  const preselected = (location.state as { preselected?: string[] })?.preselected as
     | string[]
     | undefined
   const [selected, setSelected] = useState<Set<string>>(
@@ -35,7 +49,11 @@ export const SelectSongsPage = () => {
   const toggle = (id: string) => {
     setSelected(prev => {
       const next = new Set(prev)
-      next.has(id) ? next.delete(id) : next.add(id)
+      if (next.has(id)) {
+        next.delete(id)
+      } else {
+        next.add(id)
+      }
       return next
     })
   }
@@ -54,10 +72,6 @@ export const SelectSongsPage = () => {
 
   if (songs.isPending || played.isPending)
     return <div className="p-4">Ladataan…</div>
-  if (songs.isError)
-    return <div className="p-4 text-red-300">Virhe: {songs.error.message}</div>
-  if (played.isError)
-    return <div className="p-4 text-red-300">Virhe: {played.error.message}</div>
 
   return (
     <div className="flex flex-col min-h-screen">

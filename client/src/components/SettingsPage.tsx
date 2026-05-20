@@ -8,6 +8,7 @@ import { TeacherSettings } from './TeacherSettings'
 import { User, Key, Settings, LogOut, Trash2 } from 'lucide-react'
 import { useNotification } from '../hooks/useNotification'
 
+import { Link } from 'react-router-dom'
 export const SettingsPage = () => {
   const { data: session, isPending } = useSession()
   const [isDeleting, setIsDeleting] = useState(false)
@@ -193,6 +194,15 @@ export const SettingsPage = () => {
             </button>
           </div>
         </form>
+      </div>
+
+      <div className="bg-neutral-900 rounded-lg p-6">
+        <h3 className="mb-4">Palaute</h3>
+        <div className="flex justify-center">
+          <Link to="/feedback" className="button-basic">
+            Anna palautetta
+          </Link>
+        </div>
       </div>
 
       {userType === 'teacher' && <TeacherSettings />}

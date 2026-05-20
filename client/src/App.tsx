@@ -16,6 +16,7 @@ import { TeacherStudentLayout } from './components/TeacherStudentLayout'
 import { SongslistPage } from './components/SongslistPage'
 import { HomeworkEditPage } from './components/HomeworkEditPage'
 import { SelectSongsPage } from './components/SelectSongsPage'
+import { FeedbackPage } from './components/FeedbackPage'
 
 import { AppLayout } from './components/AppLayout'
 import PublicLayout from './components/PublicLayout'
@@ -190,6 +191,15 @@ const App = () => {
             element={
               <AppLayout>
                 <SettingsPage />
+              </AppLayout>
+            }
+          />
+
+          <Route
+            path="/feedback"
+            element={
+              <AppLayout>
+                <FeedbackPage />
               </AppLayout>
             }
           />

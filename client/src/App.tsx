@@ -21,6 +21,7 @@ import { FeedbackPage } from './components/FeedbackPage'
 import { AppLayout } from './components/AppLayout'
 import PublicLayout from './components/PublicLayout'
 import { SettingsPage } from './components/SettingsPage'
+import { AdminPanel } from './components/AdminPanel'
 import { Route, Routes, Navigate } from 'react-router-dom'
 import { useSession } from './auth-client'
 import type { AppSessionUser } from '../../shared/types'
@@ -186,6 +187,17 @@ const App = () => {
             </>
           )}
 
+          {userType === 'admin' && (
+            <Route
+              path="/admin"
+              element={
+                <AppLayout>
+                  <AdminPanel />
+                </AppLayout>
+              }
+            />
+          )}
+
           <Route
             path="/settings"
             element={
@@ -228,7 +240,9 @@ const App = () => {
                 ? '/teacher/students'
                 : userType === 'student'
                   ? '/student/homework'
-                  : '/login'
+                  : userType === 'admin'
+                    ? '/admin'
+                    : '/login'
             }
             replace
           />
@@ -247,7 +261,9 @@ const App = () => {
                   ? '/teacher/students'
                   : userType === 'student'
                     ? '/student/homework'
-                    : '/login'
+                    : userType === 'admin'
+                      ? '/admin'
+                      : '/login'
               }
               replace
             />

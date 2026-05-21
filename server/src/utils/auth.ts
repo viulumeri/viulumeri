@@ -150,7 +150,7 @@ Jos et rekisteröitynyt Viulumeri-palveluun, voit jättää tämän viestin huom
               })
               await newTeacher.save()
               logger.info('Teacher profile created', { userId: user.id })
-            } else {
+            } else if (user.userType === 'student') {
               const newStudent = new Student({
                 userId: user.id,
                 name: user.name,
@@ -158,6 +158,10 @@ Jos et rekisteröitynyt Viulumeri-palveluun, voit jättää tämän viestin huom
               })
               await newStudent.save()
               logger.info('Student profile created', { userId: user.id })
+            } else if (user.userType === 'admin') {
+              logger.info('Admin account created', { userId: user.id })
+            } else {
+              throw new Error(`Unsupported userType: ${user.userType}`)
             }
           } catch (error) {
             logger.error('Failed to create user profile', {

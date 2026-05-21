@@ -33,6 +33,14 @@ export const requireStudent = (req: Request, res: Response, next: NextFunction) 
   next()
 }
 
+export const requireAdmin = (req: Request, res: Response, next: NextFunction) => {
+  if (req.session?.user?.userType !== 'admin') {
+    res.status(403).json({ error: 'Admin role required' })
+    return
+  }
+  next()
+}
+
 export const loadTeacherProfile = async (req: Request, res: Response, next: NextFunction) => {
   const teacher = await Teacher.findOne({ userId: req.session!.user.id })
   if (!teacher) {

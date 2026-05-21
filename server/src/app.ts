@@ -13,6 +13,7 @@ import homeworkRouter from './controllers/homework'
 import studentsRouter from './controllers/students'
 import playedSongsRouter from './controllers/playedSongs'
 import feedbackRouter from './controllers/feedback'
+import adminRouter from './controllers/admin'
 
 const app = express()
 
@@ -37,6 +38,7 @@ app.use('/api/teacher', teacherRouter)
 app.use('/api/homework', homeworkRouter)
 app.use('/api/students', studentsRouter)
 app.use('/api/played-songs', playedSongsRouter)
+app.use('/api/admin', adminRouter)
 app.use('/api/feedback', feedbackRouter)
 
 app.get('/ping', (_req, res) => {

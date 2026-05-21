@@ -6,15 +6,21 @@ import app from './app'
 import logger from './utils/logger'
 import { ensureAdminUser } from './utils/admin'
 
-const start = async () => {
+async function start() {
   await connectDB()
   musicService.initialize()
 
   try {
-    await ensureAdminUser()
+    const result = await ensureAdminUser()
+    if (!result.ok) {
+      console.warn('[admin bootstrap]', result.reason)
+    } else {
+      console.log(
+        `[admin bootstrap] ok (collection=${result.collection}, promoted=${result.promoted})`
+      )
+    }
   } catch (error) {
-    logger.error('Failed to ensure admin user', { error })
-    process.exit(1)
+    console.warn('[admin bootstrap] failed (non-fatal):', error)
   }
 
   app.listen(port, () => {

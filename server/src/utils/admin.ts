@@ -1,66 +1,63 @@
-import logger from './logger'
-import { auth } from './auth'
+import mongoose from 'mongoose'
 
-export const ensureAdminUser = async () => {
-  const email = process.env.ADMIN_EMAIL || 'admin@example.com'
-  const password = process.env.ADMIN_PASSWORD || 'admin123'
-  const name = process.env.ADMIN_NAME || 'Administrator'
+type EnsureAdminResult =
+  | { ok: true; promoted: boolean; collection: string }
+  | { ok: false; reason: string }
 
-  const authContext = (auth as any).$context
-  if (!authContext?.internalAdapter || !authContext?.password) {
-    throw new Error('Unable to access Better Auth internal adapter or password helper')
+async function tryPromoteInCollection(
+  collectionName: string,
+  email: string
+): Promise<{ matched: number; modified: number } | null> {
+  const db = mongoose.connection.db
+  if (!db) return null
+
+  const col = db.collection(collectionName)
+
+  // Better Auth schemas vary; we only rely on "email" and a custom "userType" field.
+  const update = await col.updateOne(
+    { email },
+    { $set: { userType: 'admin' } }
+  )
+
+  return { matched: update.matchedCount, modified: update.modifiedCount }
+}
+
+export async function ensureAdminUser(): Promise<EnsureAdminResult> {
+  const email = process.env.ADMIN_EMAIL?.trim().toLowerCase()
+  if (!email) return { ok: false, reason: 'ADMIN_EMAIL not set' }
+
+  // Wait briefly for DB to be ready (index.ts should connect first, but don’t assume).
+  if (mongoose.connection.readyState !== 1) {
+    return {
+      ok: false,
+      reason:
+        'MongoDB connection not ready (ensure DB connects before ensureAdminUser())',
+    }
   }
 
-  const adapter = authContext.internalAdapter as any
-  const passwordHelper = authContext.password as any
+  // Try common collection names (adjust once you confirm the actual one).
+  const candidates = [
+    'users',
+    'user',
+    'auth_users',
+    'better_auth_users',
+  ]
 
-  const existingUser = await adapter.findUserByEmail(email, { includeAccounts: true })
+  for (const name of candidates) {
+    const res = await tryPromoteInCollection(name, email)
+    if (!res) continue
 
-  if (existingUser?.user) {
-    if (existingUser.user.userType !== 'admin') {
-      logger.warn('Existing user found with ADMIN_EMAIL but userType is not admin', {
-        email,
-        userType: existingUser.user.userType
-      })
+    if (res.matched > 0) {
+      return { ok: true, promoted: res.modified > 0, collection: name }
     }
-
-    if (!existingUser.user.emailVerified && adapter.updateUserByEmail) {
-      await adapter.updateUserByEmail(email, { emailVerified: true })
-      logger.info('Marked existing admin email as verified', { email })
-    }
-
-    const hasCredentialAccount = Array.isArray(existingUser.accounts)
-      ? existingUser.accounts.some((account: any) => account.providerId === 'credential')
-      : false
-
-    if (!hasCredentialAccount) {
-      const passwordHash = await passwordHelper.hash(password)
-      await adapter.createAccount({
-        userId: existingUser.user.id,
-        providerId: 'credential',
-        accountId: existingUser.user.id,
-        password: passwordHash
-      })
-      logger.info('Created missing credential account for existing admin user', { email })
-    }
-
-    return
   }
 
-  const user = await adapter.createUser({
-    email: email.toLowerCase(),
-    name,
-    userType: 'admin',
-    emailVerified: true
-  })
-
-  const passwordHash = await passwordHelper.hash(password)
-  await adapter.createAccount({
-    userId: user.id,
-    providerId: 'credential',
-    accountId: user.id,
-    password: passwordHash
-  })
-
-  logger.info('Created admin user', { email })
+  return {
+    ok: false,
+    reason:
+      `No user with email "${email}" found in collections: ${candidates.join(
+        ', '
+      )}. ` +
+      `Create the user via UI first, then restart.`,
+  }
 }

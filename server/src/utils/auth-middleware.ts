@@ -34,7 +34,7 @@ export const requireStudent = (req: Request, res: Response, next: NextFunction) 
 }
 
 export const requireAdmin = (req: Request, res: Response, next: NextFunction) => {
-  if (req.session?.user?.userType !== 'admin') {
+  if (req.session?.user?.role !== 'admin') {
     res.status(403).json({ error: 'Admin role required' })
     return
   }

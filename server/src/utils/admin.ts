@@ -16,7 +16,7 @@ async function tryPromoteInCollection(
   // Better Auth schemas vary; we only rely on "email" and a custom "userType" field.
   const update = await col.updateOne(
     { email },
-    { $set: { userType: 'admin' } }
+    { $set: { role: 'admin' } }
   )
 
   return { matched: update.matchedCount, modified: update.modifiedCount }

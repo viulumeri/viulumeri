@@ -16,7 +16,8 @@ export interface SongListItem extends Omit<Song, 'audioBundle'> {
 }
 
 export interface AppSessionUser {
-  userType: 'teacher' | 'student' | 'admin'
+  userType: 'teacher' | 'student' ,
+  role: 'admin' | 'user' 
 }
 
 export interface InviteTeacher {

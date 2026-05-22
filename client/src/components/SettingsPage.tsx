@@ -130,9 +130,9 @@ export const SettingsPage = () => {
             <strong className="text-gray-100">Tyyppi:</strong>{' '}
             {userType === 'teacher'
               ? 'Opettaja'
-              : userType === 'admin'
-                ? 'Admin'
-                : 'Oppilas'}
+              : userType === 'student'
+                ? 'Oppilas'
+                : 'Tuntematon'}
           </p>
         </div>
       </div>

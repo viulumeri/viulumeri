@@ -32,8 +32,10 @@ import './index.css'
 const App = () => {
   const { data: session, isPending } = useSession()
   const userType = (session?.user as AppSessionUser | undefined)?.userType
+  const role = (session?.user as AppSessionUser | undefined)?.role
 
   return (
+    
     <NotificationProvider>
       <NotificationBanner />
       <Routes>
@@ -90,7 +92,7 @@ const App = () => {
       {isPending && <Route path="*" element={<div>Ladataan...</div>} />}
 
       {/* Protected routes */}
-      {session && (
+      {session  && (
         <>
           {/* Shared */}
           <Route
@@ -187,7 +189,7 @@ const App = () => {
             </>
           )}
 
-          {userType === 'admin' && (
+          {role === 'admin' && (
             <Route
               path="/admin"
               element={
@@ -244,6 +246,7 @@ const App = () => {
                     ? '/admin'
                     : '/login'
             }
+            
             replace
           />
           )

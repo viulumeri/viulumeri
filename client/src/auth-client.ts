@@ -1,4 +1,5 @@
 import { createAuthClient } from 'better-auth/react'
+import { adminClient } from "better-auth/client/plugins"
 
 const getBaseURL = () => {
   // Use window.location.origin to get the current origin
@@ -7,7 +8,10 @@ const getBaseURL = () => {
 }
 
 export const authClient = createAuthClient({
-  baseURL: getBaseURL()
+  baseURL: getBaseURL(),
+  plugins: [
+    adminClient()
+  ]
 })
 
 export const { useSession } = authClient

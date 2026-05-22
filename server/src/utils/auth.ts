@@ -7,6 +7,7 @@ import logger from './logger'
 import Teacher from '../models/teacher'
 import Student from '../models/student'
 import Homework from '../models/homework'
+import { admin } from "better-auth/plugins"
 
 logger.info('Initializing better-auth...')
 
@@ -23,6 +24,9 @@ client
 
 export const auth = betterAuth({
   database: mongodbAdapter(client.db() as any),
+  plugins:[
+    admin()
+  ],
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: process.env.NODE_ENV !== 'test', // Disable email verification in tests
@@ -49,7 +53,19 @@ Jos et pyytänyt salasanan palautusta, voit jättää tämän viestin huomioimat
       userType: {
         type: 'string',
         required: true
-      }
+      },
+/*       userRole: {
+        type: ["user", "admin"],
+        required: false,
+        defaultValue: "user",
+        input: false, // don't allow user to set role
+      }, */
+      role: {
+        type: ["user", "admin"],
+        required: false,
+        defaultValue: "user",
+        input: false, // don't allow user to set role
+      },
     },
     deleteUser: {
       enabled: true,

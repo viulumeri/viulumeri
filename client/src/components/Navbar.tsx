@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom'
-import { Users, Music, Settings, BookOpenText } from 'lucide-react'
+import { Users, Music, Settings, BookOpenText, Banana } from 'lucide-react'
 import { useSession } from '../auth-client'
 import type { AppSessionUser } from '../../../shared/types'
 
@@ -31,6 +31,13 @@ export const Navbar = () => {
             <BookOpenText className="w-6 h-6" />
           </Link>
         )}
+
+        {userType === 'admin' && (
+          <Link to="/admin" className={isActive('/admin')}>
+            <Banana className="w-6 h-6" />
+          </Link>
+        )}
+
         <Link to="/songslist" className={isActive('/songslist')}>
           <Music className="w-6 h-6" />
         </Link>

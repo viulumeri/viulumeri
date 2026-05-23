@@ -46,8 +46,18 @@ export const SettingsPage = () => {
     }
   })
 
-      const changeEmail = useChangeEmail({
-  // TODO
+  const changeEmail = useChangeEmail({
+    onSuccess: () => {
+      currentEmail.reset()
+      newEmail.reset()
+      confirmEmail.reset()
+
+    showSuccess('Sähköpostiosoite vaihdettu onnistuneesti!')
+  },
+
+  onError: (error: Error) => {
+    showError(`Virhe sähköpostiosoitteen vaihdossa: ${error.message}`)
+  },
 })
 
 
@@ -277,10 +287,10 @@ export const SettingsPage = () => {
           <div className="flex justify-start">
             <button
               type="submit"
-              disabled={changePassword.isPending}
+              disabled={changeEmail.isPending}
               className="button-basic disabled:opacity-50 rounded-md px-6 py-2disabled:cursor-not-allowed"
             >
-              {changePassword.isPending ? 'Vaihdetaan...' : 'Vaihda sähköpostiosoite'}
+              {changeEmail.isPending ? 'Vaihdetaan...' : 'Vaihda sähköpostiosoite'}
             </button>
           </div>
         </form>

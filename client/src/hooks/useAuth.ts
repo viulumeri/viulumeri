@@ -115,7 +115,7 @@ export const useChangePassword = (
   })
 }
 
-export const useChangeEmail = () => {
+export const useChangeEmail = (p0: {}) => {
   // TODO
 }
 

@@ -1,7 +1,9 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
+import DOMPurify from 'dompurify'
 import { Ellipsis, X } from 'lucide-react'
 import type { SongListItem, HomeworkListResponse } from '../../../shared/types'
 import SongCard from './SongCard'
+import TextEditor from './TextEditor'
 type HomeworkItem = HomeworkListResponse['homework'][number]
 
 type Props = {
@@ -46,7 +48,6 @@ const HomeworkCard = ({
   onAddSong
 }: Props) => {
   const menuRef = useRef<HTMLDivElement | null>(null)
-  const [isCommentEditing, setIsCommentEditing] = useState(false)
 
   useEffect(() => {
     function onDocClick(e: MouseEvent) {
@@ -151,27 +152,11 @@ const HomeworkCard = ({
         {editableComment ? (
           <div className="mt-5">
             <h3 className="mb-3">Opettajan kommentti</h3>
-            {isCommentEditing ? (
-              <textarea
+            <TextEditor
                 value={commentDraft ?? hw.comment ?? ''}
-                onChange={e => onChangeComment?.(e.target.value)}
-                onBlur={() => setIsCommentEditing(false)}
-                rows={8}
-                className="w-full p-3 rounded-lg bg-white/20 outline-none text-gray-300 min-h-[120px] max-h-[300px] resize-y"
+              onChange={next => onChangeComment?.(next)}
                 placeholder="Kirjoita kommentti"
-                autoFocus
               />
-            ) : (
-              <button
-                type="button"
-                className="w-full text-left p-3 rounded-lg bg-white/15"
-                onClick={() => setIsCommentEditing(true)}
-              >
-                <h4 className="font-light text-gray-400 whitespace-pre-wrap">
-                  {(commentDraft ?? hw.comment) || 'Kirjoita kommentti'}
-                </h4>
-              </button>
-            )}
           </div>
         ) : (
           hw.comment && (

@@ -358,10 +358,13 @@ export const SettingsPage = () => {
 
       <p className="text-right text-xs text-gray-500">Versio: {__APP_VERSION__}</p> {/* Näytä (clientin) versio asetuksissa */}
       {__BUILD_TIME__ && (
-      <p className="text-right text-xs text-gray-500">
-        Viimeksi päivitetty: {new Date(__BUILD_TIME__).toLocaleString('fi-FI')}
-      </p>
-    )}
+        <p className="text-right text-xs text-gray-500">
+          Viimeksi päivitetty:{' '}
+          {Number.isNaN(Date.parse(__BUILD_TIME__))
+            ? __BUILD_TIME__
+            : new Date(__BUILD_TIME__).toLocaleString('fi-FI')}
+        </p>
+      )}
     </div>
   )
 }

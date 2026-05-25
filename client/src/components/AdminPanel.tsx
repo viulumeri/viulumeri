@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Users, Trash2, ScanSearch} from 'lucide-react'
+import { Users, ScanSearch } from 'lucide-react'
 
 interface SummaryResponse {
   teacherCount: number

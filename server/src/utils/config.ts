@@ -26,7 +26,15 @@ const getTrustedOrigins = (): string[] => {
     ]
   }
   // Dev:
-  return ['http://localhost:5173', 'http://localhost:3001']
+  return [
+    'http://localhost:5173',
+    'http://localhost:3001',
+    // CI/containers sometimes resolve localhost differently
+    'http://127.0.0.1:5173',
+    'http://127.0.0.1:3001',
+    'http://[::1]:5173',
+    'http://[::1]:3001'
+  ]
 }
 
 const trustedOrigins = getTrustedOrigins()

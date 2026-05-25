@@ -27,9 +27,20 @@ const loginAsStudent = async (page: any) => {
   await page.goto('/login')
   await page.getByPlaceholder('Sähköpostiosoite').fill(student.email)
   await page.getByPlaceholder('Salasana').fill(student.password)
+  const signInResponsePromise = page.waitForResponse((response: any) => {
+    return (
+      response.url().includes('/api/auth/sign-in/email') &&
+      response.request().method() === 'POST'
+    )
+  })
+
   await page.getByRole('button', { name: /kirjaudu sisään/i }).click()
 
-  await page.waitForURL('**/student/homework', { timeout: 15_000 })
+  const signInResponse = await signInResponsePromise
+  expect(
+    signInResponse.ok(),
+    `Sign-in failed: HTTP ${signInResponse.status()}`
+  ).toBe(true)
 
   await dismissNotificationIfVisible(page)
 }

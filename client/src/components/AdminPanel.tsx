@@ -102,8 +102,6 @@ export const AdminPanel = () => {
         const studentsData = (await studentsRes.json()) as { students: Student[] }
         setStudents(studentsData.students)
         
-        // Set combined users
-        setUsers([...teachersData.teachers, ...studentsData.students])
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An error occurred')
       }

@@ -6,11 +6,12 @@ interface InviteTokenPayload {
 }
 
 const isTestEnv = process.env.NODE_ENV === 'test'
+const strictSecrets = process.env.E2E_STRICT_SECRETS === 'true'
 
 const getInviteTokenSecret = () => {
   const secret = process.env.BETTER_AUTH_SECRET
   if (secret) return secret
-  if (isTestEnv) return 'test-better-auth-secret'
+  if (isTestEnv && !strictSecrets) return 'test-better-auth-secret'
   throw new Error('BETTER_AUTH_SECRET is required for invite tokens')
 }
 

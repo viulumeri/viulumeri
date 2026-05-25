@@ -2,6 +2,7 @@ import { Resend } from 'resend'
 import logger from './logger'
 
 const isTestEnv = process.env.NODE_ENV === 'test'
+const emailMode = process.env.E2E_EMAIL_MODE || (isTestEnv ? 'skip' : 'real')
 let resend: Resend | null = null
 
 const getResendClient = () => {
@@ -24,7 +25,7 @@ interface SendEmailOptions {
 }
 
 export const sendEmail = async ({ to, subject, text, html }: SendEmailOptions) => {
-  if (isTestEnv) {
+  if (emailMode !== 'real') {
     logger.info('Email send skipped (test)', { to, subject })
     return { id: 'test-email' }
   }

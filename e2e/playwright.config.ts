@@ -6,19 +6,16 @@ const DEFAULT_UI_URL = 'http://localhost:5173'
 const isCI = !!process.env.CI
 
 const uiUrl = process.env.E2E_UI_URL || DEFAULT_UI_URL
-const ciPort = process.env.E2E_SERVER_PORT || '3002'
-const serverUrl = isCI
-  ? (process.env.E2E_SERVER_URL || `http://localhost:${ciPort}`)
-  : (process.env.BASE_URL || DEFAULT_SERVER_URL)
+const defaultServerPort = isCI ? '3002' : '3001'
+const serverPort = process.env.E2E_SERVER_PORT || defaultServerPort
+const serverUrl = process.env.E2E_SERVER_URL || `http://localhost:${serverPort}`
 
 const mongodbUri =
   process.env.E2E_MONGODB_URI ||
   'mongodb://admin:password@localhost:27017/viulumeri?authSource=admin'
 
 // Ensure globalSetup (and any other helpers) point to the same API origin.
-if (isCI) {
-  process.env.BASE_URL = serverUrl
-}
+process.env.BASE_URL = serverUrl
 
 const webServer = isCI
   ? [
@@ -31,7 +28,7 @@ const webServer = isCI
         reuseExistingServer: false,
         timeout: 180_000,
         env: {
-          PORT: ciPort,
+          PORT: serverPort,
           NODE_ENV: 'test',
           TEST_MONGODB_URI: mongodbUri,
           CLIENT_URL: serverUrl,
@@ -47,7 +44,7 @@ const webServer = isCI
         reuseExistingServer: false,
         timeout: 120_000,
         env: {
-          PORT: '3001',
+          PORT: serverPort,
           NODE_ENV: 'test',
           TEST_MONGODB_URI: mongodbUri,
           CLIENT_URL: uiUrl,

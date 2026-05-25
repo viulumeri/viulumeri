@@ -114,6 +114,7 @@ export const AdminPanel = () => {
     event.preventDefault()
     if (searchResults.length > 0) {
       const user = searchResults[0]
+      // add slice function to show only 3 first users
       const fullUserData = teachers.find(t => t.id === user.id) || students.find(s => s.id === user.id)
       if (fullUserData) {
         setSelectedUser(fullUserData)

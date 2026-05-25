@@ -104,10 +104,10 @@ Jos et pyytänyt tilin poistamista, voit jättää tämän viestin huomioimatta.
     }
   },
   emailVerification: {
-    sendOnSignUp: process.env.NODE_ENV !== 'test',
-    sendOnSignIn: process.env.NODE_ENV !== 'test',
+    sendOnSignUp: process.env.NODE_ENV !== 'test' && process.env.E2E_SEED !== 'true',
+    sendOnSignIn: process.env.NODE_ENV !== 'test' && process.env.E2E_SEED !== 'true',
     autoSignInAfterVerification: true,
-    sendVerificationEmail: process.env.NODE_ENV !== 'test'
+    sendVerificationEmail: process.env.NODE_ENV !== 'test' && process.env.E2E_SEED !== 'true'
       ? async ({ user, url }) => {
       logger.info('Sending verification email', {
         userId: user.id,

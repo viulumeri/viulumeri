@@ -9,6 +9,7 @@
   },
   "devDependencies": {
     "@playwright/test": "^1.49.0",
-    "@types/node": "^22.0.0"
+    "@types/node": "^22.0.0",
+    "mongodb": "^6.18.0"
   }
 }

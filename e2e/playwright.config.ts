@@ -23,7 +23,7 @@ export default defineConfig({
       // API server (Better Auth + Express)
       command: 'npm --prefix .. --workspace=server run dev',
       url: `${serverUrl}/ping`,
-      reuseExistingServer: !process.env.CI,
+      reuseExistingServer: true,
       timeout: 120_000,
       env: {
         PORT: '3001',
@@ -36,7 +36,7 @@ export default defineConfig({
       // UI (Vite). Proxies /api -> :3001
       command: 'npm --prefix .. --workspace=client run dev -- --port 5173 --strictPort',
       url: `${uiUrl}/login`,
-      reuseExistingServer: !process.env.CI,
+      reuseExistingServer: true,
       timeout: 120_000
     }
   ],

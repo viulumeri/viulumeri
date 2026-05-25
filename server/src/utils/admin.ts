@@ -22,9 +22,22 @@ async function tryPromoteInCollection(
   return { matched: update.matchedCount, modified: update.modifiedCount }
 }
 
+const getAdminEmails = (): string[] => {
+  const envValue = process.env.ADMIN_EMAILS ?? process.env.ADMIN_EMAIL
+
+  if (!envValue) return []
+
+  return envValue
+    .split(',')
+    .map(email => email.trim().toLowerCase())
+    .filter(Boolean)
+}
+
 export async function ensureAdminUser(): Promise<EnsureAdminResult> {
-  const email = process.env.ADMIN_EMAIL?.trim().toLowerCase()
-  if (!email) return { ok: false, reason: 'ADMIN_EMAIL not set' }
+  const emails = getAdminEmails()
+  if (emails.length === 0) {
+    return { ok: false, reason: 'ADMIN_EMAIL or ADMIN_EMAILS not set' }
+  }
 
   // Wait briefly for DB to be ready (index.ts should connect first, but don’t assume).
   if (mongoose.connection.readyState !== 1) {
@@ -44,18 +57,26 @@ export async function ensureAdminUser(): Promise<EnsureAdminResult> {
   ]
 
   for (const name of candidates) {
-    const res = await tryPromoteInCollection(name, email)
-    if (!res) continue
+    let promoted = false
 
-    if (res.matched > 0) {
-      return { ok: true, promoted: res.modified > 0, collection: name }
+    for (const email of emails) {
+      const res = await tryPromoteInCollection(name, email)
+      if (!res) continue
+
+      if (res.matched > 0) {
+        promoted = true
+      }
+    }
+
+    if (promoted) {
+      return { ok: true, promoted: true, collection: name }
     }
   }
 
   return {
     ok: false,
     reason:
-      `No user with email "${email}" found in collections: ${candidates.join(
+      `No user with any of these emails "${emails.join(', ')}" found in collections: ${candidates.join(
         ', '
       )}. ` +
       `Create the user via UI first, then restart.`,

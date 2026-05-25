@@ -26,7 +26,7 @@ interface SendEmailOptions {
 
 export const sendEmail = async ({ to, subject, text, html }: SendEmailOptions) => {
   if (emailMode !== 'real') {
-    logger.info('Email send skipped (test)', { to, subject })
+    logger.info('Email send skipped', { to, subject, emailMode })
     return { id: 'test-email' }
   }
 

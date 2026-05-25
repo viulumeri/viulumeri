@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import { VitePWA } from 'vite-plugin-pwa'
 
-const appVersion = process.env.VITE_APP_VERSION || process.env.VITE_BUILD_ID || '0.0.0'
+const appVersion = process.env.VITE_APP_VERSION || '0.0.0'
 const buildTime = process.env.VITE_BUILD_TIME || ''
 
 // https://vite.dev/config/

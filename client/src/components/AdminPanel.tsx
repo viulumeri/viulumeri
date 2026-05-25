@@ -32,7 +32,6 @@ export const AdminPanel = () => {
   const [error, setError] = useState<string | null>(null)
   const [teachers, setTeachers] = useState<Teacher[]>([])
   const [students, setStudents] = useState<Student[]>([])
-  const [users, setUsers] = useState<User[]>([])
 
   const [searchUserInput, setSearchUserInput] = useState('')
   const [searchResults, setSearchResults] = useState<User[]>([])
@@ -43,21 +42,36 @@ export const AdminPanel = () => {
     setSelectedUser(null)
   }
 
-  useEffect(() => {
-    const query = searchUserInput.trim().toLowerCase()
-    if (!query) {
-      setSearchResults([])
-      return
-    }
-
-    setSearchResults(
-      [...teachers, ...students].filter(user =>
-        user.name.toLowerCase().includes(query) ||
-        user.email.toLowerCase().includes(query)
-      )
-    )
-  }, [searchUserInput, teachers, students])
-
+  useEffect(() => {
+
+    const query = searchUserInput.trim().toLowerCase()
+
+    if (!query) {
+
+      setSearchResults([])
+
+      return
+
+    }
+
+
+
+    setSearchResults(
+
+      [...teachers, ...students].filter(user =>
+
+        user.name.toLowerCase().includes(query) ||
+
+        user.email.toLowerCase().includes(query)
+
+      )
+
+    )
+
+  }, [searchUserInput, teachers, students])
+
+
+
   useEffect(() => {
     const loadData = async () => {
       try {

@@ -41,12 +41,23 @@ export const AdminPanel = () => {
   const handleSearchUserInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchUserInput(event.target.value)
     setSelectedUser(null)
-    setSearchResults([...teachers, ...students].filter(user =>
-      user.name.toLowerCase().includes(event.target.value.toLowerCase()) ||
-      user.email.toLowerCase().includes(event.target.value.toLowerCase())
-    ))
   }
 
+  useEffect(() => {
+    const query = searchUserInput.trim().toLowerCase()
+    if (!query) {
+      setSearchResults([])
+      return
+    }
+
+    setSearchResults(
+      [...teachers, ...students].filter(user =>
+        user.name.toLowerCase().includes(query) ||
+        user.email.toLowerCase().includes(query)
+      )
+    )
+  }, [searchUserInput, teachers, students])
+
   useEffect(() => {
     const loadData = async () => {
       try {
@@ -126,10 +137,14 @@ export const AdminPanel = () => {
           </div>
         </button>
     </div> */}
-      <form
-        className="flex items-center max-w-sm mx-auto space-x-2"
-        onSubmit={buttonHandler}
-      >
+      <form
+
+        className="flex items-center max-w-sm mx-auto space-x-2"
+
+        onSubmit={buttonHandler}
+
+      >
+
       <form className="flex items-center max-w-sm mx-auto space-x-2">   
         <label htmlFor="simple-search" className="sr-only">Search</label>
         <div className="relative w-full">

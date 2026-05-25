@@ -80,3 +80,18 @@ export interface PracticeResponse {
   id: string
   practiceCount: number
 }
+
+export type FeedbackCategory = 'bug' | 'feature' | 'other'
+
+export interface SubmitFeedbackBody {
+  title: string
+  category: FeedbackCategory
+  message: string
+  // Honeypot spam trap: the UI will keep this hidden.
+  // Server should reject if this is non-empty.
+  website?: string
+}
+
+export interface SubmitFeedbackResponse {
+  ok: boolean
+}

@@ -139,25 +139,6 @@ export const AdminPanel = () => {
         !error && <div>Ladataan yhteenvedon tietoja...</div>
       )}
 
-{/*     <div className="space-y-6 p-6 pb-24">
-      <h1 className="text-2xl font-bold">Admin Panel</h1>
-        <button className="w-full" onClick={() => alert('Käyttäjien hallinta -toiminto ei ole vielä toteutettu')} >
-          <div className="bg-neutral-800 rounded-lg p-6">
-            <h3 className="flex items-center gap-3 mb-4">
-              <Users className="w-6 h-6" />
-              Käyttäjien hallinta
-            </h3>
-          </div>
-        </button>
-    </div> */}
-      <form
-
-        className="flex items-center max-w-sm mx-auto space-x-2"
-
-        onSubmit={buttonHandler}
-
-      >
-
       <form className="flex items-center max-w-sm mx-auto space-x-2">   
         <label htmlFor="simple-search" className="sr-only">Search</label>
         <div className="relative w-full">
@@ -177,8 +158,9 @@ export const AdminPanel = () => {
               </div>
             ))}
         </div>
-          onClick={buttonHandler}
-          >
+        <button type="submit" className="p-2.5 bg-neutral-secondary-medium border border-default-medium rounded-base text-sm text-white hover:bg-neutral-secondary-dark focus:ring-4 focus:outline-none focus:ring-neutral-secondary-light"
+        onClick={buttonHandler}>
+          
         
             <ScanSearch size={22} strokeWidth={1.5} />
             <span className="sr-only">Icon description</span>

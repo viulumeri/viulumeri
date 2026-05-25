@@ -1,26 +1,10 @@
-import { useEffect, useState } from 'react'
-import { Users, ScanSearch } from 'lucide-react'
+import { useState } from 'react'
+import { Users, Trash2, ScanSearch } from 'lucide-react'
+import { useAdminSummary, useAdminTeachers, useAdminStudents } from '../hooks/useAdmin'
+import type { Teacher, Student } from '../services/admin'
 
 
-interface SummaryResponse {
-  teacherCount: number
-  studentCount: number
-  homeworkCount: number
-}
-interface Teacher {
-  id: string
-  name: string
-  email: string
-  studentCount: number
-  students: { id: string; name: string; email: string }[]
-}
-interface Student {
-  id: string
-  name: string
-  email: string
-  playedSongs: number
-  teacher: { id: string; name: string; email: string } | null
-}
+
 interface User {
   id: string
   name: string
@@ -28,87 +12,27 @@ interface User {
 }
 
 export const AdminPanel = () => {
-  const [summary, setSummary] = useState<SummaryResponse | null>(null)
-  const [error, setError] = useState<string | null>(null)
-  const [teachers, setTeachers] = useState<Teacher[]>([])
-  const [students, setStudents] = useState<Student[]>([])
+  const { data: summaryData } = useAdminSummary()
+  const { data: teachersData, isLoading: teachersLoading, error: teachersError } = useAdminTeachers()
+  const { data: studentsData, isLoading: studentsLoading, error: studentsError } = useAdminStudents()
 
   const [searchUserInput, setSearchUserInput] = useState('')
   const [searchResults, setSearchResults] = useState<User[]>([])
   const [selectedUser, setSelectedUser] = useState<Teacher | Student | null>(null)
 
+  const teachers = teachersData?.teachers ?? []
+  const students = studentsData?.students ?? []
+  const error = teachersError || studentsError ? 'Failed to load admin data' : null
+  const isLoading = teachersLoading || studentsLoading
+
   const handleSearchUserInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchUserInput(event.target.value)
     setSelectedUser(null)
+    setSearchResults([...teachers, ...students].filter(user =>
+      user.name.toLowerCase().includes(event.target.value.toLowerCase()) ||
+      user.email.toLowerCase().includes(event.target.value.toLowerCase())
+    ))
   }
-
-  useEffect(() => {
-
-    const query = searchUserInput.trim().toLowerCase()
-
-    if (!query) {
-
-      setSearchResults([])
-
-      return
-
-    }
-
-
-
-    setSearchResults(
-
-      [...teachers, ...students].filter(user =>
-
-        user.name.toLowerCase().includes(query) ||
-
-        user.email.toLowerCase().includes(query)
-
-      )
-
-    )
-
-  }, [searchUserInput, teachers, students])
-
-
-
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        // Load summary
-        const summaryRes = await fetch('/api/admin/summary', { credentials: 'include' })
-        if (!summaryRes.ok) {
-          const body = await summaryRes.json().catch(() => ({}))
-          throw new Error(body.error || 'Failed to load admin summary')
-        }
-        const summaryData = (await summaryRes.json()) as SummaryResponse
-        setSummary(summaryData)
-
-        // Load teachers
-        const teachersRes = await fetch('/api/admin/teachers', { credentials: 'include' })
-        if (!teachersRes.ok) {
-          const body = await teachersRes.json().catch(() => ({}))
-          throw new Error(body.error || 'Failed to load teachers')
-        }
-        const teachersData = (await teachersRes.json()) as { teachers: Teacher[] }
-        setTeachers(teachersData.teachers)
-
-        // Load students
-        const studentsRes = await fetch('/api/admin/students', { credentials: 'include' })
-        if (!studentsRes.ok) {
-          const body = await studentsRes.json().catch(() => ({}))
-          throw new Error(body.error || 'Failed to load students')
-        }
-        const studentsData = (await studentsRes.json()) as { students: Student[] }
-        setStudents(studentsData.students)
-        
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'An error occurred')
-      }
-    }
-
-    loadData()
-  }, [])
 
   const buttonHandler = (event: React.FormEvent) => {
     event.preventDefault()
@@ -122,6 +46,7 @@ export const AdminPanel = () => {
     }
   }
 
+
   return (
     <div className="admin-panel">
       <h1>Admin Panel</h1>
@@ -129,15 +54,16 @@ export const AdminPanel = () => {
 
       {error && <div className="error">{error}</div>}
 
-      {summary ? (
+      {summaryData ? (
         <div className="admin-summary">
-          <div>Opettajia: {summary.teacherCount}</div>
-          <div>Oppilaita: {summary.studentCount}</div>
-          <div>Tehtäviä: {summary.homeworkCount}</div>
+          <div>Opettajia: {summaryData.teacherCount}</div>
+          <div>Oppilaita: {summaryData.studentCount}</div>
+          <div>Tehtäviä: {summaryData.homeworkCount}</div>
         </div>
       ) : (
         !error && <div>Ladataan yhteenvedon tietoja...</div>
       )}
+
 
       <form className="flex items-center max-w-sm mx-auto space-x-2">   
         <label htmlFor="simple-search" className="sr-only">Search</label>
@@ -158,9 +84,9 @@ export const AdminPanel = () => {
               </div>
             ))}
         </div>
-        <button type="submit" className="p-2.5 bg-neutral-secondary-medium border border-default-medium rounded-base text-sm text-white hover:bg-neutral-secondary-dark focus:ring-4 focus:outline-none focus:ring-neutral-secondary-light"
-        onClick={buttonHandler}>
-          
+        <button type="submit" className="inline-flex items-center justify-center shrink-0 text-white bg-brand hover:bg-brand-strong focus:ring-4 focus:ring-brand-medium shadow-xs rounded-base w-10 h-10 focus:outline-none"
+          onClick={buttonHandler}
+          >
         
             <ScanSearch size={22} strokeWidth={1.5} />
             <span className="sr-only">Icon description</span>

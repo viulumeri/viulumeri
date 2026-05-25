@@ -359,7 +359,7 @@ export const SettingsPage = () => {
       <p className="text-right text-xs text-gray-500">Versio: {__APP_VERSION__}</p> {/* Näytä (clientin) versio asetuksissa */}
       {__BUILD_TIME__ && (
       <p className="text-right text-xs text-gray-500">
-        Viimeksi päivitetty: {__BUILD_TIME__}
+        Viimeksi päivitetty: {new Date(__BUILD_TIME__).toLocaleString('fi-FI')}
       </p>
     )}
     </div>

@@ -25,8 +25,9 @@ const getTrustedOrigins = (): string[] => {
       // + others if needed
     ]
   }
-  // Dev:
-  return [
+  // Dev/test:
+  // Keep a permissive but explicit allowlist for local development and CI.
+  const defaults = [
     'http://localhost:5173',
     'http://localhost:3001',
     // CI/containers sometimes resolve localhost differently
@@ -35,6 +36,13 @@ const getTrustedOrigins = (): string[] => {
     'http://[::1]:5173',
     'http://[::1]:3001'
   ]
+
+  const set = new Set(defaults)
+  if (process.env.CLIENT_URL) {
+    set.add(process.env.CLIENT_URL)
+  }
+
+  return Array.from(set)
 }
 
 const trustedOrigins = getTrustedOrigins()

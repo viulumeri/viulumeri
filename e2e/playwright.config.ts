@@ -3,12 +3,66 @@ import { defineConfig, devices } from '@playwright/test'
 const DEFAULT_SERVER_URL = 'http://localhost:3001'
 const DEFAULT_UI_URL = 'http://localhost:5173'
 
-const serverUrl = process.env.BASE_URL || DEFAULT_SERVER_URL
+const isCI = !!process.env.CI
+
 const uiUrl = process.env.E2E_UI_URL || DEFAULT_UI_URL
+const ciPort = process.env.E2E_SERVER_PORT || '3002'
+const serverUrl = isCI
+  ? (process.env.E2E_SERVER_URL || `http://localhost:${ciPort}`)
+  : (process.env.BASE_URL || DEFAULT_SERVER_URL)
 
 const mongodbUri =
   process.env.E2E_MONGODB_URI ||
   'mongodb://admin:password@localhost:27017/viulumeri?authSource=admin'
+
+// Ensure globalSetup (and any other helpers) point to the same API origin.
+if (isCI) {
+  process.env.BASE_URL = serverUrl
+}
+
+const webServer = isCI
+  ? [
+      {
+        // CI: build the client and let the backend serve client/dist.
+        // This avoids Better Auth origin issues through a dev proxy.
+        command:
+          'npm --prefix .. --workspace=client run build && npm --prefix .. --workspace=server run dev',
+        url: `${serverUrl}/ping`,
+        reuseExistingServer: false,
+        timeout: 180_000,
+        env: {
+          PORT: ciPort,
+          NODE_ENV: 'test',
+          TEST_MONGODB_URI: mongodbUri,
+          CLIENT_URL: serverUrl,
+          E2E_SEED: 'true'
+        }
+      }
+    ]
+  : [
+      {
+        // API server (Better Auth + Express)
+        command: 'npm --prefix .. --workspace=server run dev',
+        url: `${serverUrl}/ping`,
+        reuseExistingServer: true,
+        timeout: 120_000,
+        env: {
+          PORT: '3001',
+          NODE_ENV: 'test',
+          TEST_MONGODB_URI: mongodbUri,
+          CLIENT_URL: uiUrl,
+          E2E_SEED: 'true'
+        }
+      },
+      {
+        // UI (Vite). Proxies /api -> :3001
+        command:
+          'npm --prefix .. --workspace=client run dev -- --port 5173 --strictPort',
+        url: `${uiUrl}/login`,
+        reuseExistingServer: true,
+        timeout: 120_000
+      }
+    ]
 
 export default defineConfig({
   testDir: './tests',
@@ -18,30 +72,9 @@ export default defineConfig({
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : undefined,
   reporter: process.env.CI ? [['html'], ['github']] : 'html',
-  webServer: [
-    {
-      // API server (Better Auth + Express)
-      command: 'npm --prefix .. --workspace=server run dev',
-      url: `${serverUrl}/ping`,
-      reuseExistingServer: true,
-      timeout: 120_000,
-      env: {
-        PORT: '3001',
-        NODE_ENV: 'test',
-        TEST_MONGODB_URI: mongodbUri,
-        E2E_SEED: 'true'
-      }
-    },
-    {
-      // UI (Vite). Proxies /api -> :3001
-      command: 'npm --prefix .. --workspace=client run dev -- --port 5173 --strictPort',
-      url: `${uiUrl}/login`,
-      reuseExistingServer: true,
-      timeout: 120_000
-    }
-  ],
+  webServer,
   use: {
-    baseURL: uiUrl,
+    baseURL: isCI ? serverUrl : uiUrl,
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
   },

@@ -6,7 +6,7 @@ const MONGODB_URI =
   process.env.E2E_MONGODB_URI ||
   'mongodb://admin:password@localhost:27017/viulumeri?authSource=admin'
 
-const SEED_USERS = [
+export const SEED_USERS = [
   {
     email: 'e2e-teacher@example.com',
     password: 'E2eTeacher123!',

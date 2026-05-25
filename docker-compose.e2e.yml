@@ -3,7 +3,7 @@ services:
     image: mongo:8
     container_name: viulumeri-e2e-mongodb
     ports:
-      - '27018:27017'
+      - '127.0.0.1:27018:27017'
     environment:
       MONGO_INITDB_ROOT_USERNAME: admin
       MONGO_INITDB_ROOT_PASSWORD: password

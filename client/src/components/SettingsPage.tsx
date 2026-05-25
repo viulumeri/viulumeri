@@ -5,7 +5,7 @@ import { useField } from '../hooks/useField'
 import type { AppSessionUser } from '../../../shared/types'
 import { StudentSettings } from './StudentSettings'
 import { TeacherSettings } from './TeacherSettings'
-import { User, Key, Settings, LogOut, Trash2, Mail, MessageCircle, ChevronDown } from 'lucide-react'
+import { User, Key, Settings, LogOut, Trash2, Mail, MessageCircle } from 'lucide-react'
 import { useNotification } from '../hooks/useNotification'
 
 import { Link } from 'react-router-dom'
@@ -124,14 +124,6 @@ export const SettingsPage = () => {
   const handleLogout = () => {
     logout.mutate()
   }
-
-  const togglePasswordMenu = () => {
-  setPasswordOpen((prev) => !prev);
-};
-
-  const toggleEmailMenu = () => {
-  setEmailOpen((prev) => !prev);
-};
 
   return (
 

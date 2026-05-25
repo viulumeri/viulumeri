@@ -4,7 +4,7 @@ import { MongoClient } from 'mongodb'
 const BASE_URL = process.env.BASE_URL || 'http://localhost:3001'
 const MONGODB_URI =
   process.env.E2E_MONGODB_URI ||
-  'mongodb://admin:password@localhost:27018/viulumeri?authSource=admin'
+  'mongodb://admin:password@localhost:27017/viulumeri?authSource=admin'
 
 const SEED_USERS = [
   {
@@ -31,11 +31,16 @@ export default async function globalSetup() {
 
     for (const user of SEED_USERS) {
       const existing = await db.collection('user').findOne({ email: user.email })
-      if (existing) {
-        continue
-      }
 
-      await context.post('/api/auth/sign-up/email', { data: user })
+      if (!existing) {
+        const response = await context.post('/api/auth/sign-up/email', { data: user })
+        if (!response.ok()) {
+          const body = await response.text()
+          throw new Error(
+            `Failed to seed user ${user.email}: ${response.status()} ${body}`
+          )
+        }
+      }
 
       await db
         .collection('user')

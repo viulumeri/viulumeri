@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "test": "E2E_MONGODB_URI=mongodb://admin:password@localhost:27017/viulumeri?authSource=admin playwright test",
+    "test": "playwright test",
     "test:ui": "playwright test --ui",
     "test:headed": "playwright test --headed"
   },

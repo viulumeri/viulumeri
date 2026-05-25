@@ -2,6 +2,8 @@ services:
   mongodb:
     image: mongo:8
     container_name: viulumeri-e2e-mongodb
+    ports:
+      - '27018:27017'
     environment:
       MONGO_INITDB_ROOT_USERNAME: admin
       MONGO_INITDB_ROOT_PASSWORD: password
@@ -19,6 +21,7 @@ services:
       - '3001:3001'
     environment:
       NODE_ENV: production
+      E2E_SEED: 'true'
       MONGODB_URI: mongodb://admin:password@mongodb:27017/viulumeri?authSource=admin
       BETTER_AUTH_SECRET: e2e-test-secret-key-for-ci-only
       BETTER_AUTH_URL: http://localhost:3001

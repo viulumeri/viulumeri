@@ -112,6 +112,8 @@ jobs:
       - name: Run E2E tests
         run: npm test
         working-directory: e2e
+        env:
+          E2E_MONGODB_URI: mongodb://admin:password@localhost:27018/viulumeri?authSource=admin
 
       - name: Upload Playwright report
         if: always()

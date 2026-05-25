@@ -19,7 +19,10 @@ const TextEditor = ({ value, onChange, placeholder }: Props) => {
   const editor = useEditor({
     extensions: [
       StarterKit,
-      Link.configure({ openOnClick: false }),
+      Link.configure({
+        openOnClick: false,
+        HTMLAttributes: { target: '_blank', rel: 'noopener noreferrer' },
+      }),
       Placeholder.configure({ placeholder: placeholder ?? '' }),
     ],
     content: value,
@@ -28,7 +31,7 @@ const TextEditor = ({ value, onChange, placeholder }: Props) => {
         skipNextUpdate.current = false
         return
       }
-      onChange(editor.getHTML())
+      onChange(editor.isEmpty ? '' : editor.getHTML())
     },
   })
 
@@ -74,6 +77,7 @@ const TextEditor = ({ value, onChange, placeholder }: Props) => {
     if (!editor) return
     const url =
       rawUrl && !/^https?:\/\//i.test(rawUrl) ? `https://${rawUrl}` : rawUrl
+    if (url !== '' && !/^https?:\/\//i.test(url)) return
     const sel = savedSelection.current
     if (url === '') {
       const chain = sel ? editor.chain().focus().setTextSelection(sel) : editor.chain().focus()
@@ -122,6 +126,8 @@ const TextEditor = ({ value, onChange, placeholder }: Props) => {
           onClick={() => editor?.chain().focus().toggleBold().run()}
           className={btn(state.isBold)}
           title="Lihavointi"
+          aria-label="Lihavointi"
+          aria-pressed={state.isBold}
         >
           <Bold className="w-4 h-4" />
         </button>
@@ -130,6 +136,8 @@ const TextEditor = ({ value, onChange, placeholder }: Props) => {
           onClick={() => editor?.chain().focus().toggleItalic().run()}
           className={btn(state.isItalic)}
           title="Kursivointi"
+          aria-label="Kursivointi"
+          aria-pressed={state.isItalic}
         >
           <Italic className="w-4 h-4" />
         </button>
@@ -138,6 +146,8 @@ const TextEditor = ({ value, onChange, placeholder }: Props) => {
           onClick={() => editor?.chain().focus().toggleBulletList().run()}
           className={btn(state.isBulletList)}
           title="Lista"
+          aria-label="Lista"
+          aria-pressed={state.isBulletList}
         >
           <List className="w-4 h-4" />
         </button>
@@ -146,6 +156,8 @@ const TextEditor = ({ value, onChange, placeholder }: Props) => {
           onClick={() => editor?.chain().focus().toggleOrderedList().run()}
           className={btn(state.isOrderedList)}
           title="Numeroitu lista"
+          aria-label="Numeroitu lista"
+          aria-pressed={state.isOrderedList}
         >
           <ListOrdered className="w-4 h-4" />
         </button>
@@ -154,6 +166,8 @@ const TextEditor = ({ value, onChange, placeholder }: Props) => {
           onClick={handleLink}
           className={btn(state.isLink)}
           title="Linkki"
+          aria-label="Linkki"
+          aria-pressed={state.isLink}
         >
           <Link2 className="w-4 h-4" />
         </button>
@@ -191,8 +205,9 @@ const TextEditor = ({ value, onChange, placeholder }: Props) => {
             onMouseDown={e => e.stopPropagation()}
           >
             <h3 className="text-white text-sm font-medium mb-3">Lisää linkki</h3>
-            <label className="block text-xs text-gray-400 mb-1">Näyttötapa</label>
+            <label htmlFor="link-text" className="block text-xs text-gray-400 mb-1">Näyttötapa</label>
             <input
+              id="link-text"
               type="text"
               className="w-full rounded bg-white/10 text-gray-200 px-3 py-1.5 text-sm outline-none focus:ring-1 focus:ring-white/30 mb-3"
               placeholder="Linkin teksti"
@@ -204,9 +219,10 @@ const TextEditor = ({ value, onChange, placeholder }: Props) => {
                 if (e.key === 'Escape') setLinkDialog(null)
               }}
             />
-            <label className="block text-xs text-gray-400 mb-1">Verkko-osoite (URL)</label>
+            <label htmlFor="link-url" className="block text-xs text-gray-400 mb-1">Verkko-osoite (URL)</label>
             <input
-              type="text"
+              id="link-url"
+              type="url"
               className="w-full rounded bg-white/10 text-gray-200 px-3 py-1.5 text-sm outline-none focus:ring-1 focus:ring-white/30 mb-3"
               placeholder=""
               value={linkDialog.url}

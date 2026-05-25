@@ -177,7 +177,7 @@ const HomeworkCard = ({
                 [&_ol_ol_ol]:list-[lower-roman]
                 [&_li]:my-0.5
                 [&_a]:text-blue-400 [&_a]:underline"
-                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(hw.comment) }}
+                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(hw.comment, { ADD_ATTR: ['target'] }) }}
               />
             </>
           )

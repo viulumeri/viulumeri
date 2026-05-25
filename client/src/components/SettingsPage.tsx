@@ -1,11 +1,11 @@
 import { useState } from 'react'
 import { useSession } from '../auth-client'
-import { useDeleteUser, useChangePassword, useLogout } from '../hooks/useAuth'
+import { useDeleteUser, useChangePassword, useChangeEmail, useLogout } from '../hooks/useAuth'
 import { useField } from '../hooks/useField'
 import type { AppSessionUser } from '../../../shared/types'
 import { StudentSettings } from './StudentSettings'
 import { TeacherSettings } from './TeacherSettings'
-import { User, Key, Settings, LogOut, Trash2 } from 'lucide-react'
+import { User, Key, Settings, LogOut, Trash2, Mail, MessageCircle } from 'lucide-react'
 import { useNotification } from '../hooks/useNotification'
 
 import { Link } from 'react-router-dom'
@@ -15,6 +15,10 @@ export const SettingsPage = () => {
   const currentPassword = useField('password')
   const newPassword = useField('password')
   const confirmPassword = useField('password')
+  const newEmail = useField('email')
+  const confirmEmail = useField('email')
+  const [passwordOpen, setPasswordOpen] = useState(false);
+  const [emailOpen, setEmailOpen] = useState(false);
   const { showError, showSuccess } = useNotification()
 
   const deleteUser = useDeleteUser({
@@ -41,6 +45,20 @@ export const SettingsPage = () => {
       showError(`Virhe salasanan vaihdossa: ${error.message}`)
     }
   })
+
+  const changeEmail = useChangeEmail({
+    onSuccess: () => {
+      newEmail.reset()
+      confirmEmail.reset()
+
+    showSuccess('Sähköpostiosoite vaihdettu onnistuneesti!')
+  },
+
+  onError: (error: Error) => {
+    showError(`Virhe sähköpostiosoitteen vaihdossa: ${error.message}`)
+  },
+})
+
 
   const logout = useLogout({
     onSuccess: () => {
@@ -94,30 +112,30 @@ export const SettingsPage = () => {
     })
   }
 
+ const handleChangeEmail = (event: React.FormEvent) => {
+  event.preventDefault();
+
+  changeEmail.mutate({
+    newEmail: newEmail.value,
+    password: confirmEmail.value,
+  });
+};
+
   const handleLogout = () => {
     logout.mutate()
   }
 
   return (
-    <div className="space-y-6 p-6 pb-24">
+
+    <div className="space-y-4 p-5 pb-24">
       <h2 className="flex items-center gap-3">
         <Settings className="w-8 h-8" />
         Asetukset
       </h2>
 
-      <div className="flex justify-center">
-        <button
-          onClick={handleLogout}
-          disabled={logout.isPending}
-          className="flex items-center gap-2 button-basic disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          <LogOut className="w-5 h-5" />
-          {logout.isPending ? 'Kirjaudutaan ulos...' : 'Kirjaudu ulos'}
-        </button>
-      </div>
-
-      <div className="bg-neutral-900 rounded-lg p-6">
-        <h3 className="flex items-center gap-3 mb-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
+      <div className="bg-neutral-900 rounded-lg p-2 -mb-4">
+        <h3 className="flex items-center gap-3 mb-5">
           <User className="w-6 h-6" />
           Käyttäjätiedot
         </h3>
@@ -132,12 +150,45 @@ export const SettingsPage = () => {
           </p>
         </div>
       </div>
+        <div className="bg-neutral-900 rounded-lg p-2 flex items-center justify-center">
 
-      <div className="bg-neutral-900 rounded-lg p-6">
-        <h3 className="flex items-center gap-3 mb-4">
-          <Key className="w-6 h-6" />
-          Salasanan vaihto
-        </h3>
+          <div className="flex justify-start">
+        <button
+          onClick={handleLogout}
+          disabled={logout.isPending}
+            className="inline-flex justify-center items-center gap-2 bg-neutral-100 text-black rounded-full
+            px-6 py-2 text-xl disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <LogOut className="w-5 h-5" />
+          {logout.isPending ? 'Kirjaudutaan ulos...' : 'Kirjaudu ulos'}
+
+        </button>
+        </div>
+      </div>
+    </div>
+
+      <div className="bg-neutral-900 rounded-lg p-3">
+        <button
+          type="button"
+          onClick={() => setPasswordOpen(!passwordOpen)}
+          className="w-full flex items-center justify-between gap-3 mb-1
+          bg-neutral-800 hover:bg-neutral-700 border border-neutral-700
+          rounded-md px-4 py-3 text-left transition-colors"
+        >
+          <span className="flex items-center gap-3">
+            <Key className="w-6 h-6" />
+            Salasanan vaihto
+          </span>
+
+          <span
+            className={`transition-transform duration-200 ${
+              passwordOpen ? "rotate-180" : ""
+            }`}
+          >
+            ▼
+          </span>
+        </button>
+        {passwordOpen && (
         <form onSubmit={handleChangePassword} className="space-y-4">
           <div>
             <label
@@ -151,7 +202,8 @@ export const SettingsPage = () => {
               {...currentPassword.props}
               required
               autoComplete="current-password"
-              className="w-full bg-neutral-700 border border-neutral-600 rounded-md px-3 py-2 text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full bg-neutral-700 border border-neutral-600 rounded-md px-3 py-2
+              text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
           <div>
@@ -166,7 +218,8 @@ export const SettingsPage = () => {
               {...newPassword.props}
               required
               autoComplete="new-password"
-              className="w-full bg-neutral-700 border border-neutral-600 rounded-md px-3 py-2 text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full bg-neutral-700 border border-neutral-600 rounded-md px-3 py-2
+              text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
           <div>
@@ -181,25 +234,101 @@ export const SettingsPage = () => {
               {...confirmPassword.props}
               required
               autoComplete="new-password"
-              className="w-full bg-neutral-700 border border-neutral-600 rounded-md px-3 py-2 text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full bg-neutral-700 border border-neutral-600 rounded-md px-3 py-2
+              text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
           <div className="flex justify-center">
             <button
               type="submit"
               disabled={changePassword.isPending}
-              className="button-basic disabled:opacity-50 disabled:cursor-not-allowed"
+              className="button-basic disabled:opacity-50 rounded-full px-6 py-2 disabled:cursor-not-allowed"
             >
               {changePassword.isPending ? 'Vaihdetaan...' : 'Vaihda salasana'}
             </button>
           </div>
         </form>
+        )}
       </div>
 
-      <div className="bg-neutral-900 rounded-lg p-6">
-        <h3 className="mb-4">Palaute</h3>
+       <div className="bg-neutral-900 rounded-lg p-3 mb-4">
+        <button
+          type="button"
+          onClick={() => setEmailOpen(!emailOpen)}
+          className="w-full flex items-center justify-between gap-3 mb-4
+          bg-neutral-800 hover:bg-neutral-700 border border-neutral-700
+          rounded-md px-4 py-3 text-left transition-colors"
+        >
+          <span className="flex items-center gap-3">
+            <Mail className="w-6 h-6" />
+            Sähköpostiosoitteen vaihto
+          </span>
+
+          <span
+            className={`transition-transform duration-200 ${
+              emailOpen ? "rotate-180" : ""
+            }`}
+          >
+            ▼
+          </span>
+        </button>
+        {emailOpen && (
+        <form onSubmit={handleChangeEmail} className="space-y-4">
+          <div>
+            <label
+              htmlFor="new-password"
+              className="block text-sm font-medium text-gray-300 mb-1"
+            >
+              Uusi sähköpostiosoite:
+            </label>
+            <input
+              id="new-password"
+              {...newEmail.props}
+              required
+              autoComplete="new-password"
+              className="w-full bg-neutral-700 border border-neutral-600 rounded-md px-3 py-2
+              text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+          </div>
+          <div>
+            <label
+              htmlFor="confirm-password"
+              className="block text-sm font-medium text-gray-300 mb-1"
+            >
+              Vahvista kirjoittamalla salasana:
+            </label>
+            <input
+              id="confirm-password"
+              {...confirmEmail.props}
+              required
+              autoComplete="new-password"
+              className="w-full bg-neutral-700 border border-neutral-600 rounded-md px-3 py-2
+              text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+          </div>
+          <div className="flex justify-center">
+            <button
+              type="submit"
+              disabled={changeEmail.isPending}
+              className="button-basic disabled:opacity-50 rounded-full px-6 py-2 disabled:cursor-not-allowed"
+            >
+              {changeEmail.isPending ? 'Vaihdetaan...' : 'Vaihda sähköpostiosoite'}
+            </button>
+          </div>
+        </form>
+        )}
+      </div>
+
+      <div className="bg-neutral-900 rounded-lg p-3">
+        <h3 className="flex items-center gap-3 mb-4">
+          <MessageCircle className="w-6 h-6" />
+          Palaute
+        </h3>
         <div className="flex justify-center">
-          <Link to="/feedback" className="button-basic">
+          <Link
+            to="/feedback"
+            className="button-basic inline-flex items-center justify-center px-6 py-2 text-xl rounded-full"
+          >
             Anna palautetta
           </Link>
         </div>
@@ -214,7 +343,8 @@ export const SettingsPage = () => {
             <button
               onClick={handleDeleteAccount}
               disabled={isDeleting}
-              className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white rounded-full px-6 py-2 text-xl font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white rounded-full
+              px-6 py-2 text-xl font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Trash2 className="w-5 h-5" />
               {isDeleting ? 'Lähetetään vahvistusta...' : 'Poista käyttäjätili'}

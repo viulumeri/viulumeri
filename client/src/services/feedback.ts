@@ -13,7 +13,7 @@ export const feedbackService = {
     } catch (error: unknown) {
       if (axios.isAxiosError(error)) {
         const status = error.response?.status
-        const serverError = (error.response?.data as any)?.error
+        const serverError = (error.response?.data as { error?: string })?.error
         if (status === 400) {
           if (serverError === 'Invalid title') {
             throw new Error('Otsikon pitää olla 1–200 merkkiä.')

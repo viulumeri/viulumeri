@@ -6,7 +6,33 @@ import app from './app'
 import logger from './utils/logger'
 
 connectDB()
-musicService.initialize()
+
+const isTestEnv = process.env.NODE_ENV === 'test'
+const strictMusicScan = process.env.E2E_MUSIC_STRICT === 'true'
+
+const isMissingDirError = (error: unknown): boolean => {
+  if (!error || typeof error !== 'object') return false
+  const maybeErrno = error as NodeJS.ErrnoException
+  if (maybeErrno.code === 'ENOENT') return true
+  if (error instanceof Error) {
+    return (
+      error.message.includes('ENOENT') ||
+      error.message.includes('no such file or directory')
+    )
+  }
+  return false
+}
+
+void musicService.initialize().catch(error => {
+  if (isTestEnv && !strictMusicScan && isMissingDirError(error)) {
+    logger.info('Music directory missing in test env; continuing with empty library')
+    musicService.initializeEmpty()
+    return
+  }
+
+  logger.error('Music service failed to initialize', error)
+  process.exit(1)
+})
 
 app.listen(port, () => {
   logger.info(`Server running on port ${port}`)

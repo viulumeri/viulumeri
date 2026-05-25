@@ -1,7 +1,20 @@
 import { Resend } from 'resend'
 import logger from './logger'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
+const isTestEnv = process.env.NODE_ENV === 'test'
+let resend: Resend | null = null
+
+const getResendClient = () => {
+  if (resend) return resend
+
+  const apiKey = process.env.RESEND_API_KEY
+  if (!apiKey) {
+    throw new Error('Missing RESEND_API_KEY')
+  }
+
+  resend = new Resend(apiKey)
+  return resend
+}
 
 interface SendEmailOptions {
   to: string
@@ -11,8 +24,14 @@ interface SendEmailOptions {
 }
 
 export const sendEmail = async ({ to, subject, text, html }: SendEmailOptions) => {
+  if (isTestEnv) {
+    logger.info('Email send skipped (test)', { to, subject })
+    return { id: 'test-email' }
+  }
+
   try {
-    const { data, error } = await resend.emails.send({
+    const client = getResendClient()
+    const { data, error } = await client.emails.send({
       from: process.env.FROM_EMAIL || 'onboarding@resend.dev',
       to,
       subject,

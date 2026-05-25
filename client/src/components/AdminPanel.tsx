@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
-import { Users, ScanSearch } from 'lucide-react'
+import { Users, ScanSearch } from 'lucide-react'
+
 
 interface SummaryResponse {
   teacherCount: number
@@ -125,7 +126,10 @@ export const AdminPanel = () => {
           </div>
         </button>
     </div> */}
-
+      <form
+        className="flex items-center max-w-sm mx-auto space-x-2"
+        onSubmit={buttonHandler}
+      >
       <form className="flex items-center max-w-sm mx-auto space-x-2">   
         <label htmlFor="simple-search" className="sr-only">Search</label>
         <div className="relative w-full">
@@ -145,7 +149,6 @@ export const AdminPanel = () => {
               </div>
             ))}
         </div>
-        <button type="submit" className="inline-flex items-center justify-center shrink-0 text-white bg-brand hover:bg-brand-strong focus:ring-4 focus:ring-brand-medium shadow-xs rounded-base w-10 h-10 focus:outline-none"
           onClick={buttonHandler}
           >
         

@@ -20,11 +20,6 @@ interface ChangePasswordData {
   revokeOtherSessions?: boolean
 }
 
-interface ChangeEmailData {
-  newEmail: string
-  password: string
-}
-
 interface RequestPasswordResetData {
   email: string
   redirectTo?: string
@@ -112,25 +107,6 @@ export const useChangePassword = (
         }
 
         throw new Error(errorMessage)
-      }
-
-      return response
-    },
-    ...options
-  })
-}
-
-export const useChangeEmail = (
-  options?: UseMutationOptions<unknown, Error, ChangeEmailData>
-) => {
-  return useMutation({
-    mutationFn: async (data: ChangeEmailData) => {
-      const response = await authClient.changeEmail(data)
-
-      if (response.error) {
-        throw new Error(
-          response.error.message || 'Sähköpostiosoitteen vaihto epäonnistui'
-        )
       }
 
       return response

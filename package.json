@@ -20,5 +20,10 @@
   "bugs": {
     "url": "https://github.com/viulumeri/viulumeri/issues"
   },
-  "homepage": "https://github.com/viulumeri/viulumeri#readme"
+  "homepage": "https://github.com/viulumeri/viulumeri#readme",
+  "dependencies": {
+    "better-auth": "1.2.10",
+    "better-call": "1.3.3",
+    "rou3": "0.6.3"
+  }
 }

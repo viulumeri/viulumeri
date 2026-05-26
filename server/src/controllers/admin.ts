@@ -4,6 +4,7 @@ import { requireAdmin } from '../utils/auth-middleware'
 import Teacher from '../models/teacher'
 import Student from '../models/student'
 import Homework from '../models/homework'
+import PopupMessage from '../models/popupMessage'
 
 const adminRouter = Router()
 adminRouter.use(requireAdmin)
@@ -89,6 +90,40 @@ adminRouter.delete('/students/:studentId', async (request, response) => {
   await Homework.deleteMany({ student: student.id })
   await student.deleteOne()
 
+  response.status(204).send()
+})
+
+adminRouter.post('/popup-messages', async (request, response) => {
+  const title =
+    typeof request.body?.title === 'string' ? request.body.title.trim() : ''
+  const content =
+    typeof request.body?.content === 'string' ? request.body.content.trim() : ''
+
+  if (!title) {
+    return response.status(400).json({ error: 'Title is required' })
+  }
+  if (!content) {
+    return response.status(400).json({ error: 'Content is required' })
+  }
+
+  const doc = await PopupMessage.create({
+    title,
+    content,
+    postedAt: new Date()
+  })
+
+  response.status(201).json({
+    message: {
+      id: doc.id,
+      title: doc.title,
+      content: doc.content,
+      postedAt: doc.postedAt.toISOString()
+    }
+  })
+})
+
+adminRouter.delete('/popup-messages', async (_request, response) => {
+  await PopupMessage.deleteMany({})
   response.status(204).send()
 })
 

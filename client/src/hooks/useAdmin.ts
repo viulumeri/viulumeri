@@ -35,11 +35,12 @@ export const useDeleteAdminTeacher = (
 
   return useMutation({
     mutationFn: adminService.deleteTeacher,
-    onSuccess: () => {
+    ...options,
+    onSuccess: (...args) => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'teachers'] })
       queryClient.invalidateQueries({ queryKey: ['admin', 'summary'] })
+      options?.onSuccess?.(...args)
     },
-    ...options
   })
 }
 
@@ -50,10 +51,11 @@ export const useDeleteAdminStudent = (
 
   return useMutation({
     mutationFn: adminService.deleteStudent,
-    onSuccess: () => {
+    ...options,
+    onSuccess: (...args) => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'students'] })
       queryClient.invalidateQueries({ queryKey: ['admin', 'summary'] })
+      options?.onSuccess?.(...args)
     },
-    ...options
   })
 }

@@ -177,9 +177,13 @@ export class TestHelper {
     const { password } = await this.signUpUser(api, userData)
 
     const db = this.client!.db()
-    await db
+    const result = await db
       .collection('user')
       .updateOne({ email: userData.email }, { $set: { emailVerified: true, role: 'admin' } })
+
+    if (result.matchedCount === 0) {
+      throw new Error(`createAuthenticatedAdmin: user not found in DB for email ${userData.email}`)
+    }
 
     const signInResponse = await this.signInUser(api, userData.email, password)
     const sessionCookie = this.extractSessionCookie(signInResponse)

@@ -1,4 +1,4 @@
-import { useQuery, type UseQueryOptions } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient, type UseQueryOptions, type UseMutationOptions } from '@tanstack/react-query'
 import { adminService, type SummaryResponse, type Teacher, type Student } from '../services/admin'
 
 export const useAdminSummary = (
@@ -27,3 +27,33 @@ export const useAdminStudents = (
     queryFn: adminService.getAdminStudents,
     ...options
   })
+
+export const useDeleteAdminTeacher = (
+  options?: UseMutationOptions<void, Error, string>
+) => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: adminService.deleteTeacher,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'teachers'] })
+      queryClient.invalidateQueries({ queryKey: ['admin', 'summary'] })
+    },
+    ...options
+  })
+}
+
+export const useDeleteAdminStudent = (
+  options?: UseMutationOptions<void, Error, string>
+) => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: adminService.deleteStudent,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'students'] })
+      queryClient.invalidateQueries({ queryKey: ['admin', 'summary'] })
+    },
+    ...options
+  })
+}

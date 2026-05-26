@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { Users, Trash2, ScanSearch } from 'lucide-react'
 import { useAdminSummary, useAdminTeachers, useAdminStudents } from '../hooks/useAdmin'
 import { DropdownSearchbar } from './DropdownSearchbar'
 import type { Teacher, Student } from '../services/admin'
@@ -14,8 +13,8 @@ interface User {
 
 export const AdminPanel = () => {
   const { data: summaryData } = useAdminSummary()
-  const { data: teachersData, isLoading: teachersLoading, error: teachersError } = useAdminTeachers()
-  const { data: studentsData, isLoading: studentsLoading, error: studentsError } = useAdminStudents()
+  const { data: teachersData, error: teachersError } = useAdminTeachers()
+  const { data: studentsData, error: studentsError } = useAdminStudents()
 
   const [searchUserInput, setSearchUserInput] = useState('')
   const [searchResults, setSearchResults] = useState<User[]>([])
@@ -24,7 +23,6 @@ export const AdminPanel = () => {
   const teachers = teachersData?.teachers ?? []
   const students = studentsData?.students ?? []
   const error = teachersError || studentsError ? 'Failed to load admin data' : null
-  const isLoading = teachersLoading || studentsLoading
 
   const handleSearchUserInputChange = (value: string) => {
     setSearchUserInput(value)

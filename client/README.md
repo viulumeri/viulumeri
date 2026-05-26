@@ -52,3 +52,19 @@ export default tseslint.config({
   },
 })
 ```
+
+  ## Startup announcements popup (dev/testing)
+
+  The app can show a startup popup with one or more announcement messages.
+
+  For now, messages are read from a Vite env var (compile-time): `VITE_STARTUP_ANNOUNCEMENTS`.
+
+  Example for `client/.env.local`:
+
+  ```bash
+  VITE_STARTUP_ANNOUNCEMENTS='[
+    {"title":"Päivitys","content":"Sovellukseen on tehty muutoksia.","postedAt":"2026-05-26"}
+  ]'
+  ```
+
+  The popup is dismissed per user (stored in `localStorage`) and will only reappear when there is a new message (i.e. the env var content changes).

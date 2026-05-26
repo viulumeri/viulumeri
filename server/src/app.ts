@@ -14,6 +14,7 @@ import studentsRouter from './controllers/students'
 import playedSongsRouter from './controllers/playedSongs'
 import feedbackRouter from './controllers/feedback'
 import adminRouter from './controllers/admin'
+import popupMessagesRouter from './controllers/popupMessages'
 
 const app = express()
 
@@ -32,6 +33,7 @@ app.all('/api/auth/{*splat}', toNodeHandler(auth))
 
 app.use(express.json())
 app.use('/api', authenticate)
+app.use('/api/popup-messages', popupMessagesRouter)
 app.use('/api/songs', songsRouter)
 app.use('/api/invites', inviteRouter)
 app.use('/api/teacher', teacherRouter)

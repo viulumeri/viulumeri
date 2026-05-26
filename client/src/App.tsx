@@ -22,22 +22,26 @@ import { AppLayout } from './components/AppLayout'
 import PublicLayout from './components/PublicLayout'
 import { SettingsPage } from './components/SettingsPage'
 import { AdminPanel } from './components/AdminPanel'
+import { PopupAdminPage } from './components/PopupAdminPage'
 import { Route, Routes, Navigate } from 'react-router-dom'
 import { useSession } from './auth-client'
 import type { AppSessionUser } from '../../shared/types'
 import { NotificationProvider } from './contexts/NotificationProvider'
 import { NotificationBanner } from './components/NotificationBanner'
+import { StartupAnnouncementsPopup } from './components/StartupAnnouncementsPopup'
 import './index.css'
 
 const App = () => {
   const { data: session, isPending } = useSession()
   const userType = (session?.user as AppSessionUser | undefined)?.userType
   const role = (session?.user as AppSessionUser | undefined)?.role
+  const userId = (session?.user as { id?: string } | undefined)?.id
 
   return (
     
     <NotificationProvider>
       <NotificationBanner />
+      <StartupAnnouncementsPopup userId={userId} isPending={isPending} />
       <Routes>
       {/* Public routes */}
       <Route
@@ -190,14 +194,24 @@ const App = () => {
           )}
 
           {role === 'admin' && (
-            <Route
-              path="/admin"
-              element={
-                <AppLayout>
-                  <AdminPanel />
-                </AppLayout>
-              }
-            />
+            <>
+              <Route
+                path="/admin"
+                element={
+                  <AppLayout>
+                    <AdminPanel />
+                  </AppLayout>
+                }
+              />
+              <Route
+                path="/admin/popup"
+                element={
+                  <AppLayout>
+                    <PopupAdminPage />
+                  </AppLayout>
+                }
+              />
+            </>
           )}
 
           <Route

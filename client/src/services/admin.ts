@@ -42,6 +42,24 @@ export const adminService = {
       withCredentials: true
     })
     return response.data
+  },
+
+  createPopupMessage: async (body: {
+    title: string
+    content: string
+  }): Promise<{
+    message: { id: string; title: string; content: string; postedAt: string }
+  }> => {
+    const response = await axios.post('/api/admin/popup-messages', body, {
+      withCredentials: true
+    })
+    return response.data
+  },
+
+  deleteAllPopupMessages: async (): Promise<void> => {
+    await axios.delete('/api/admin/popup-messages', {
+      withCredentials: true
+    })
   }
 }
 

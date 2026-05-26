@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { Users, ScanSearch } from 'lucide-react'
-import type { Teacher, Student } from '../services/admin'
 
 interface User {
   id: string

@@ -63,15 +63,15 @@ adminRouter.delete('/teachers/:teacherId', async (request, response) => {
     return response.status(404).json({ error: 'Teacher not found' })
   }
 
+  await auth.api.removeUser({
+    body: { userId: teacher.userId },
+    headers: fromNodeHeaders(request.headers)
+  })
   await Student.updateMany(
     { teacher: teacher.id },
     { $unset: { teacher: 1 } }
   )
   await teacher.deleteOne()
-  await auth.api.removeUser({
-    body: { userId: teacher.userId },
-    headers: fromNodeHeaders(request.headers)
-  })
 
   response.status(204).send()
 })
@@ -92,12 +92,12 @@ adminRouter.delete('/students/:studentId', async (request, response) => {
     }
   }
 
-  await Homework.deleteMany({ student: student.id })
-  await student.deleteOne()
   await auth.api.removeUser({
     body: { userId: student.userId },
     headers: fromNodeHeaders(request.headers)
   })
+  await Homework.deleteMany({ student: student.id })
+  await student.deleteOne()
 
   response.status(204).send()
 })

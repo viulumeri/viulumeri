@@ -4,6 +4,10 @@ COPY client/package*.json ./
 RUN npm install
 COPY client/ ./
 COPY shared/ ../shared/
+ARG VITE_APP_VERSION=0.0.0
+ARG VITE_BUILD_TIME=
+ENV VITE_APP_VERSION=${VITE_APP_VERSION}
+ENV VITE_BUILD_TIME=${VITE_BUILD_TIME}
 RUN npm run build
 
 FROM node:22-alpine AS backend-builder

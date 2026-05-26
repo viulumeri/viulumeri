@@ -34,6 +34,9 @@ jobs:
           context: .
           push: true
           tags: jayzstep/viulumeri:${{ github.sha }}
+          build-args: |
+            VITE_APP_VERSION=dev-${{ github.sha }}
+            VITE_BUILD_TIME=${{ github.event.head_commit.timestamp }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -57,6 +60,8 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            VITE_APP_VERSION=${{ github.event.release.tag_name }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 

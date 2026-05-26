@@ -2,14 +2,15 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import { VitePWA } from 'vite-plugin-pwa'
-import { readFileSync } from 'fs'
 
-const { version } = JSON.parse(readFileSync('./package.json', 'utf-8'))
+const appVersion = process.env.VITE_APP_VERSION || '0.0.0'
+const buildTime = process.env.VITE_BUILD_TIME || ''
 
 // https://vite.dev/config/
 export default defineConfig({
   define: {
-    __APP_VERSION__: JSON.stringify(version)
+    __APP_VERSION__: JSON.stringify(appVersion),
+    __BUILD_TIME__: JSON.stringify(buildTime)
   },
   plugins: [
     react(), 

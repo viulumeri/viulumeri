@@ -1,10 +1,5 @@
 # Viulumeri app
 
-## Known bugs:
-
-- SignUp might not succeed
-- User Deletion might not succeed
-
 Viulumeri-nuottikirjan digitaalinen kumppani säestysraitojen toistamiseen ja harjoitteluun.
 
 ## Ohjeet
@@ -23,6 +18,7 @@ Lopulta opettajana voit merkata kappaleen oppilaskohtaisesti soitetuksi.
 
 Kappaleet-näkymässä voit selata ja toistaa kaikkia Viulumeren kappaleita, sekä nähdä onko kappale merkattu soitetuksi.
 
+Opettajat ja oppilaat voivat lähettää kehittäjälle palautetta asetusnäkymästä palautelomakkeen avulla. Lomakkeen kautta on esimerkiksi mahdollista raportoida bugeista tai ehdottaa sovellukselle uusia ominaisuuksia
 
 ## App
 

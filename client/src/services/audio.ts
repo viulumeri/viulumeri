@@ -53,7 +53,7 @@ export const fetchSongBundle = async (songId: string): Promise<string> => {
 const fetchSongTracksInternal = async (
   songId: string,
   bundleType: 'normal' | 'slow'
-): Promise<AudioTracks> => {
+): Promise<AudioTracks | null> => {
   const suffix = bundleType === 'slow' ? '-slow' : ''
   const cacheKey = `song-bundle${suffix}-${songId}`
   const apiEndpoint =
@@ -71,8 +71,13 @@ const fetchSongTracksInternal = async (
     zipContent = await zip.loadAsync(cachedBlob)
   } else {
     const response = await axios.get(apiEndpoint, {
-      responseType: 'blob'
+      responseType: 'blob',
+      validateStatus: (status) => (status >= 200 && status < 300) || status === 404 // <-- Don't crash on 404
     })
+
+    if (response.status === 404) {
+      return null
+    }
 
     const cacheResponse = new Response(response.data)
     await cache.put(cacheKey, cacheResponse.clone())
@@ -106,12 +111,33 @@ const fetchSongTracksInternal = async (
   return tracks
 }
 
-export const fetchSongTracks = async (songId: string): Promise<AudioTracks> => {
+export const fetchSongTracks = async (songId: string): Promise<AudioTracks | null> => {
   return fetchSongTracksInternal(songId, 'normal')
 }
 
 export const fetchSlowSongTracks = async (
   songId: string
-): Promise<AudioTracks> => {
+): Promise<AudioTracks | null> => {
   return fetchSongTracksInternal(songId, 'slow')
+}
+
+export const checkSlowTrackAvailability = async (songId: string): Promise<boolean> => {
+  const cacheKey = `song-bundle-slow-${songId}`
+  const cache = await caches.open(AUDIO_CACHE_NAME)
+
+  const cachedResponse = await cache.match(cacheKey)
+  if (cachedResponse) {
+    return true
+  }
+
+  try {
+    const response = await axios.head(`/api/songs/${songId}/bundle-slow`, {
+      validateStatus: status => (status >= 200 && status < 300) || status === 404
+    })
+
+    return response.status !== 404
+  } catch (err) {
+    console.error('Error checking slow track availability:', err)
+    return false
+  }
 }

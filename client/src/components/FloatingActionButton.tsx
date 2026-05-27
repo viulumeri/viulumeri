@@ -3,6 +3,7 @@ import { Plus, Check } from 'lucide-react'
 
 type Props = {
   to?: string
+  state?: unknown
   onClick?: () => void
   icon?: 'plus' | 'check'
   className?: string
@@ -10,6 +11,7 @@ type Props = {
 
 export const FloatingActionButton = ({
   to,
+  state,
   onClick,
   icon = 'plus',
   className = ''
@@ -26,6 +28,7 @@ export const FloatingActionButton = ({
       {to ? (
         <Link
           to={to}
+          state={state}
           className="bg-white text-black rounded-full w-13 h-13 flex items-center justify-center border-black border-1"
         >
           <Icon size={28} strokeWidth={2.5} />

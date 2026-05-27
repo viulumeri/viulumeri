@@ -159,10 +159,10 @@ export const Signup = () => {
       </form>
 
       <button
-          onClick={() => navigate('/login')}
-          className="back-button-basic block mx-auto mt-4"
-        >
-          Takaisin
+        onClick={() => navigate('/login')}
+        className="back-button-basic block mx-auto mt-4"
+      >
+        Takaisin
       </button>
     </div>
   )

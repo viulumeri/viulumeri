@@ -76,7 +76,7 @@ class MusicService {
 
     const files = await fs.readdir(songPath)
 
-    const audioBundle = files.find(f => f.endsWith('.zip'))
+    const audioBundle = files.find(f => f.endsWith('.zip') && !f.includes('-slow'))
     if (!audioBundle) {
       throw new Error(`Missing audio bundle (.zip) in ${folder}`)
     }

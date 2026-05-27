@@ -79,7 +79,7 @@ describe('GET /api/invites/:token', () => {
   test('should reject token for non-existent teacher', async () => {
     const { sessionCookie } = await TestHelper.createAuthenticatedStudent(api)
     const nonExistentTeacherId = new mongoose.Types.ObjectId().toString()
-    
+
     const { generateInviteToken } = await import('../utils/inviteToken')
     const token = generateInviteToken(nonExistentTeacherId)
 
@@ -138,7 +138,7 @@ describe('POST /api/invites/:token/accept', () => {
   test('should reject token for non-existent teacher', async () => {
     const { sessionCookie } = await TestHelper.createAuthenticatedStudent(api)
     const nonExistentTeacherId = new mongoose.Types.ObjectId().toString()
-    
+
     const { generateInviteToken } = await import('../utils/inviteToken')
     const token = generateInviteToken(nonExistentTeacherId)
 
@@ -176,7 +176,7 @@ describe('POST /api/invites/:token/accept', () => {
     // Verify database state
     const updatedStudent = await Student.findById(student.id)
     const updatedTeacher = await Teacher.findById(teacher.id)
-    
+
     assert(updatedStudent.teacher)
     assert.strictEqual(updatedStudent.teacher.toString(), teacher.id)
     assert(updatedTeacher.students.includes(student._id))
@@ -251,7 +251,7 @@ describe('POST /api/invites/:token/accept', () => {
     const updatedStudent = await Student.findById(student.id)
     const updatedOldTeacher = await Teacher.findById(oldTeacher.id)
     const updatedNewTeacher = await Teacher.findById(newTeacher.id)
-    
+
     assert.strictEqual(updatedStudent.teacher.toString(), newTeacher.id)
     assert(!updatedOldTeacher.students.includes(student._id))
     assert(updatedNewTeacher.students.includes(student._id))

@@ -30,20 +30,27 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: process.env.NODE_ENV !== 'test', // Disable email verification in tests
-    sendResetPassword: process.env.NODE_ENV !== 'test'
-      ? async ({ user, url }) => {
-          await sendEmail({
-            to: user.email,
-            subject: 'Salasanan palautus - Viulumeri',
-            text: `Olet pyytänyt salasanan palautusta Viulumeri-palvelussa.
+    sendResetPassword:
+      process.env.NODE_ENV !== 'test'
+        ? async ({ user, url }) => {
+            await sendEmail({
+              to: user.email,
+              subject: 'Salasanan palautus - Viulumeri',
+              text: `Olet pyytänyt salasanan palautusta Viulumeri-palvelussa.
 
 Klikkaa alla olevaa linkkiä vaihtaaksesi salasanasi:
 ${url}
 
 Jos et pyytänyt salasanan palautusta, voit jättää tämän viestin huomioimatta.`
-          })
-        }
-      : undefined,
+            })
+          }
+        : async ({ user }: { user: any }) => {
+            // Test/E2E: enable the flow without sending email.
+            logger.info('Password reset requested (test/E2E)', {
+              userId: user?.id,
+              email: user?.email
+            })
+          },
     onPasswordReset: async ({ user }: { user: any }) => {
       logger.info('Password reset completed', { userId: user.id, email: user.email })
     }
@@ -120,10 +127,10 @@ Jos et pyytänyt tilin poistamista, voit jättää tämän viestin huomioimatta.
     }
   },
   emailVerification: {
-    sendOnSignUp: process.env.NODE_ENV !== 'test',
-    sendOnSignIn: process.env.NODE_ENV !== 'test',
+    sendOnSignUp: process.env.NODE_ENV !== 'test' && process.env.E2E_SEED !== 'true',
+    sendOnSignIn: process.env.NODE_ENV !== 'test' && process.env.E2E_SEED !== 'true',
     autoSignInAfterVerification: true,
-    sendVerificationEmail: process.env.NODE_ENV !== 'test'
+    sendVerificationEmail: process.env.NODE_ENV !== 'test' && process.env.E2E_SEED !== 'true'
       ? async ({ user, url }) => {
       logger.info('Sending verification email', {
         userId: user.id,

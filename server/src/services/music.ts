@@ -7,6 +7,11 @@ class MusicService {
   private songs: Song[] = []
   private initialized = false
 
+  initializeEmpty(): void {
+    this.songs = []
+    this.initialized = true
+  }
+
   async initialize(
     musicDir: string = process.env.MUSIC_DIR || '/var/www/audio'
   ): Promise<void> {
@@ -39,7 +44,21 @@ class MusicService {
         }
       }
     } catch (error) {
-      throw new Error(`Failed to read music directory ${musicDir}: ${error}`)
+      const message =
+        error instanceof Error ? error.message : String(error)
+
+      const wrapped = new Error(
+        `Failed to read music directory ${musicDir}: ${message}`
+      )
+
+      ;(wrapped as { cause?: unknown }).cause = error
+
+      const code = (error as NodeJS.ErrnoException | undefined)?.code
+      if (code) {
+        ;(wrapped as NodeJS.ErrnoException).code = code
+      }
+
+      throw wrapped
     }
     return songs
   }

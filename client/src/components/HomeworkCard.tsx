@@ -1,7 +1,9 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
+import DOMPurify from 'dompurify'
 import { Ellipsis, X } from 'lucide-react'
 import type { SongListItem, HomeworkListResponse } from '../../../shared/types'
 import SongCard from './SongCard'
+import TextEditor from './TextEditor'
 type HomeworkItem = HomeworkListResponse['homework'][number]
 
 type Props = {
@@ -46,7 +48,6 @@ const HomeworkCard = ({
   onAddSong
 }: Props) => {
   const menuRef = useRef<HTMLDivElement | null>(null)
-  const [isCommentEditing, setIsCommentEditing] = useState(false)
 
   useEffect(() => {
     function onDocClick(e: MouseEvent) {
@@ -151,37 +152,33 @@ const HomeworkCard = ({
         {editableComment ? (
           <div className="mt-5">
             <h3 className="mb-3">Opettajan kommentti</h3>
-            {isCommentEditing ? (
-              <textarea
-                value={commentDraft ?? hw.comment ?? ''}
-                onChange={e => onChangeComment?.(e.target.value)}
-                onBlur={() => setIsCommentEditing(false)}
-                rows={8}
-                className="w-full p-3 rounded-lg bg-white/20 outline-none text-gray-300 min-h-[120px] max-h-[300px] resize-y"
-                placeholder="Kirjoita kommentti"
-                autoFocus
-              />
-            ) : (
-              <button
-                type="button"
-                className="w-full text-left p-3 rounded-lg bg-white/15"
-                onClick={() => setIsCommentEditing(true)}
-              >
-                <h4 className="font-light text-gray-400 whitespace-pre-wrap">
-                  {(commentDraft ?? hw.comment) || 'Kirjoita kommentti'}
-                </h4>
-              </button>
-            )}
+            <TextEditor
+              value={commentDraft ?? hw.comment ?? ''}
+              onChange={next => onChangeComment?.(next)}
+              placeholder="Kirjoita kommentti"
+            />
           </div>
         ) : (
           hw.comment && (
             <>
               <h3 className="mt-5 mb-3">Opettajan kommentti</h3>
-              <div className="px-3">
-                <p className="text-[14px] text-gray-400 whitespace-pre-wrap">
-                  {hw.comment}
-                </p>
-              </div>
+              <div className="px-3 text-[14px] text-gray-400
+                [&_p]:my-1
+                [&_p:empty]:h-[1em]
+                [&_strong]:font-semibold [&_strong]:text-gray-300
+                [&_em]:italic
+                [&_h2]:text-xl [&_h2]:font-bold [&_h2]:mt-3 [&_h2]:mb-1 [&_h2]:text-gray-200
+                [&_h3]:text-lg [&_h3]:font-semibold [&_h3]:mt-2 [&_h3]:mb-1 [&_h3]:text-gray-300
+                [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:my-1
+                [&_ul_ul]:list-[circle]
+                [&_ul_ul_ul]:list-[square]
+                [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:my-1
+                [&_ol_ol]:list-[lower-alpha]
+                [&_ol_ol_ol]:list-[lower-roman]
+                [&_li]:my-0.5
+                [&_a]:text-blue-400 [&_a]:underline"
+                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(hw.comment, { ADD_ATTR: ['target'] }) }}
+              />
             </>
           )
         )}

@@ -50,8 +50,6 @@ export const fetchSongBundle = async (songId: string): Promise<string> => {
   return URL.createObjectURL(audioBlob)
 }
 
-// audio.ts
-
 const fetchSongTracksInternal = async (
   songId: string,
   bundleType: 'normal' | 'slow'

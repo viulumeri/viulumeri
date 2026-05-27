@@ -29,7 +29,7 @@ songsRouter.get('/:id/bundle', async (request, response) => {
   const bundlePath = path.join(musicDir, song.id, 'audio.zip')
 
   response.sendFile(bundlePath, err => {
-    if (err) {
+    if (err && !response.headersSent) {
       response.status(404).json({ error: 'Audio bundle not found' })
     }
   })
@@ -46,8 +46,25 @@ songsRouter.get('/:id/bundle-slow', async (request, response) => {
   const slowBundlePath = path.join(musicDir, song.id, 'audio-slow.zip')
 
   response.sendFile(slowBundlePath, err => {
-    if (err) {
-      response.status(404).json({ error: 'Slow audio bundle not found' })
+    if (err && !response.headersSent) {
+      response.status(404).json({ error: 'Audio bundle not found' }) 
+    }
+  })
+})
+
+songsRouter.head('/:id/bundle-slow', async (request, response) => {
+  const song = musicService.getSongById(request.params.id)
+
+  if (!song) {
+    return response.status(404).end()
+  }
+
+  const musicDir = process.env.MUSIC_DIR || '/var/www/audio'
+  const slowBundlePath = path.join(musicDir, song.id, 'audio-slow.zip')
+
+  response.sendFile(slowBundlePath, err => {
+    if (err && !response.headersSent) {
+      response.status(404).end()
     }
   })
 })

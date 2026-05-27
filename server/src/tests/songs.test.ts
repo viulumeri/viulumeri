@@ -223,7 +223,7 @@ describe('Songs API HEAD /:id/bundle-slow', () => {
       .set('Cookie', sessionCookie)
 
     assert.strictEqual(response.status, 200)
-    assert.strictEqual(response.text, '')
+    assert.ok(!response.text, 'HEAD response should not contain a text body')
   })
 
   it('should return 404 for valid-song-2 because audio-slow.zip is missing', async () => {

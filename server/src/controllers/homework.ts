@@ -53,8 +53,9 @@ homeworkRouter.get('/', requireStudent, loadStudentProfile, async (request, resp
 // POST /api/homework/practice/:homeworkId  (oppilas kirjaa harjoituskerran)
 homeworkRouter.post('/practice/:homeworkId', requireStudent, loadStudentProfile, async (request, response) => {
   const student = request.studentProfile!
+  const homeworkId = request.params.homeworkId as string
 
-  const homework = await validateHomeworkOwnershipByStudent(student, request.params.homeworkId, response)
+  const homework = await validateHomeworkOwnershipByStudent(student, homeworkId, response)
   if (!homework) return
 
   homework.practiceCount = (homework.practiceCount ?? 0) + 1
@@ -65,11 +66,12 @@ homeworkRouter.post('/practice/:homeworkId', requireStudent, loadStudentProfile,
 // DELETE /api/homework/:homeworkId (opettaja poistaa läksyn)
 homeworkRouter.delete('/:homeworkId', requireTeacher, loadTeacherProfile, async (request, response) => {
   const teacher = request.teacherProfile!
+  const homeworkId = request.params.homeworkId as string
 
-  const homework = await validateHomeworkOwnershipByTeacher(teacher, request.params.homeworkId, response)
+  const homework = await validateHomeworkOwnershipByTeacher(teacher, homeworkId, response)
   if (!homework) return
 
-  await Homework.findByIdAndDelete(request.params.homeworkId)
+  await Homework.findByIdAndDelete(homeworkId)
   response.status(204).send()
 })
 
@@ -80,8 +82,9 @@ homeworkRouter.put('/:homeworkId', requireTeacher, loadTeacherProfile, async (re
     return response.status(400).json({ error: 'songs must be array' })
 
   const teacher = request.teacherProfile!
+  const homeworkId = request.params.homeworkId as string
 
-  const homework = await validateHomeworkOwnershipByTeacher(teacher, request.params.homeworkId, response)
+  const homework = await validateHomeworkOwnershipByTeacher(teacher, homeworkId, response)
   if (!homework) return
 
   if (songs !== undefined) homework.songs = songs

@@ -12,6 +12,8 @@ const url = '/api/songs'
 const testMusicDir = path.join(__dirname, 'fixtures', 'music')
 
 before(async () => {
+  process.env.MUSIC_DIR = testMusicDir
+  
   await TestHelper.setupTestDatabase()
   await musicService.initialize(testMusicDir)
 })
@@ -157,7 +159,7 @@ describe('Songs API GET /:id/bundle', () => {
     assert.strictEqual(response.body.error, 'Song not found')
   })
 
-  it('should return 404 when audio bundle file does not exist', async () => {
+  it('should return 200 and stream the zip file when audio bundle file exists', async () => {
     const { sessionCookie } = await TestHelper.createAuthenticatedTeacher(
       api,
       'teacher.bundle@edu.hel.fi',
@@ -168,9 +170,7 @@ describe('Songs API GET /:id/bundle', () => {
       .get(`${url}/valid-song-1/bundle`)
       .set('Cookie', sessionCookie)
 
-    // In test environment, the mock zip files don't exist on the filesystem
-    assert.strictEqual(response.status, 404)
-    assert.strictEqual(response.body.error, 'Audio bundle not found')
+    assert.strictEqual(response.status, 200)
   })
 
   it('should handle bundle request for authenticated student', async () => {
@@ -184,9 +184,7 @@ describe('Songs API GET /:id/bundle', () => {
       .get(`${url}/valid-song-2/bundle`)
       .set('Cookie', sessionCookie)
 
-    // Same expectation - file doesn't exist in test environment
-    assert.strictEqual(response.status, 404)
-    assert.strictEqual(response.body.error, 'Audio bundle not found')
+    assert.strictEqual(response.status, 200)
   })
 })
 

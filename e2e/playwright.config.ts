@@ -27,7 +27,7 @@ const webServer = isCI
         command:
           'npm --prefix .. --workspace=client run build && npm --prefix .. --workspace=server run dev',
         url: `${serverUrl}/ping`,
-        reuseExistingServer: false,
+        reuseExistingServer: true,
         timeout: 180_000,
         env: {
           PORT: serverPort,

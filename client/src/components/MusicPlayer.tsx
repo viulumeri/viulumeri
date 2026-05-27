@@ -36,9 +36,9 @@ export const MusicPlayer = () => {
   const [dragPosition, setDragPosition] = useState(0)
   const playersRef = useRef<Tone.Players | null>(null)
   const audioTracksRef = useRef<AudioTracks | null>(null)
-  const [hasSlowTrack, setHasSlowTrack] = useState(true)
+  const [hasSlowTrack, setHasSlowTrack] = useState(false)
 
-const loadSongTracks = async () => {
+  const loadSongTracks = async () => {
   if (!songId || tracksLoaded) return
 
   try {
@@ -50,9 +50,11 @@ const loadSongTracks = async () => {
       : await fetchSongTracks(songId)
 
     if (!tracks && isPracticeTempo) {
-      console.warn("Slow tempo bundle not found, falling back to normal tempo.")
+      console.warn('Slow tempo bundle not found, falling back to normal tempo.')
+      setHasSlowTrack(false)
       setIsPracticeTempo(false)
-      tracks = await fetchSongTracks(songId)
+      setIsLoading(false)
+      return
     }
 
     if (!tracks) {
@@ -126,7 +128,7 @@ const loadSongTracks = async () => {
     )
     setIsLoading(false)
   }
-}
+  }
 
   const startPlayback = async () => {
     if (!playersRef.current || !tracksLoaded) return
@@ -401,7 +403,7 @@ const loadSongTracks = async () => {
               <button 
                 onClick={togglePracticeTempo}
                 disabled={!hasSlowTrack}
-                title={!hasSlowTrack ? "Hidasta versiota ei ole saatavilla tästä kappaleesta" : ""}
+                title={!hasSlowTrack ? 'Hidasta versiota ei ole saatavilla tästä kappaleesta' : ''}
               >
                 <Snail
                   className={`w-5 h-5 ${

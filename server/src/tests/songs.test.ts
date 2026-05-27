@@ -10,10 +10,12 @@ const api = supertest(app)
 const url = '/api/songs'
 
 const testMusicDir = path.join(__dirname, 'fixtures', 'music')
+let originalMusicDir: string | undefined
 
 before(async () => {
+  originalMusicDir = process.env.MUSIC_DIR
   process.env.MUSIC_DIR = testMusicDir
-  
+
   await TestHelper.setupTestDatabase()
   await musicService.initialize(testMusicDir)
 })
@@ -23,6 +25,7 @@ beforeEach(async () => {
 })
 
 after(async () => {
+  process.env.MUSIC_DIR = originalMusicDir
   await TestHelper.cleanup()
 })
 
@@ -220,7 +223,7 @@ describe('Songs API HEAD /:id/bundle-slow', () => {
       .set('Cookie', sessionCookie)
 
     assert.strictEqual(response.status, 200)
-    assert.strictEqual(response.text, undefined) 
+    assert.strictEqual(response.text, '')
   })
 
   it('should return 404 for valid-song-2 because audio-slow.zip is missing', async () => {

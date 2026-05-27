@@ -132,12 +132,12 @@ export const checkSlowTrackAvailability = async (songId: string): Promise<boolea
 
   try {
     const response = await axios.head(`/api/songs/${songId}/bundle-slow`, {
-      validateStatus: (status) => (status >= 200 && status < 300) || status === 404
+      validateStatus: status => (status >= 200 && status < 300) || status === 404
     })
-    
+
     return response.status !== 404
   } catch (err) {
-    console.error("Error checking slow track availability:", err)
+    console.error('Error checking slow track availability:', err)
     return false
   }
 }

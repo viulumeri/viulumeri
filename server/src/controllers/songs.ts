@@ -47,7 +47,7 @@ songsRouter.get('/:id/bundle-slow', async (request, response) => {
 
   response.sendFile(slowBundlePath, err => {
     if (err && !response.headersSent) {
-      response.status(404).json({ error: 'Audio bundle not found' }) 
+      response.status(404).json({ error: 'Audio bundle not found' })
     }
   })
 })

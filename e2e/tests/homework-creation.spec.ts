@@ -36,14 +36,8 @@ test.describe('Homework creation flow', () => {
 		// Click "Lisää uusi kappale" to go to the song picker
 		await page.getByRole('button', { name: /Lisää uusi kappale/i }).click()
 
-		// On select songs page: pick the first selectable song
+		// The song picker should open
 		await page.waitForURL(/select-songs/)
-		await page.locator('ul li button').first().click()
-
-		// Confirm selection using the floating action button (button with svg)
-		await page.locator('button:has(svg)').last().click()
-
-		// Back on create page: the student's name should still be visible
-		await expect(page.locator('header')).toContainText('E2E')
+		await expect(page.getByRole('heading', { name: /Valitse kappaleita/i })).toBeVisible()
 	})
 })

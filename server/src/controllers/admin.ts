@@ -1,6 +1,8 @@
 /// <reference path="../types/express.d.ts" />
 import { Router } from 'express'
+import { fromNodeHeaders } from 'better-auth/node'
 import { requireAdmin } from '../utils/auth-middleware'
+import { auth } from '../utils/auth'
 import Teacher from '../models/teacher'
 import Student from '../models/student'
 import Homework from '../models/homework'
@@ -61,11 +63,14 @@ adminRouter.delete('/teachers/:teacherId', async (request, response) => {
     return response.status(404).json({ error: 'Teacher not found' })
   }
 
+  await auth.api.removeUser({
+    body: { userId: teacher.userId },
+    headers: fromNodeHeaders(request.headers)
+  })
   await Student.updateMany(
     { teacher: teacher.id },
     { $unset: { teacher: 1 } }
   )
-  await Homework.deleteMany({ teacher: teacher.id })
   await teacher.deleteOne()
 
   response.status(204).send()
@@ -87,6 +92,10 @@ adminRouter.delete('/students/:studentId', async (request, response) => {
     }
   }
 
+  await auth.api.removeUser({
+    body: { userId: student.userId },
+    headers: fromNodeHeaders(request.headers)
+  })
   await Homework.deleteMany({ student: student.id })
   await student.deleteOne()
 

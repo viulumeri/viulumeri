@@ -60,6 +60,18 @@ export const adminService = {
     await axios.delete('/api/admin/popup-messages', {
       withCredentials: true
     })
+  },
+
+  deleteTeacher: async (id: string): Promise<void> => {
+    await axios.delete(`/api/admin/teachers/${id}`, {
+      withCredentials: true
+    })
+  },
+
+  deleteStudent: async (id: string): Promise<void> => {
+    await axios.delete(`/api/admin/students/${id}`, {
+      withCredentials: true
+    })
   }
 }
 

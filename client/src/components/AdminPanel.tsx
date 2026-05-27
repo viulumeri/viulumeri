@@ -1,6 +1,8 @@
 import { useState } from 'react'
-import { useAdminSummary, useAdminTeachers, useAdminStudents } from '../hooks/useAdmin'
+import { Trash2 } from 'lucide-react'
+import { useAdminSummary, useAdminTeachers, useAdminStudents, useDeleteAdminTeacher, useDeleteAdminStudent } from '../hooks/useAdmin'
 import { DropdownSearchbar } from './DropdownSearchbar'
+import { useNotification } from '../hooks/useNotification'
 import type { Teacher, Student } from '../services/admin'
 
 
@@ -19,6 +21,33 @@ export const AdminPanel = () => {
   const [searchUserInput, setSearchUserInput] = useState('')
   const [searchResults, setSearchResults] = useState<User[]>([])
   const [selectedUser, setSelectedUser] = useState<Teacher | Student | null>(null)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
+
+  const { showSuccess, showError } = useNotification()
+
+  const deleteTeacher = useDeleteAdminTeacher({
+    onSuccess: () => {
+      setSelectedUser(null)
+      setDeletingId(null)
+      showSuccess('Käyttäjä poistettu onnistuneesti')
+    },
+    onError: (error) => {
+      setDeletingId(null)
+      showError(`Virhe käyttäjän poistamisessa: ${error.message}`)
+    }
+  })
+
+  const deleteStudent = useDeleteAdminStudent({
+    onSuccess: () => {
+      setSelectedUser(null)
+      setDeletingId(null)
+      showSuccess('Käyttäjä poistettu onnistuneesti')
+    },
+    onError: (error) => {
+      setDeletingId(null)
+      showError(`Virhe käyttäjän poistamisessa: ${error.message}`)
+    }
+  })
 
   const teachers = teachersData?.teachers ?? []
   const students = studentsData?.students ?? []
@@ -96,6 +125,24 @@ export const AdminPanel = () => {
               </>
             )}
           </div>
+          <button
+            onClick={() => {
+              if (deletingId) return
+              if (confirm(`Haluatko varmasti poistaa käyttäjän ${selectedUser.name}? Toimintoa ei voi perua.`)) {
+                setDeletingId(selectedUser.id)
+                if ('studentCount' in selectedUser) {
+                  deleteTeacher.mutate(selectedUser.id)
+                } else {
+                  deleteStudent.mutate(selectedUser.id)
+                }
+              }
+            }}
+            disabled={Boolean(deletingId)}
+            className="flex items-center gap-2 mt-4 bg-red-600 hover:bg-red-700 text-white rounded-md px-3 py-2 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <Trash2 className="w-4 h-4" />
+            {deletingId === selectedUser.id ? 'Poistetaan...' : 'Poista käyttäjä'}
+          </button>
         </div>
       )}
     </div>

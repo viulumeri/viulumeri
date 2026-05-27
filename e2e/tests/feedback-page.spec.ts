@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test'
 import { MongoClient } from 'mongodb'
 import { SEED_USERS } from '../global-setup'
+import { markStartupAnnouncementsAsSeen } from './announcement-state'
 
 const MONGODB_URI =
   process.env.E2E_MONGODB_URI ||
@@ -19,12 +20,16 @@ const student = (() => {
 const dismissNotificationIfVisible = async (page: any) => {
   const closeButton = page.getByRole('button', { name: /sulje ilmoitus/i })
   if (await closeButton.isVisible().catch(() => false)) {
-    await closeButton.click()
+    await closeButton.evaluate(button => {
+      ;(button as HTMLElement).click()
+    })
+    await expect(closeButton).toBeHidden({ timeout: 5_000 })
   }
 }
 
 const loginAsStudent = async (page: any) => {
   await page.goto('/login')
+  await markStartupAnnouncementsAsSeen(page, student.email)
   await page.getByPlaceholder('Sähköpostiosoite').fill(student.email)
   await page.getByPlaceholder('Salasana').fill(student.password)
   const signInResponsePromise = page.waitForResponse((response: any) => {

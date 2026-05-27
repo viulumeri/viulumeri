@@ -91,6 +91,8 @@ export default async function globalSetup() {
       { email: 'e2e-admin@example.com' },
       { $set: { role: 'admin' } }
     )
+
+    await db.collection('popupmessages').deleteMany({})
   } finally {
     await mongoClient.close()
     await context.dispose()

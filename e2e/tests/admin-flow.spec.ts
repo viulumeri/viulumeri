@@ -1,4 +1,6 @@
 import { test, expect, type Page } from '@playwright/test'
+import { MongoClient } from 'mongodb'
+import { markStartupAnnouncementsAsSeen } from './announcement-state'
 
 const ADMIN = {
   email: 'e2e-admin@example.com',
@@ -14,8 +16,20 @@ const STUDENT = {
   password: 'E2eStudent123!'
 }
 
-async function login(page: Page, email: string, password: string) {
+const MONGODB_URI =
+  process.env.E2E_MONGODB_URI ||
+  'mongodb://admin:password@127.0.0.1:27017/viulumeri?authSource=admin'
+
+async function login(
+  page: Page,
+  email: string,
+  password: string,
+  suppressAnnouncements = false
+) {
   await page.goto('/login')
+  if (suppressAnnouncements) {
+    await markStartupAnnouncementsAsSeen(page, email)
+  }
   await page.getByPlaceholder('Sähköpostiosoite').fill(email)
   await page.getByPlaceholder('Salasana').fill(password)
 
@@ -39,18 +53,6 @@ async function login(page: Page, email: string, password: string) {
   })
 }
 
-async function dismissAnnouncementsIfPresent(page: Page) {
-  const dialog = page.getByRole('dialog', { name: 'Ilmoitukset' })
-  try {
-    await dialog.waitFor({ state: 'visible', timeout: 2_000 })
-  } catch {
-    return
-  }
-
-  await page.getByRole('button', { name: 'OK' }).click()
-  await expect(dialog).not.toBeVisible()
-}
-
 test('admin can delete user, create popup, and user sees popup', async ({ page }) => {
   test.setTimeout(60_000)
 
@@ -58,8 +60,7 @@ test('admin can delete user, create popup, and user sees popup', async ({ page }
   const popupContent = 'Hello from Playwright admin-flow test.'
 
   // 1) Log in as admin.
-  await login(page, ADMIN.email, ADMIN.password)
-  await dismissAnnouncementsIfPresent(page)
+  await login(page, ADMIN.email, ADMIN.password, true)
 
   // 2) Search the test user from AdminPanel and delete them.
   await page.goto('/admin')
@@ -128,11 +129,10 @@ test('admin can delete user, create popup, and user sees popup', async ({ page }
   await page.getByRole('button', { name: /^lähetä$/i }).click()
 
   await expect(page.getByText('Pop-up lähetetty')).toBeVisible({ timeout: 15_000 })
+  await markStartupAnnouncementsAsSeen(page, ADMIN.email)
 
   // 4) Log out.
   await page.goto('/settings')
-  await dismissAnnouncementsIfPresent(page)
-  await dismissAnnouncementsIfPresent(page)
   await page.getByRole('button', { name: /kirjaudu ulos/i }).click()
   await expect(page).toHaveURL(/\/login/, { timeout: 15_000 })
 
@@ -146,4 +146,12 @@ test('admin can delete user, create popup, and user sees popup', async ({ page }
 
   await page.getByRole('button', { name: 'OK' }).click()
   await expect(dialog).not.toBeVisible({ timeout: 15_000 })
+
+  const mongoClient = new MongoClient(MONGODB_URI)
+  await mongoClient.connect()
+  try {
+    await mongoClient.db().collection('popupmessages').deleteMany({})
+  } finally {
+    await mongoClient.close()
+  }
 })

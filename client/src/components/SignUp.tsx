@@ -157,6 +157,13 @@ export const Signup = () => {
           {signUpMutation.isPending ? 'Luodaan…' : 'Luo uusi käyttäjä'}
         </button>
       </form>
+
+      <button
+        onClick={() => navigate('/login')}
+        className="back-button-basic block mx-auto mt-4"
+      >
+        Takaisin
+      </button>
     </div>
   )
 }

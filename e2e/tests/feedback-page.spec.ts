@@ -4,7 +4,7 @@ import { SEED_USERS } from '../global-setup'
 
 const MONGODB_URI =
   process.env.E2E_MONGODB_URI ||
-  'mongodb://admin:password@localhost:27017/viulumeri?authSource=admin'
+  'mongodb://admin:password@127.0.0.1:27017/viulumeri?authSource=admin'
 
 type FeedbackCategory = 'bug' | 'feature' | 'other'
 

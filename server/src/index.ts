@@ -6,8 +6,6 @@ import app from './app'
 import logger from './utils/logger'
 import { ensureAdminUser } from './utils/admin'
 
-connectDB()
-
 const isTestEnv = process.env.NODE_ENV === 'test'
 const strictMusicScan = process.env.E2E_MUSIC_STRICT === 'true'
 
@@ -24,20 +22,23 @@ const isMissingDirError = (error: unknown): boolean => {
   return false
 }
 
-void musicService.initialize().catch(error => {
-  if (isTestEnv && !strictMusicScan && isMissingDirError(error)) {
-    logger.info('Music directory missing in test env; continuing with empty library')
-    musicService.initializeEmpty()
-    return
-  }
+const start = async () => {
+  await connectDB()
 
-  logger.error('Music service failed to initialize', error)
-  process.exit(1)
-})
+  void musicService.initialize().catch(error => {
+    if (isTestEnv && !strictMusicScan && isMissingDirError(error)) {
+      logger.info('Music directory missing in test env; continuing with empty library')
+      musicService.initializeEmpty()
+      return
+    }
+
+    logger.error('Music service failed to initialize', error)
+    process.exit(1)
+  })
 
   try {
     const result = await ensureAdminUser()
-    if (!result.ok) {
+    if (result.ok === false) {
       console.warn('[admin bootstrap]', result.reason)
     } else {
       console.log(

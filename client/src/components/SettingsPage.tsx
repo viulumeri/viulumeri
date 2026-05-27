@@ -121,7 +121,11 @@ export const SettingsPage = () => {
           </p>
           <p>
             <strong className="text-gray-100">Tyyppi:</strong>{' '}
-            {userType === 'teacher' ? 'Opettaja' : 'Oppilas'}
+            {userType === 'teacher'
+              ? 'Opettaja'
+              : userType === 'student'
+                ? 'Oppilas'
+                : 'Tuntematon'}
           </p>
         </div>
       </div>

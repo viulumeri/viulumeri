@@ -1,6 +1,13 @@
 import { test, expect } from '@playwright/test'
 import { SEED_USERS } from '../global-setup'
 
+const dismissNotificationIfVisible = async (page: any) => {
+  const closeButton = page.getByRole('button', { name: /sulje ilmoitus/i })
+  if (await closeButton.isVisible().catch(() => false)) {
+    await closeButton.click()
+  }
+}
+
 const teacher = (() => {
   const found = SEED_USERS.find(user => user.userType === 'teacher')
   if (!found) {
@@ -23,6 +30,8 @@ test.describe('Homework creation flow', () => {
     await page.getByRole('button', { name: /kirjaudu sisään/i }).click()
     const signInResponse = await signInResponsePromise
     expect(signInResponse.ok()).toBeTruthy()
+    await page.waitForURL(/\/teacher\//)
+    await dismissNotificationIfVisible(page)
 
     // Go to students list and open the first student card
     await page.goto('/teacher/students')

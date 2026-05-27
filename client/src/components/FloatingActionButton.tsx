@@ -1,9 +1,9 @@
-import { Link } from 'react-router-dom'
+import { Link, type LinkProps } from 'react-router-dom'
 import { Plus, Check } from 'lucide-react'
 
 type Props = {
   to?: string
-  state?: unknown
+  state?: LinkProps['state']
   onClick?: () => void
   icon?: 'plus' | 'check'
   className?: string

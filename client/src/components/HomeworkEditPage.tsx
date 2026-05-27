@@ -86,7 +86,7 @@ export const HomeworkEditPage = () => {
   const goToPicker = () => {
     navigate(
       `/teacher/students/${studentId}/homework/${homeworkId}/select-songs`,
-      { state: { preselected: currentSongIds } }
+      { state: { ...(location.state ?? {}), preselected: currentSongIds } }
     )
   }
 

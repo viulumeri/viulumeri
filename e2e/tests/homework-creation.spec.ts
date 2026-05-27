@@ -1,13 +1,12 @@
-import { test, expect, type Page } from '@playwright/test'
-import { SEED_USERS } from '../global-setup'
+import { test, expect } from '@playwright/test'
 
 const TEACHER = { email: 'e2e-teacher@example.com', password: 'E2eTeacher123!' }
+const BASE_URL = process.env.BASE_URL || process.env.E2E_UI_URL || 'http://localhost:3001'
 
 test.describe('Homework creation flow', () => {
 	test('teacher header preserves student name through create/select flow', async ({ page }) => {
 		// Login as seeded teacher
-		const UI_URL = process.env.E2E_UI_URL || 'http://localhost:5173'
-		await page.goto(`${UI_URL}/login`)
+		await page.goto(`${BASE_URL}/login`)
 		await page.getByPlaceholder('Sähköpostiosoite').fill(TEACHER.email)
 		await page.getByPlaceholder('Salasana').fill(TEACHER.password)
 
@@ -20,7 +19,7 @@ test.describe('Homework creation flow', () => {
 		expect(signInResponse.ok()).toBeTruthy()
 
 		// Go to students list and open the first student card
-		await page.goto(`${UI_URL}/teacher/students`)
+		await page.goto(`${BASE_URL}/teacher/students`)
 		const studentLink = page.locator('main').locator('a').first()
 		await expect(studentLink).toBeVisible()
 		await studentLink.click()

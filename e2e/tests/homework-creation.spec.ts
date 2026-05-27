@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test'
+import { SEED_USERS } from '../global-setup'
 
-const TEACHER = { email: 'e2e-teacher@example.com', password: 'E2eTeacher123!' }
+const TEACHER = SEED_USERS.teacher
 const BASE_URL = process.env.BASE_URL || process.env.E2E_UI_URL || 'http://localhost:3001'
 
 test.describe('Homework creation flow', () => {

@@ -154,3 +154,4 @@ shared/*.js
 
 # Misc
 .DS_Store
+server/src/homework.ts

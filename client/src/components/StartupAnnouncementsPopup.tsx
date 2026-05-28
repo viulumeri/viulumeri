@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useState } from 'react'
 import {
   computeAnnouncementsMarker,
-  getAnnouncementsStorageKey,
-  getStartupAnnouncementsFromEnv
+  getAnnouncementsStorageKey
 } from '../utils/startupAnnouncements'
 import { popupMessagesService } from '../services/popupMessages'
+import type { StartupAnnouncement } from '../utils/startupAnnouncements'
 
 const formatPostedAt = (postedAt: string): string => {
   const ms = Date.parse(postedAt)
@@ -22,13 +22,12 @@ type Props = {
 }
 
 export const StartupAnnouncementsPopup = ({ userId, isPending }: Props) => {
-  const envAnnouncements = useMemo(() => getStartupAnnouncementsFromEnv(), [])
-  const [announcements, setAnnouncements] = useState(envAnnouncements)
+  const [announcements, setAnnouncements] = useState<StartupAnnouncement[]>([])
 
   useEffect(() => {
     if (isPending) return
     if (!userId) {
-      setAnnouncements(envAnnouncements)
+      setAnnouncements([])
       return
     }
 
@@ -40,14 +39,14 @@ export const StartupAnnouncementsPopup = ({ userId, isPending }: Props) => {
         setAnnouncements(data.messages)
       } catch {
         if (cancelled) return
-        setAnnouncements(envAnnouncements)
+        setAnnouncements([])
       }
     })()
 
     return () => {
       cancelled = true
     }
-  }, [userId, isPending, envAnnouncements])
+  }, [userId, isPending])
 
   const marker = useMemo(
     () => computeAnnouncementsMarker(announcements),

@@ -65,6 +65,11 @@ spec:
                 secretKeyRef:
                   name: viulumeri-secrets
                   key: FROM_EMAIL
+            - name: ADMIN_EMAIL
+              valueFrom:
+                secretKeyRef:
+                  name: viulumeri-secrets
+                  key: ADMIN_EMAIL
           volumeMounts:
             - name: audio-storage
               mountPath: /var/www/audio

@@ -72,6 +72,13 @@ export const PopupAdminPage = () => {
   }
 
   const onDeleteAll = async () => {
+    const confirmed = window.confirm(
+      'Poistetaanko kaikki pop-upit? Tätä ei voi perua.'
+    )
+    if (!confirmed) {
+      return
+    }
+
     setIsDeleting(true)
     try {
       await adminService.deleteAllPopupMessages()
@@ -109,6 +116,14 @@ export const PopupAdminPage = () => {
   }
 
   const onDeleteOne = async (id: string) => {
+    const message = messages.find(item => item.id === id)
+    const confirmed = window.confirm(
+      `Poistetaanko pop-up${message ? ` "${message.title}"` : ''}? Tätä ei voi perua.`
+    )
+    if (!confirmed) {
+      return
+    }
+
     setProcessingId(id)
     try {
       await adminService.deleteAdminPopupMessage(id)

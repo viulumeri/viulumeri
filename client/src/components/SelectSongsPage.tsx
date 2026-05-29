@@ -16,6 +16,9 @@ export const SelectSongsPage = () => {
   }>()
   const navigate = useNavigate()
   const location = useLocation()
+  const state = location.state as
+    | { studentName?: string; preselected?: string[]; addSongs?: string[] }
+    | undefined
 
   const songs = useSongsList()
   const played = useStudentPlayedSongs(studentId!)
@@ -33,9 +36,7 @@ export const SelectSongsPage = () => {
     }
   }, [played.isError, played.error, showError])
 
-  const preselected = (location.state as { preselected?: string[] })?.preselected as
-    | string[]
-    | undefined
+  const preselected = state?.preselected as string[] | undefined
   const [selected, setSelected] = useState<Set<string>>(
     () => new Set(preselected ?? [])
   )
@@ -65,7 +66,7 @@ export const SelectSongsPage = () => {
         : `/teacher/students/${studentId}/homework/create`,
       {
         replace: true,
-        state: { addSongs: Array.from(selected) }
+        state: { ...(state ?? {}), addSongs: Array.from(selected) }
       }
     )
   }

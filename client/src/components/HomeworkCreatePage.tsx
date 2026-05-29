@@ -10,10 +10,17 @@ import { useNotification } from '../hooks/useNotification'
 
 type HomeworkItem = HomeworkListResponse['homework'][number]
 
+type HomeworkCreateState = {
+  studentName?: string
+  addSongs?: string[]
+  preselected?: string[]
+}
+
 export const HomeworkCreatePage = () => {
   const { studentId } = useParams<{ studentId: string }>()
   const navigate = useNavigate()
   const location = useLocation()
+  const state = location.state as HomeworkCreateState | undefined
 
   const songsQ = useSongsList()
 
@@ -21,12 +28,15 @@ export const HomeworkCreatePage = () => {
   const [comment, setComment] = useState<string>('')
 
   useEffect(() => {
-    const ids: string[] = (location.state as { addSongs?: string[] })?.addSongs ?? []
+    const ids: string[] = state?.addSongs ?? []
     if (!ids.length) return
 
     setSongIds(prev => [...new Set([...prev, ...ids])])
-    navigate('.', { replace: true })
-  }, [])
+    navigate('.', {
+      replace: true,
+      state: { ...(state ?? {}), addSongs: undefined }
+    })
+  }, [navigate, state])
 
   const songMap = useMemo(
     () =>
@@ -83,7 +93,7 @@ export const HomeworkCreatePage = () => {
 
   const goToPicker = () => {
     navigate(`/teacher/students/${studentId}/homework/create/select-songs`, {
-      state: { preselected: songIds }
+      state: { ...(state ?? {}), preselected: songIds }
     })
   }
 

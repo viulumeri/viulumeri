@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useNotification } from '../hooks/useNotification'
 import { adminService } from '../services/admin'
 import type { AdminPopupMessage } from '../services/admin'
@@ -15,7 +15,7 @@ export const PopupAdminPage = () => {
   const [isDeleting, setIsDeleting] = useState(false)
   const [processingId, setProcessingId] = useState<string | null>(null)
 
-  const loadMessages = async () => {
+  const loadMessages = useCallback(async () => {
     setIsLoadingMessages(true)
     try {
       const response = await adminService.getAdminPopupMessages()
@@ -29,11 +29,11 @@ export const PopupAdminPage = () => {
     } finally {
       setIsLoadingMessages(false)
     }
-  }
+  }, [showError])
 
   useEffect(() => {
     void loadMessages()
-  }, [])
+  }, [loadMessages])
 
   const onSubmit = async (event: React.FormEvent) => {
     event.preventDefault()
@@ -240,7 +240,8 @@ export const PopupAdminPage = () => {
 
                   <p className="whitespace-pre-wrap text-gray-200 break-words">{message.content}</p>
                   <p className="text-xs text-gray-400">
-                    Julkaistu: {new Date(message.postedAt).toLocaleString()}
+                    {message.isDraft ? 'Luotu' : 'Julkaistu'}:{' '}
+                    {new Date(message.postedAt).toLocaleString()}
                   </p>
 
                   <div className="flex flex-wrap gap-2">

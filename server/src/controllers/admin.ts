@@ -149,20 +149,24 @@ adminRouter.post('/popup-messages', async (request, response) => {
 })
 
 adminRouter.patch('/popup-messages/:messageId', async (request, response) => {
-  if (typeof request.body?.isDraft !== 'boolean') {
+  const isDraft = request.body?.isDraft
+
+  if (typeof isDraft !== 'boolean') {
     return response.status(400).json({ error: 'isDraft boolean is required' })
   }
 
-  const doc = await PopupMessage.findByIdAndUpdate(
-    request.params.messageId,
-    { $set: { isDraft: request.body.isDraft } },
-    { new: true }
-  )
-
+  const doc = await PopupMessage.findById(request.params.messageId)
   if (!doc) {
     return response.status(404).json({ error: 'Popup message not found' })
   }
 
+  const wasDraft = doc.isDraft
+  doc.isDraft = isDraft
+  if (wasDraft && !isDraft) {
+    doc.postedAt = new Date()
+  }
+  await doc.save()
+
   response.json({
     message: {
       id: doc.id,

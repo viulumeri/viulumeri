@@ -1,4 +1,4 @@
-import { Link, useParams, useNavigate, useLocation } from 'react-router-dom'
+import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import { useInviteDetails, useAcceptInvite } from '../hooks/useInvite'
 import { useSession } from '../auth-client'
 

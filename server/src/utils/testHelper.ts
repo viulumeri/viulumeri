@@ -163,6 +163,39 @@ export class TestHelper {
     }
   }
 
+  static async createAuthenticatedAdmin(
+    api: any,
+    email?: string,
+    name?: string
+  ) {
+    const userData = {
+      email: email || `test-admin-${Date.now()}@example.com`,
+      name: name || 'Test Admin',
+      userType: 'teacher' as const
+    }
+
+    const { password } = await this.signUpUser(api, userData)
+
+    const db = this.client!.db()
+    const result = await db
+      .collection('user')
+      .updateOne({ email: userData.email }, { $set: { emailVerified: true, role: 'admin' } })
+
+    if (result.matchedCount === 0) {
+      throw new Error(`createAuthenticatedAdmin: user not found in DB for email ${userData.email}`)
+    }
+
+    const signInResponse = await this.signInUser(api, userData.email, password)
+    const sessionCookie = this.extractSessionCookie(signInResponse)
+
+    return {
+      user: signInResponse.body.user,
+      sessionCookie,
+      email: userData.email,
+      password
+    }
+  }
+
   static async makeAuthenticatedRequest(
     api: any,
     method: 'get' | 'post' | 'put' | 'delete',

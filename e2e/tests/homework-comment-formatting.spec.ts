@@ -1,4 +1,5 @@
 import { test, expect, request, type Page } from '@playwright/test'
+import { markStartupAnnouncementsAsSeen } from './announcement-state'
 
 const BASE_URL = process.env.BASE_URL || 'http://localhost:3001'
 const TEACHER = { email: 'e2e-teacher@example.com', password: 'E2eTeacher123!' }
@@ -72,6 +73,7 @@ async function loginAs(
   expectedUrlPattern: RegExp
 ) {
   await page.goto('/login')
+  await markStartupAnnouncementsAsSeen(page, credentials.email)
   await page.getByPlaceholder('Sähköpostiosoite').fill(credentials.email)
   await page.getByPlaceholder('Salasana').fill(credentials.password)
   await page.getByRole('button', { name: /kirjaudu sisään/i }).click()

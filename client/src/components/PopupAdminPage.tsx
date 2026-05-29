@@ -15,7 +15,7 @@ export const PopupAdminPage = () => {
   const [isDeleting, setIsDeleting] = useState(false)
   const [processingId, setProcessingId] = useState<string | null>(null)
 
-  const loadMessages = async () => {
+  const loadMessages = useCallback(async () => {
     setIsLoadingMessages(true)
     try {
       const response = await adminService.getAdminPopupMessages()
@@ -29,11 +29,11 @@ export const PopupAdminPage = () => {
     } finally {
       setIsLoadingMessages(false)
     }
-  }
+  }, [showError])
 
   useEffect(() => {
     void loadMessages()
-  }, [])
+  }, [loadMessages])
 
   const onSubmit = async (event: React.FormEvent) => {
     event.preventDefault()

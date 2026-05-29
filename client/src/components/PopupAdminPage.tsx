@@ -225,7 +225,8 @@ export const PopupAdminPage = () => {
 
                   <p className="whitespace-pre-wrap text-gray-200 break-words">{message.content}</p>
                   <p className="text-xs text-gray-400">
-                    Julkaistu: {new Date(message.postedAt).toLocaleString()}
+                    {message.isDraft ? 'Luotu' : 'Julkaistu'}:{' '}
+                    {new Date(message.postedAt).toLocaleString()}
                   </p>
 
                   <div className="flex flex-wrap gap-2">

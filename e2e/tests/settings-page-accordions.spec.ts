@@ -3,7 +3,7 @@ import { SEED_USERS } from '../global-setup'
 
 
 // Salasanan vaihto -haitari aukeaa ja sulkeutuu klikattaessa.
-test('password accordion opens when clicked', async ({ page }) => {
+test('Password accordion opens and closes when clicked', async ({ page }) => {
   await page.goto('/login')
 
   await page.getByPlaceholder('Sähköpostiosoite').fill(SEED_USERS[0].email)
@@ -46,7 +46,7 @@ test('password accordion opens when clicked', async ({ page }) => {
 })
 
 //Usein kysytyt kysymykset -haitari aukeaa ja sulkeutuu klikattaessa.
-test('FAQ accordion opens when clicked', async ({ page }) => {
+test('FAQ accordion opens and closes when clicked', async ({ page }) => {
   await page.goto('/login')
 
   await page.getByPlaceholder('Sähköpostiosoite').fill(SEED_USERS[0].email)

@@ -25,8 +25,8 @@ const webServer = isCI
         command:
           'npm --prefix .. --workspace=client run build && npm --prefix .. --workspace=server run dev',
         url: `${serverUrl}/ping`,
-        reuseExistingServer: false,
-        timeout: 180_000,
+        reuseExistingServer: true,
+        timeout: 120_000,
         env: {
           PORT: serverPort,
           NODE_ENV: 'test',
@@ -41,7 +41,7 @@ const webServer = isCI
         // API server (Better Auth + Express)
         command: 'npm --prefix .. --workspace=server run dev',
         url: `${serverUrl}/ping`,
-        reuseExistingServer: false,
+        reuseExistingServer: true,
         timeout: 120_000,
         env: {
           PORT: serverPort,

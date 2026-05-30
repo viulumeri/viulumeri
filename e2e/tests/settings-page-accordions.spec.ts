@@ -10,7 +10,7 @@ if (!TEACHER) {
 
 
 // Salasanan vaihto -haitari aukeaa ja sulkeutuu klikattaessa.
-test('password accordion opens when clicked', async ({ page }) => {
+test('Password accordion opens and closes when clicked', async ({ page }) => {
   await page.goto('/login')
   await markStartupAnnouncementsAsSeen(page, TEACHER.email)
 
@@ -54,7 +54,7 @@ test('password accordion opens when clicked', async ({ page }) => {
 })
 
 //Usein kysytyt kysymykset -haitari aukeaa ja sulkeutuu klikattaessa.
-test('FAQ accordion opens when clicked', async ({ page }) => {
+test('FAQ accordion opens and closes when clicked', async ({ page }) => {
   await page.goto('/login')
   await markStartupAnnouncementsAsSeen(page, TEACHER.email)
 

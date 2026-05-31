@@ -10,6 +10,13 @@ import HomeworkCard from './HomeworkCard'
 import { FloatingActionButton } from '../components/FloatingActionButton'
 import { useNotification } from '../hooks/useNotification'
 
+type HomeworkEditState = {
+  studentName?: string
+  comment?: string
+  preselected?: string[]
+  addSongs?: string[]
+}
+
 export const HomeworkEditPage = () => {
   const { studentId, homeworkId } = useParams<{
     studentId: string
@@ -17,6 +24,7 @@ export const HomeworkEditPage = () => {
   }>()
   const navigate = useNavigate()
   const location = useLocation()
+  const draftState = location.state as HomeworkEditState | undefined
 
   const hwQ = useTeacherStudentHomework(studentId!)
   const songsQ = useSongsList()
@@ -26,28 +34,30 @@ export const HomeworkEditPage = () => {
     [hwQ.data, homeworkId]
   )
 
-  const [songIds, setSongIds] = useState<string[] | null>(null)
-  const currentSongIds = songIds ?? editing?.songs ?? []
-  const [comment, setComment] = useState<string>('')
+  const [songIds, setSongIds] = useState<string[] | null>(
+    draftState?.preselected ?? null
+  )
+  const currentSongIds = songIds ?? draftState?.preselected ?? editing?.songs ?? []
+  const [comment, setComment] = useState<string>(draftState?.comment ?? '')
+
+  const syncDraftState = (nextComment: string, nextSongIds: string[]) => {
+    navigate('.', {
+      replace: true,
+      state: {
+        ...(draftState ?? {}),
+        comment: nextComment,
+        preselected: nextSongIds
+      }
+    })
+  }
 
   useEffect(() => {
-    setComment(editing?.comment ?? '')
-  }, [editing?.comment])
-
-  useEffect(() => {
-    const addSongs = (location.state as { addSongs?: string[] })?.addSongs as string[] | undefined
-    if (addSongs?.length) {
-      setSongIds(prev => {
-        const base = prev ?? editing?.songs ?? []
-        const merged = Array.from(new Set([...base, ...addSongs]))
-        return merged
-      })
-      navigate('.', {
-        replace: true,
-        state: { ...(location.state as { addSongs?: string[] }), addSongs: undefined }
-      })
+    if (draftState?.comment !== undefined) {
+      setComment(draftState.comment)
+      return
     }
-  }, [location.state, navigate, editing?.songs])
+    setComment(editing?.comment ?? '')
+  }, [draftState?.comment, editing?.comment])
 
   const songMap = useMemo(() => {
     const m = new Map<string, SongListItem>()
@@ -71,7 +81,9 @@ export const HomeworkEditPage = () => {
   const removeSong = (id: string) => {
     setSongIds(prev => {
       const base = prev ?? editing?.songs ?? []
-      return base.filter(sid => sid !== id)
+      const next = base.filter(sid => sid !== id)
+      syncDraftState(comment, next)
+      return next
     })
   }
 
@@ -86,7 +98,7 @@ export const HomeworkEditPage = () => {
   const goToPicker = () => {
     navigate(
       `/teacher/students/${studentId}/homework/${homeworkId}/select-songs`,
-      { state: { preselected: currentSongIds } }
+      { state: { ...(draftState ?? {}), comment, preselected: currentSongIds } }
     )
   }
 
@@ -125,7 +137,10 @@ export const HomeworkEditPage = () => {
           headingLabel="Muokkaa tehtävää"
           editableComment
           commentDraft={comment}
-          onChangeComment={setComment}
+          onChangeComment={next => {
+            setComment(next)
+            syncDraftState(next, currentSongIds)
+          }}
           onAddSong={goToPicker}
         />
       </div>

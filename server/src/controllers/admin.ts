@@ -7,8 +7,7 @@ import Teacher from '../models/teacher'
 import Student from '../models/student'
 import Homework from '../models/homework'
 import PopupMessage from '../models/popupMessage'
-import Feedback from '../models/feedback'
-import { mapFeedbacksToAdminItems } from '../utils/feedbackHelpers'
+import { getAdminFeedbacks } from '../services/admin'
 
 const adminRouter = Router()
 adminRouter.use(requireAdmin)
@@ -139,23 +138,8 @@ adminRouter.delete('/popup-messages', async (_request, response) => {
 })
 
 adminRouter.get('/feedbacks', async (_request, response) => {
-  const feedbacks = await Feedback.find().sort({ createdAt: -1 })
-
-  const teacherUserIds = feedbacks
-    .filter(f => f.userType === 'teacher')
-    .map(f => f.userId)
-  const studentUserIds = feedbacks
-    .filter(f => f.userType === 'student')
-    .map(f => f.userId)
-
-  const [teachers, students] = await Promise.all([
-    Teacher.find({ userId: { $in: teacherUserIds } }, 'userId name email'),
-    Student.find({ userId: { $in: studentUserIds } }, 'userId name email')
-  ])
-
-  const result = mapFeedbacksToAdminItems(feedbacks, teachers, students)
-
-  response.json({ feedbacks: result })
+  const feedbacks = await getAdminFeedbacks()
+  response.json({ feedbacks })
 })
 
 export default adminRouter

@@ -21,7 +21,7 @@ export const InviteAccept = () => {
   if (!session) {
   return (
     <div className="space-y-4">
-      <h2 className="flex justify-center">Kirjaudu sisään vastaanottaaksesi kutsuun</h2>
+      <h2 className="flex justify-center">Kirjaudu sisään vastaanottaaksesi kutsun</h2>
       <button
         className="button-basic block mx-auto mt-1"
         onClick={() => navigate(`/login?next=${encodeURIComponent(location.pathname)}`)}

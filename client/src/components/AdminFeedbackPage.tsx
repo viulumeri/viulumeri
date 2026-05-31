@@ -17,9 +17,8 @@ export const AdminFeedbackPage = () => {
 
   return (
     <div className="space-y-6 p-6 pb-24">
-      <h2>Palautteet</h2>
-
       <div className="bg-neutral-900 rounded-lg p-6">
+        <h2 className="mb-4">Palautteet</h2>
         {feedbacks.length === 0 ? (
           <p className="text-gray-400">Ei palautteita.</p>
         ) : (
@@ -29,10 +28,10 @@ export const AdminFeedbackPage = () => {
               <div className="flex items-center justify-between gap-2">
                 <span className="font-semibold">{item.title}</span>
                 <span className="text-xs text-gray-400">
-                  {new Date(item.createdAt).toLocaleString('fi-FI')}
+                  {new Date(item.createdAt).toLocaleString('fi-FI', { dateStyle: 'short', timeStyle: 'short' })}
                 </span>
               </div>
-              <div className="text-sm text-gray-300 space-x-2">
+              <div className="text-sm text-gray-300 flex flex-wrap gap-x-2 gap-y-0.5">
                 <span>{categoryLabel[item.category]}</span>
                 <span>·</span>
                 <span>{userTypeLabel[item.userType]}</span>
@@ -41,7 +40,7 @@ export const AdminFeedbackPage = () => {
                 {item.senderEmail && (
                   <>
                     <span>·</span>
-                    <span>{item.senderEmail}</span>
+                    <span className="break-all">{item.senderEmail}</span>
                   </>
                 )}
               </div>

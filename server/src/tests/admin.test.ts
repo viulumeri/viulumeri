@@ -6,6 +6,7 @@ import app from '../app'
 import Teacher from '../models/teacher'
 import Student from '../models/student'
 import Homework from '../models/homework'
+import Feedback from '../models/feedback'
 
 const api = supertest(app)
 
@@ -206,5 +207,115 @@ describe('DELETE /api/admin/students/:studentId', () => {
       .send({ email, password })
 
     assert.notStrictEqual(signInResponse.status, 200)
+  })
+})
+
+describe('GET /api/admin/feedbacks', () => {
+  it('should return 401 for unauthenticated request', async () => {
+    const response = await api.get('/api/admin/feedbacks')
+
+    assert.strictEqual(response.status, 401)
+  })
+
+  it('should return 403 for non-admin', async () => {
+    const { sessionCookie } = await TestHelper.createAuthenticatedTeacher(api)
+
+    const response = await api
+      .get('/api/admin/feedbacks')
+      .set('Cookie', sessionCookie)
+
+    assert.strictEqual(response.status, 403)
+    assert.strictEqual(response.body.error, 'Admin role required')
+  })
+
+  it('should return empty array when there are no feedbacks', async () => {
+    const { sessionCookie } = await TestHelper.createAuthenticatedAdmin(api)
+
+    const response = await api
+      .get('/api/admin/feedbacks')
+      .set('Cookie', sessionCookie)
+
+    assert.strictEqual(response.status, 200)
+    assert.deepStrictEqual(response.body.feedbacks, [])
+  })
+
+  it('should return feedbacks with sender info for admin', async () => {
+    const { sessionCookie } = await TestHelper.createAuthenticatedAdmin(api)
+    const { user: teacherUser } = await TestHelper.createAuthenticatedTeacher(api)
+    const teacher = await Teacher.findOne({ userId: teacherUser.id })
+
+    await Feedback.create({
+      userId: teacherUser.id,
+      userType: 'teacher',
+      title: 'Test feedback',
+      category: 'bug',
+      message: 'Something is broken'
+    })
+
+    const response = await api
+      .get('/api/admin/feedbacks')
+      .set('Cookie', sessionCookie)
+
+    assert.strictEqual(response.status, 200)
+    assert.strictEqual(response.body.feedbacks.length, 1)
+
+    const item = response.body.feedbacks[0]
+    assert.strictEqual(item.title, 'Test feedback')
+    assert.strictEqual(item.category, 'bug')
+    assert.strictEqual(item.message, 'Something is broken')
+    assert.strictEqual(item.senderName, teacher!.name)
+    assert.strictEqual(item.senderEmail, teacher!.email)
+    assert.strictEqual(item.userType, 'teacher')
+    assert.ok(item.createdAt)
+  })
+
+  it('should return feedbacks sorted newest first', async () => {
+    const { sessionCookie } = await TestHelper.createAuthenticatedAdmin(api)
+    const { user: teacherUser } = await TestHelper.createAuthenticatedTeacher(api)
+
+    await Feedback.create({
+      userId: teacherUser.id,
+      userType: 'teacher',
+      title: 'Older feedback',
+      category: 'other',
+      message: 'This came first',
+      createdAt: new Date('2024-01-01T10:00:00Z')
+    })
+    await Feedback.create({
+      userId: teacherUser.id,
+      userType: 'teacher',
+      title: 'Newer feedback',
+      category: 'feature',
+      message: 'This came second',
+      createdAt: new Date('2024-06-01T10:00:00Z')
+    })
+
+    const response = await api
+      .get('/api/admin/feedbacks')
+      .set('Cookie', sessionCookie)
+
+    assert.strictEqual(response.body.feedbacks[0].title, 'Newer feedback')
+    assert.strictEqual(response.body.feedbacks[1].title, 'Older feedback')
+  })
+
+  it('should use fallback values for deleted user', async () => {
+    const { sessionCookie } = await TestHelper.createAuthenticatedAdmin(api)
+
+    await Feedback.create({
+      userId: 'nonexistent-user-id',
+      userType: 'teacher',
+      title: 'Orphaned feedback',
+      category: 'other',
+      message: 'User was deleted'
+    })
+
+    const response = await api
+      .get('/api/admin/feedbacks')
+      .set('Cookie', sessionCookie)
+
+    assert.strictEqual(response.status, 200)
+    const item = response.body.feedbacks[0]
+    assert.strictEqual(item.senderName, 'Poistettu käyttäjä')
+    assert.strictEqual(item.senderEmail, '')
   })
 })

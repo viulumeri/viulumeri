@@ -8,6 +8,7 @@ import Student from '../models/student'
 import Homework from '../models/homework'
 import PopupMessage from '../models/popupMessage'
 import Feedback from '../models/feedback'
+import { mapFeedbacksToAdminItems } from '../utils/feedbackHelpers'
 
 const adminRouter = Router()
 adminRouter.use(requireAdmin)
@@ -152,23 +153,7 @@ adminRouter.get('/feedbacks', async (_request, response) => {
     Student.find({ userId: { $in: studentUserIds } }, 'userId name email')
   ])
 
-  const userMap = new Map<string, { name: string; email: string }>()
-  for (const t of teachers) userMap.set(t.userId, { name: t.name, email: t.email })
-  for (const s of students) userMap.set(s.userId, { name: s.name, email: s.email })
-
-  const result = feedbacks.map(f => {
-    const user = userMap.get(f.userId)
-    return {
-      id: f.id,
-      title: f.title,
-      category: f.category,
-      message: f.message,
-      senderName: user?.name ?? 'Poistettu käyttäjä',
-      senderEmail: user?.email ?? '',
-      userType: f.userType,
-      createdAt: (f.createdAt as Date).toISOString()
-    }
-  })
+  const result = mapFeedbacksToAdminItems(feedbacks, teachers, students)
 
   response.json({ feedbacks: result })
 })

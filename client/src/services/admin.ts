@@ -1,4 +1,5 @@
 import axios from 'axios'
+import type { AdminFeedbackItem, GetAdminFeedbacksResponse } from '../../../shared/types'
 
 interface SummaryResponse {
   teacherCount: number
@@ -72,8 +73,15 @@ export const adminService = {
     await axios.delete(`/api/admin/students/${id}`, {
       withCredentials: true
     })
+  },
+
+  getAdminFeedbacks: async (): Promise<GetAdminFeedbacksResponse> => {
+    const response = await axios.get('/api/admin/feedbacks', {
+      withCredentials: true
+    })
+    return response.data
   }
 }
 
-export type { SummaryResponse, Teacher, Student }
+export type { SummaryResponse, Teacher, Student, AdminFeedbackItem, GetAdminFeedbacksResponse }
 

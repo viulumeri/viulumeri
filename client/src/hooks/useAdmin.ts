@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient, type UseQueryOptions, type UseMutationOptions } from '@tanstack/react-query'
-import { adminService, type SummaryResponse, type Teacher, type Student } from '../services/admin'
+import { adminService, type SummaryResponse, type Teacher, type Student, type GetAdminFeedbacksResponse } from '../services/admin'
 
 export const useAdminSummary = (
   options?: Omit<UseQueryOptions<SummaryResponse, Error>, 'queryKey' | 'queryFn'>
@@ -43,6 +43,15 @@ export const useDeleteAdminTeacher = (
     },
   })
 }
+
+export const useAdminFeedbacks = (
+  options?: Omit<UseQueryOptions<GetAdminFeedbacksResponse, Error>, 'queryKey' | 'queryFn'>
+) =>
+  useQuery({
+    queryKey: ['admin', 'feedbacks'],
+    queryFn: adminService.getAdminFeedbacks,
+    ...options
+  })
 
 export const useDeleteAdminStudent = (
   options?: UseMutationOptions<void, Error, string>

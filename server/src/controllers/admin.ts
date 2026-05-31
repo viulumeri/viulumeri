@@ -7,6 +7,7 @@ import Teacher from '../models/teacher'
 import Student from '../models/student'
 import Homework from '../models/homework'
 import PopupMessage from '../models/popupMessage'
+import Feedback from '../models/feedback'
 
 const adminRouter = Router()
 adminRouter.use(requireAdmin)
@@ -134,6 +135,42 @@ adminRouter.post('/popup-messages', async (request, response) => {
 adminRouter.delete('/popup-messages', async (_request, response) => {
   await PopupMessage.deleteMany({})
   response.status(204).send()
+})
+
+adminRouter.get('/feedbacks', async (_request, response) => {
+  const feedbacks = await Feedback.find().sort({ createdAt: -1 })
+
+  const teacherUserIds = feedbacks
+    .filter(f => f.userType === 'teacher')
+    .map(f => f.userId)
+  const studentUserIds = feedbacks
+    .filter(f => f.userType === 'student')
+    .map(f => f.userId)
+
+  const [teachers, students] = await Promise.all([
+    Teacher.find({ userId: { $in: teacherUserIds } }, 'userId name email'),
+    Student.find({ userId: { $in: studentUserIds } }, 'userId name email')
+  ])
+
+  const userMap = new Map<string, { name: string; email: string }>()
+  for (const t of teachers) userMap.set(t.userId, { name: t.name, email: t.email })
+  for (const s of students) userMap.set(s.userId, { name: s.name, email: s.email })
+
+  const result = feedbacks.map(f => {
+    const user = userMap.get(f.userId)
+    return {
+      id: f.id,
+      title: f.title,
+      category: f.category,
+      message: f.message,
+      senderName: user?.name ?? 'Poistettu käyttäjä',
+      senderEmail: user?.email ?? '',
+      userType: f.userType,
+      createdAt: (f.createdAt as Date).toISOString()
+    }
+  })
+
+  response.json({ feedbacks: result })
 })
 
 export default adminRouter

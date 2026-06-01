@@ -222,13 +222,19 @@ const readVisibilityUpdate = (requestBody: any) => {
     return null
   }
 
+  if (hasVisibleToTeachers && typeof requestBody?.visibleToTeachers !== 'boolean') {
+    return null
+  }
+  if (hasVisibleToStudents && typeof requestBody?.visibleToStudents !== 'boolean') {
+    return null
+  }
+
   const visibleToTeachers = hasVisibleToTeachers
-    ? readBooleanField(requestBody?.visibleToTeachers, false)
+    ? (requestBody.visibleToTeachers as boolean)
     : undefined
   const visibleToStudents = hasVisibleToStudents
-    ? readBooleanField(requestBody?.visibleToStudents, false)
+    ? (requestBody.visibleToStudents as boolean)
     : undefined
-
   if (visibleToTeachers === undefined && visibleToStudents === undefined) {
     return null
   }

@@ -140,9 +140,12 @@ test('admin can delete user, create popup, and user sees popup', async ({ page }
   await feedbackMongoClient.connect()
   try {
     const db = feedbackMongoClient.db()
-    const teacherAuthUser =
-      await db.collection('user').findOne({ email: TEACHER.email }) ??
-      await db.collection('users').findOne({ email: TEACHER.email })
+    const userCollectionCandidates = ['user', 'users', 'auth_users', 'better_auth_users']
+    let teacherAuthUser = null
+    for (const collName of userCollectionCandidates) {
+      teacherAuthUser = await db.collection(collName).findOne({ email: TEACHER.email })
+      if (teacherAuthUser) break
+    }
     const teacherUserId = (teacherAuthUser as any)?._id?.toString() ?? 'unknown'
 
     await db.collection('feedbacks').insertOne({

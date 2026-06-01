@@ -28,13 +28,13 @@ export const mapFeedbacksToAdminItems = (
   return feedbacks.map(f => {
     const user = userMap.get(f.userId)
     return {
-      id: f.id ?? '',
+      id: f.id,
       title: f.title,
-      category: f.category as AdminFeedbackItem['category'],
+      category: f.category,
       message: f.message,
       senderName: user?.name ?? 'Poistettu käyttäjä',
       senderEmail: user?.email ?? '',
-      userType: f.userType as AdminFeedbackItem['userType'],
+      userType: f.userType,
       createdAt: f.createdAt.toISOString()
     }
   })

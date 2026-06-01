@@ -9,6 +9,7 @@ interface SummaryResponse {
 
 interface Teacher {
   id: string
+  userId: string
   name: string
   email: string
   studentCount: number
@@ -17,6 +18,7 @@ interface Teacher {
 
 interface Student {
   id: string
+  userId: string
   name: string
   email: string
   playedSongs: number
@@ -29,6 +31,22 @@ interface AdminPopupMessage {
   content: string
   postedAt: string
   isDraft: boolean
+}
+
+export interface ImpersonateAdminRequest {
+  userId: string
+}
+
+export interface ImpersonateAdminResponse {
+  session: {
+    id: string
+    createdAt: string
+    updatedAt: string
+    userId: string
+    expiresAt: string
+    token: string
+  }
+  user: Record<string, unknown>
 }
 
 export const adminService = {
@@ -114,6 +132,18 @@ export const adminService = {
       withCredentials: true
     })
     return response.data
+  },
+  // Call the better-auth admin plugin endpoint directly so the library
+  // sets the auth cookies on the response (browser will receive Set-Cookie).
+  impersonateUser: async (body: ImpersonateAdminRequest): Promise<ImpersonateAdminResponse> => {
+    const response = await axios.post('/api/auth/admin/impersonate-user', body, {
+      withCredentials: true
+    })
+    return response.data
+  }
+  ,
+  stopImpersonating: async (): Promise<void> => {
+    await axios.post('/api/auth/admin/stop-impersonating', {}, { withCredentials: true })
   }
 }
 

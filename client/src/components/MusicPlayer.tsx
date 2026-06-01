@@ -45,7 +45,7 @@ export const MusicPlayer = () => {
     setIsLoading(true)
     setAudioError(null)
 
-    let tracks = isPracticeTempo
+    const tracks = isPracticeTempo
       ? await fetchSlowSongTracks(songId)
       : await fetchSongTracks(songId)
 

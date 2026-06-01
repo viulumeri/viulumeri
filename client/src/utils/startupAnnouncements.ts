@@ -43,14 +43,14 @@ export const getStartupAnnouncementsFromEnv = (): StartupAnnouncement[] => {
   }
 }
 
-const announcementKey = (m: StartupAnnouncement): string =>
+export const getAnnouncementKey = (m: StartupAnnouncement): string =>
   m.id || `${m.postedAt}::${m.title}`
 
 export const computeAnnouncementsMarker = (
   announcements: StartupAnnouncement[]
 ): string => {
   if (announcements.length === 0) return ''
-  return announcements.map(announcementKey).sort().join('|')
+  return announcements.map(getAnnouncementKey).sort().join('|')
 }
 
 export const getAnnouncementsStorageKey = (userId: string): string =>

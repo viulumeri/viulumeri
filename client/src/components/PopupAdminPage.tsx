@@ -473,15 +473,8 @@ export const PopupAdminPage = () => {
       </div>
 
       <div className="bg-neutral-900 rounded-lg p-6 space-y-4">
-        <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
           <h3>Nykyiset pop-upit</h3>
-          <button
-            type="button"
-            onClick={() => void loadMessages()}
-            className="button-basic"
-          >
-            Päivitä
-          </button>
         </div>
 
         {isLoadingMessages ? (

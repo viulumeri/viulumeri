@@ -301,7 +301,17 @@ adminRouter.patch('/popup-messages/:messageId', async (request, response) => {
   const hasTitle = typeof request.body?.title === 'string'
   const hasContent = typeof request.body?.content === 'string'
   const hasIsDraft = typeof request.body?.isDraft === 'boolean'
+
+  const hasVisibleToTeachers = Object.prototype.hasOwnProperty.call(
+    request.body ?? {},
+    'visibleToTeachers'
+  )
+  const hasVisibleToStudents = Object.prototype.hasOwnProperty.call(
+    request.body ?? {},
+    'visibleToStudents'
+  )
   const visibility = readVisibilityUpdate(request.body)
+
   const hasVisibleFrom = Object.prototype.hasOwnProperty.call(
     request.body ?? {},
     'visibleFrom'
@@ -313,6 +323,15 @@ adminRouter.patch('/popup-messages/:messageId', async (request, response) => {
   const visibilityWindow =
     hasVisibleFrom || hasVisibleUntil ? normalizeVisibilityWindow(request.body) : undefined
 
+  if ((hasVisibleToTeachers || hasVisibleToStudents) && !visibility) {
+    return response
+      .status(400)
+      .json({ error: 'At least one audience must be selected' })
+  }
+
+  if ((hasVisibleFrom || hasVisibleUntil) && !visibilityWindow) {
+    return response.status(400).json({ error: 'Visibility period is invalid' })
+  }
   if (hasTitle) {
     const title = request.body.title.trim()
     if (!title) {

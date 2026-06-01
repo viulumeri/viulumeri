@@ -16,6 +16,10 @@ const STUDENT = {
   password: 'E2eStudent123!'
 }
 
+const TEACHER = {
+  email: 'e2e-teacher@example.com'
+}
+
 const MONGODB_URI =
   process.env.E2E_MONGODB_URI ||
   'mongodb://admin:password@127.0.0.1:27017/viulumeri?authSource=admin'
@@ -131,12 +135,45 @@ test('admin can delete user, create popup, and user sees popup', async ({ page }
   await expect(page.getByText('Pop-up lähetetty')).toBeVisible({ timeout: 15_000 })
   await markStartupAnnouncementsAsSeen(page, ADMIN.email)
 
-  // 4) Log out.
+  // 4) Seed a feedback and verify the admin feedback view.
+  const feedbackMongoClient = new MongoClient(MONGODB_URI)
+  await feedbackMongoClient.connect()
+  try {
+    const db = feedbackMongoClient.db()
+    const teacherAuthUser =
+      await db.collection('user').findOne({ email: TEACHER.email }) ??
+      await db.collection('users').findOne({ email: TEACHER.email })
+    const teacherUserId = (teacherAuthUser as any)?._id?.toString() ?? 'unknown'
+
+    await db.collection('feedbacks').insertOne({
+      userId: teacherUserId,
+      userType: 'teacher',
+      title: 'E2E feedback title',
+      category: 'bug',
+      message: 'E2E feedback message from admin flow test.',
+      createdAt: new Date()
+    })
+  } finally {
+    await feedbackMongoClient.close()
+  }
+
+  await page.goto('/admin')
+  await page.getByRole('link', { name: 'Palauteet' }).click()
+  await expect(page).toHaveURL(/\/admin\/feedback/)
+  await expect(page.getByRole('heading', { name: 'Palautteet' })).toBeVisible()
+  const feedbackItem = page.locator('li').filter({ hasText: 'E2E feedback title' })
+  await expect(feedbackItem).toBeVisible()
+  await expect(feedbackItem.getByText('Bugiraportti', { exact: true })).toBeVisible()
+  await expect(feedbackItem.getByText('Opettaja', { exact: true })).toBeVisible()
+  await expect(feedbackItem.getByText('E2E Teacher', { exact: true })).toBeVisible()
+  await expect(feedbackItem.getByText('E2E feedback message from admin flow test.')).toBeVisible()
+
+  // 5) Log out.
   await page.goto('/settings')
   await page.getByRole('button', { name: /kirjaudu ulos/i }).click()
   await expect(page).toHaveURL(/\/login/, { timeout: 15_000 })
 
-  // 5) Log in as a normal user and verify the popup shows up.
+  // 6) Log in as a normal user and verify the popup shows up.
   await login(page, STUDENT.email, STUDENT.password)
 
   const dialog = page.getByRole('dialog', { name: 'Ilmoitukset' })
@@ -151,6 +188,7 @@ test('admin can delete user, create popup, and user sees popup', async ({ page }
   await mongoClient.connect()
   try {
     await mongoClient.db().collection('popupmessages').deleteMany({})
+    await mongoClient.db().collection('feedbacks').deleteMany({})
   } finally {
     await mongoClient.close()
   }

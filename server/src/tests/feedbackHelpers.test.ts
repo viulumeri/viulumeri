@@ -1,10 +1,19 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert'
 import { mapFeedbacksToAdminItems } from '../utils/feedbackHelpers'
+import type { AdminFeedbackItem } from '../../../shared/types'
 
 const makeDate = (iso: string) => new Date(iso)
 
-const baseFeedback = {
+const baseFeedback: {
+  id: string
+  userId: string
+  userType: AdminFeedbackItem['userType']
+  title: string
+  category: AdminFeedbackItem['category']
+  message: string
+  createdAt: Date
+} = {
   id: 'f1',
   userId: 'u1',
   userType: 'teacher',
@@ -34,7 +43,7 @@ describe('mapFeedbacksToAdminItems', () => {
   })
 
   it('should map sender name and email from matching student', () => {
-    const feedback = { ...baseFeedback, id: 'f2', userId: 'u2', userType: 'student' }
+    const feedback = { ...baseFeedback, id: 'f2', userId: 'u2', userType: 'student' as const }
 
     const result = mapFeedbacksToAdminItems(
       [feedback],
@@ -71,8 +80,8 @@ describe('mapFeedbacksToAdminItems', () => {
 
   it('should handle multiple feedbacks from different user types', () => {
     const feedbacks = [
-      { ...baseFeedback, id: 'f1', userId: 'u1', userType: 'teacher' },
-      { ...baseFeedback, id: 'f2', userId: 'u2', userType: 'student' }
+      { ...baseFeedback, id: 'f1', userId: 'u1', userType: 'teacher' as const },
+      { ...baseFeedback, id: 'f2', userId: 'u2', userType: 'student' as const }
     ]
 
     const result = mapFeedbacksToAdminItems(

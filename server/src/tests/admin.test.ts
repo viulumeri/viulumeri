@@ -243,6 +243,7 @@ describe('GET /api/admin/feedbacks', () => {
     const { sessionCookie } = await TestHelper.createAuthenticatedAdmin(api)
     const { user: teacherUser } = await TestHelper.createAuthenticatedTeacher(api)
     const teacher = await Teacher.findOne({ userId: teacherUser.id })
+    assert.ok(teacher, 'Teacher profile should exist after registration')
 
     await Feedback.create({
       userId: teacherUser.id,
@@ -263,8 +264,8 @@ describe('GET /api/admin/feedbacks', () => {
     assert.strictEqual(item.title, 'Test feedback')
     assert.strictEqual(item.category, 'bug')
     assert.strictEqual(item.message, 'Something is broken')
-    assert.strictEqual(item.senderName, teacher!.name)
-    assert.strictEqual(item.senderEmail, teacher!.email)
+    assert.strictEqual(item.senderName, teacher.name)
+    assert.strictEqual(item.senderEmail, teacher.email)
     assert.strictEqual(item.userType, 'teacher')
     assert.ok(item.createdAt)
   })

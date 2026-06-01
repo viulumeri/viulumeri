@@ -21,5 +21,17 @@ export const getAdminFeedbacks = async (): Promise<AdminFeedbackItem[]> => {
     Student.find({ userId: { $in: studentUserIds } }, 'userId name email')
   ])
 
-  return mapFeedbacksToAdminItems(feedbacks, teachers, students)
+  return mapFeedbacksToAdminItems(
+    feedbacks.map(f => ({
+      id: String(f._id),
+      userId: f.userId,
+      userType: f.userType as 'teacher' | 'student',
+      title: f.title,
+      category: f.category,
+      message: f.message,
+      createdAt: f.createdAt as Date
+    })),
+    teachers,
+    students
+  )
 }

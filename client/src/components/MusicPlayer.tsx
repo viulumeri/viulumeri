@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import * as Tone from 'tone'
 import { useSongById } from '../hooks/useSongs'
@@ -38,7 +38,13 @@ export const MusicPlayer = () => {
   const audioTracksRef = useRef<AudioTracks | null>(null)
   const [hasSlowTrack, setHasSlowTrack] = useState(false)
 
-  const loadSongTracks = async () => {
+  const cleanupTransport = useCallback(() => {
+    Tone.Transport.cancel()
+    Tone.Transport.stop()
+    Tone.Transport.position = 0
+  }, [])
+
+  const loadSongTracks = useCallback(async () => {
   if (!songId || tracksLoaded) return
 
   try {
@@ -128,7 +134,7 @@ export const MusicPlayer = () => {
     )
     setIsLoading(false)
   }
-  }
+  }, [songId, tracksLoaded, isPracticeTempo, cleanupTransport])
 
   const startPlayback = async () => {
     if (!playersRef.current || !tracksLoaded) return
@@ -163,12 +169,6 @@ export const MusicPlayer = () => {
         URL.revokeObjectURL(audioTracksRef.current.backing)
       audioTracksRef.current = null
     }
-  }
-
-  const cleanupTransport = () => {
-    Tone.Transport.cancel()
-    Tone.Transport.stop()
-    Tone.Transport.position = 0
   }
 
   const pausePlayback = () => {
@@ -245,7 +245,7 @@ export const MusicPlayer = () => {
 
   useEffect(() => {
     loadSongTracks()
-  }, [songId, isPracticeTempo])
+  }, [loadSongTracks])
 
   useEffect(() => {
     if (!isPlaying || !audioTracksRef.current?.backing || !playersRef.current)
@@ -276,7 +276,7 @@ export const MusicPlayer = () => {
       cleanupTransport()
       cleanupAudioUrls()
     }
-  }, [])
+  }, [cleanupTransport])
 
   if (!songId) {
     return <div>Ei kappaletta</div>

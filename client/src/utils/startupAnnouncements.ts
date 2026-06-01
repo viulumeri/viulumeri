@@ -7,6 +7,8 @@ export type StartupAnnouncement = {
   postedAt: string
   visibleToTeachers?: boolean
   visibleToStudents?: boolean
+  visibleFrom?: string
+  visibleUntil?: string
 }
 
 const ENV_VAR = 'VITE_STARTUP_ANNOUNCEMENTS'

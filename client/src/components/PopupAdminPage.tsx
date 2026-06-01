@@ -8,9 +8,90 @@ type AudienceState = {
   students: boolean
 }
 
+type VisibilityWindowState = {
+  visibleFrom: string
+  visibleUntil: string
+}
+
 const DEFAULT_AUDIENCE: AudienceState = {
   teachers: true,
   students: true
+}
+
+const DEFAULT_VISIBILITY_WINDOW: VisibilityWindowState = {
+  visibleFrom: '',
+  visibleUntil: ''
+}
+
+const formatDate = (value: string): string => {
+  if (!value) return ''
+  const parsed = new Date(`${value}T00:00:00`)
+  if (Number.isNaN(parsed.getTime())) return value
+
+  return parsed.toLocaleDateString('fi-FI', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  })
+}
+
+const formatDateTime = (value: string): string => {
+  const parsed = new Date(value)
+  if (Number.isNaN(parsed.getTime())) return value
+
+  return parsed.toLocaleString('fi-FI', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false
+  })
+}
+
+const getVisibilityStatusLabel = (
+  message: Pick<AdminPopupMessage, 'visibilityStatus' | 'visibleFrom' | 'visibleUntil'>
+): string => {
+  switch (message.visibilityStatus) {
+    case 'expired':
+      return 'Vanhentunut'
+    case 'upcoming':
+      return 'Tulossa'
+    case 'active':
+      return 'Voimassa'
+    default:
+      return !message.visibleFrom && !message.visibleUntil
+        ? 'Aina näkyvissä'
+        : 'Voimassa'
+  }
+}
+
+const getVisibilityStatusClass = (
+  message: Pick<AdminPopupMessage, 'visibilityStatus'>
+): string => {
+  switch (message.visibilityStatus) {
+    case 'expired':
+      return 'bg-red-800 text-red-100'
+    case 'upcoming':
+      return 'bg-sky-800 text-sky-100'
+    case 'active':
+    case undefined:
+      return 'bg-emerald-800 text-emerald-100'
+    default:
+      return 'bg-emerald-800 text-emerald-100'
+  }
+}
+
+const buildVisibilitySummary = (message: Pick<AdminPopupMessage, 'visibleFrom' | 'visibleUntil'>): string => {
+  if (!message.visibleFrom && !message.visibleUntil) return 'Aina näkyvissä'
+
+  const from = message.visibleFrom ? formatDate(message.visibleFrom) : '...'
+  const until = message.visibleUntil ? formatDate(message.visibleUntil) : '...'
+  return `Näkyvyys ${from} - ${until}`
+}
+
+const hasInvalidVisibilityWindow = (window: VisibilityWindowState): boolean => {
+  return Boolean(window.visibleFrom && window.visibleUntil && window.visibleFrom > window.visibleUntil)
 }
 
 export const PopupAdminPage = () => {
@@ -30,12 +111,19 @@ export const PopupAdminPage = () => {
   const [editContent, setEditContent] = useState('')
   const [editIsDraft, setEditIsDraft] = useState(false)
   const [editAudience, setEditAudience] = useState<AudienceState>(DEFAULT_AUDIENCE)
+  const [visibilityWindow, setVisibilityWindow] = useState<VisibilityWindowState>(
+    DEFAULT_VISIBILITY_WINDOW
+  )
+  const [editVisibilityWindow, setEditVisibilityWindow] = useState<VisibilityWindowState>(
+    DEFAULT_VISIBILITY_WINDOW
+  )
 
   const resetCreateForm = () => {
     setTitle('')
     setContent('')
     setIsDraft(false)
     setAudience(DEFAULT_AUDIENCE)
+    setVisibilityWindow(DEFAULT_VISIBILITY_WINDOW)
   }
 
   const resetEditForm = () => {
@@ -44,6 +132,7 @@ export const PopupAdminPage = () => {
     setEditContent('')
     setEditIsDraft(false)
     setEditAudience(DEFAULT_AUDIENCE)
+    setEditVisibilityWindow(DEFAULT_VISIBILITY_WINDOW)
   }
 
   const hasSelectedAudience = (state: AudienceState) =>
@@ -87,6 +176,10 @@ export const PopupAdminPage = () => {
       showError('Valitse vähintään yksi kohderyhmä')
       return
     }
+    if (hasInvalidVisibilityWindow(visibilityWindow)) {
+      showError('Aloituspäivä ei voi olla päättymispäivän jälkeen')
+      return
+    }
 
     setIsSubmitting(true)
     try {
@@ -95,7 +188,9 @@ export const PopupAdminPage = () => {
         content: trimmedContent,
         isDraft,
         visibleToTeachers: audience.teachers,
-        visibleToStudents: audience.students
+        visibleToStudents: audience.students,
+        visibleFrom: visibilityWindow.visibleFrom || null,
+        visibleUntil: visibilityWindow.visibleUntil || null
       })
       showSuccess(isDraft ? 'Luonnos tallennettu' : 'Pop-up lähetetty')
       resetCreateForm()
@@ -140,6 +235,10 @@ export const PopupAdminPage = () => {
       teachers: message.visibleToTeachers !== false,
       students: message.visibleToStudents !== false
     })
+    setEditVisibilityWindow({
+      visibleFrom: message.visibleFrom || '',
+      visibleUntil: message.visibleUntil || ''
+    })
   }
 
   const onSaveEdit = async (messageId: string) => {
@@ -158,6 +257,10 @@ export const PopupAdminPage = () => {
       showError('Valitse vähintään yksi kohderyhmä')
       return
     }
+    if (hasInvalidVisibilityWindow(editVisibilityWindow)) {
+      showError('Aloituspäivä ei voi olla päättymispäivän jälkeen')
+      return
+    }
 
     setProcessingId(messageId)
     try {
@@ -166,7 +269,9 @@ export const PopupAdminPage = () => {
         content: trimmedContent,
         isDraft: editIsDraft,
         visibleToTeachers: editAudience.teachers,
-        visibleToStudents: editAudience.students
+        visibleToStudents: editAudience.students,
+        visibleFrom: editVisibilityWindow.visibleFrom || null,
+        visibleUntil: editVisibilityWindow.visibleUntil || null
       })
       showSuccess(editIsDraft ? 'Luonnos tallennettu' : 'Pop-up päivitetty')
       resetEditForm()
@@ -312,6 +417,49 @@ export const PopupAdminPage = () => {
             Luonnos
           </label>
 
+          <div className="grid gap-4 md:grid-cols-2">
+            <div>
+              <label
+                htmlFor="popup-visible-from"
+                className="block text-sm font-medium text-gray-300 mb-1"
+              >
+                Näkyy alkaen:
+              </label>
+              <input
+                id="popup-visible-from"
+                type="date"
+                value={visibilityWindow.visibleFrom}
+                onChange={event =>
+                  setVisibilityWindow(current => ({
+                    ...current,
+                    visibleFrom: event.target.value
+                  }))
+                }
+                className="w-full bg-neutral-700 border border-neutral-600 rounded-md px-3 py-2 text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
+            <div>
+              <label
+                htmlFor="popup-visible-until"
+                className="block text-sm font-medium text-gray-300 mb-1"
+              >
+                Näkyy viimeisen kerran:
+              </label>
+              <input
+                id="popup-visible-until"
+                type="date"
+                value={visibilityWindow.visibleUntil}
+                onChange={event =>
+                  setVisibilityWindow(current => ({
+                    ...current,
+                    visibleUntil: event.target.value
+                  }))
+                }
+                className="w-full bg-neutral-700 border border-neutral-600 rounded-md px-3 py-2 text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
+          </div>
+
           <div className="flex justify-center">
             <button
               type="submit"
@@ -413,6 +561,49 @@ export const PopupAdminPage = () => {
                         </label>
                       </div>
 
+                      <div className="grid gap-4 md:grid-cols-2">
+                        <div>
+                          <label
+                            htmlFor={`edit-popup-visible-from-${message.id}`}
+                            className="block text-sm font-medium text-gray-300 mb-1"
+                          >
+                            Näkyy alkaen:
+                          </label>
+                          <input
+                            id={`edit-popup-visible-from-${message.id}`}
+                            type="date"
+                            value={editVisibilityWindow.visibleFrom}
+                            onChange={event =>
+                              setEditVisibilityWindow(current => ({
+                                ...current,
+                                visibleFrom: event.target.value
+                              }))
+                            }
+                            className="w-full bg-neutral-700 border border-neutral-600 rounded-md px-3 py-2 text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          />
+                        </div>
+                        <div>
+                          <label
+                            htmlFor={`edit-popup-visible-until-${message.id}`}
+                            className="block text-sm font-medium text-gray-300 mb-1"
+                          >
+                            Näkyy viimeisen kerran:
+                          </label>
+                          <input
+                            id={`edit-popup-visible-until-${message.id}`}
+                            type="date"
+                            value={editVisibilityWindow.visibleUntil}
+                            onChange={event =>
+                              setEditVisibilityWindow(current => ({
+                                ...current,
+                                visibleUntil: event.target.value
+                              }))
+                            }
+                            className="w-full bg-neutral-700 border border-neutral-600 rounded-md px-3 py-2 text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          />
+                        </div>
+                      </div>
+
                       <label className="flex items-center gap-2 text-sm text-gray-300">
                         <input
                           type="checkbox"
@@ -427,6 +618,8 @@ export const PopupAdminPage = () => {
                         {editAudience.teachers ? 'Opettajat' : ''}
                         {editAudience.teachers && editAudience.students ? ', ' : ''}
                         {editAudience.students ? 'Oppilaat' : ''}
+                        {' · '}
+                        {buildVisibilitySummary(editVisibilityWindow)}
                       </p>
 
                       <div className="flex flex-wrap gap-2">
@@ -465,13 +658,23 @@ export const PopupAdminPage = () => {
                           <span className="text-xs px-2 py-1 rounded bg-neutral-700 text-neutral-100">
                             {audienceLabel(message)}
                           </span>
+                          <span
+                            className={`text-xs px-2 py-1 rounded ${getVisibilityStatusClass(
+                              message
+                            )}`}
+                          >
+                            {getVisibilityStatusLabel(message)}
+                          </span>
                         </div>
                       </div>
 
                       <p className="whitespace-pre-wrap text-gray-200 break-words">{message.content}</p>
                       <p className="text-xs text-gray-400">
                         {message.isDraft ? 'Luotu' : 'Julkaistu'}:{' '}
-                        {new Date(message.postedAt).toLocaleString()}
+                        {formatDateTime(message.postedAt)}
+                      </p>
+                      <p className="text-xs text-gray-400">
+                        {buildVisibilitySummary(message)}
                       </p>
 
                       <div className="flex flex-wrap gap-2">

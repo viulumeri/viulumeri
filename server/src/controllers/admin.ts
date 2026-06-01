@@ -104,6 +104,7 @@ adminRouter.delete('/students/:studentId', async (request, response) => {
 
 adminRouter.get('/popup-messages', async (_request, response) => {
   const messages = await PopupMessage.find().sort({ postedAt: -1 }).lean()
+  const todayKey = getLocalDateKey()
 
   response.json({
     messages: messages.map(message => ({
@@ -113,10 +114,81 @@ adminRouter.get('/popup-messages', async (_request, response) => {
       postedAt: new Date((message as any).postedAt).toISOString(),
       isDraft: Boolean((message as any).isDraft),
       visibleToTeachers: (message as any).visibleToTeachers !== false,
-      visibleToStudents: (message as any).visibleToStudents !== false
+      visibleToStudents: (message as any).visibleToStudents !== false,
+      visibleFrom:
+        typeof (message as any).visibleFrom === 'string'
+          ? (message as any).visibleFrom
+          : undefined,
+      visibleUntil:
+        typeof (message as any).visibleUntil === 'string'
+          ? (message as any).visibleUntil
+          : undefined,
+      visibilityStatus: getVisibilityStatus(message as any, todayKey)
     }))
   })
 })
+
+const DATE_KEY_PATTERN = /^\d{4}-\d{2}-\d{2}$/
+
+const getLocalDateKey = (date = new Date()): string => {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
+const readDateField = (
+  value: unknown
+): string | null | undefined | 'invalid' => {
+  if (value === undefined) return undefined
+  if (value === null) return null
+  if (typeof value !== 'string') return 'invalid'
+
+  const trimmed = value.trim()
+  if (!trimmed) return null
+  return DATE_KEY_PATTERN.test(trimmed) ? trimmed : 'invalid'
+}
+
+const getVisibilityStatus = (
+  message: { visibleFrom?: unknown; visibleUntil?: unknown },
+  todayKey = getLocalDateKey()
+): 'always' | 'upcoming' | 'active' | 'expired' => {
+  const visibleFrom = typeof message.visibleFrom === 'string' ? message.visibleFrom : undefined
+  const visibleUntil = typeof message.visibleUntil === 'string' ? message.visibleUntil : undefined
+
+  if (!visibleFrom && !visibleUntil) return 'always'
+  if (visibleFrom && todayKey < visibleFrom) return 'upcoming'
+  if (visibleUntil && todayKey > visibleUntil) return 'expired'
+  return 'active'
+}
+
+const normalizeVisibilityWindow = (requestBody: any) => {
+  const hasVisibleFrom = Object.prototype.hasOwnProperty.call(
+    requestBody ?? {},
+    'visibleFrom'
+  )
+  const hasVisibleUntil = Object.prototype.hasOwnProperty.call(
+    requestBody ?? {},
+    'visibleUntil'
+  )
+
+  const visibleFrom = hasVisibleFrom ? readDateField(requestBody?.visibleFrom) : undefined
+  const visibleUntil = hasVisibleUntil ? readDateField(requestBody?.visibleUntil) : undefined
+
+  if (visibleFrom === 'invalid' || visibleUntil === 'invalid') {
+    return null
+  }
+
+  if (visibleFrom === undefined || visibleUntil === undefined) {
+    return { visibleFrom, visibleUntil }
+  }
+
+  if (visibleFrom !== null && visibleUntil !== null && visibleFrom > visibleUntil) {
+    return null
+  }
+
+  return { visibleFrom, visibleUntil }
+}
 
 const readBooleanField = (
   value: unknown,
@@ -178,6 +250,7 @@ adminRouter.post('/popup-messages', async (request, response) => {
     typeof request.body?.content === 'string' ? request.body.content.trim() : ''
   const isDraft = request.body?.isDraft === true
   const visibility = normalizeVisibility(request.body)
+  const visibilityWindow = normalizeVisibilityWindow(request.body)
 
   if (!title) {
     return response.status(400).json({ error: 'Title is required' })
@@ -188,13 +261,18 @@ adminRouter.post('/popup-messages', async (request, response) => {
   if (!visibility) {
     return response.status(400).json({ error: 'At least one audience must be selected' })
   }
+  if (!visibilityWindow) {
+    return response.status(400).json({ error: 'Visibility period is invalid' })
+  }
 
   const doc = await PopupMessage.create({
     title,
     content,
     postedAt: new Date(),
     isDraft,
-    ...visibility
+    ...visibility,
+    ...(visibilityWindow.visibleFrom ? { visibleFrom: visibilityWindow.visibleFrom } : {}),
+    ...(visibilityWindow.visibleUntil ? { visibleUntil: visibilityWindow.visibleUntil } : {})
   })
 
   response.status(201).json({
@@ -205,7 +283,10 @@ adminRouter.post('/popup-messages', async (request, response) => {
       postedAt: doc.postedAt.toISOString(),
       isDraft: doc.isDraft,
       visibleToTeachers: doc.visibleToTeachers,
-      visibleToStudents: doc.visibleToStudents
+      visibleToStudents: doc.visibleToStudents,
+      visibleFrom: doc.visibleFrom,
+      visibleUntil: doc.visibleUntil,
+      visibilityStatus: getVisibilityStatus(doc.toObject())
     }
   })
 })
@@ -221,6 +302,16 @@ adminRouter.patch('/popup-messages/:messageId', async (request, response) => {
   const hasContent = typeof request.body?.content === 'string'
   const hasIsDraft = typeof request.body?.isDraft === 'boolean'
   const visibility = readVisibilityUpdate(request.body)
+  const hasVisibleFrom = Object.prototype.hasOwnProperty.call(
+    request.body ?? {},
+    'visibleFrom'
+  )
+  const hasVisibleUntil = Object.prototype.hasOwnProperty.call(
+    request.body ?? {},
+    'visibleUntil'
+  )
+  const visibilityWindow =
+    hasVisibleFrom || hasVisibleUntil ? normalizeVisibilityWindow(request.body) : undefined
 
   if (hasTitle) {
     const title = request.body.title.trim()
@@ -255,6 +346,22 @@ adminRouter.patch('/popup-messages/:messageId', async (request, response) => {
     }
   }
 
+  if (visibilityWindow) {
+    if (visibilityWindow.visibleFrom !== undefined) {
+      doc.visibleFrom = visibilityWindow.visibleFrom ?? undefined
+    }
+    if (visibilityWindow.visibleUntil !== undefined) {
+      doc.visibleUntil = visibilityWindow.visibleUntil ?? undefined
+    }
+    if (
+      doc.visibleFrom &&
+      doc.visibleUntil &&
+      doc.visibleFrom > doc.visibleUntil
+    ) {
+      return response.status(400).json({ error: 'Visibility period is invalid' })
+    }
+  }
+
   await doc.save()
 
   response.json({
@@ -265,7 +372,10 @@ adminRouter.patch('/popup-messages/:messageId', async (request, response) => {
       postedAt: doc.postedAt.toISOString(),
       isDraft: doc.isDraft,
       visibleToTeachers: doc.visibleToTeachers,
-      visibleToStudents: doc.visibleToStudents
+      visibleToStudents: doc.visibleToStudents,
+      visibleFrom: doc.visibleFrom,
+      visibleUntil: doc.visibleUntil,
+      visibilityStatus: getVisibilityStatus(doc.toObject())
     }
   })
 })

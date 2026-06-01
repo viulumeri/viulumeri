@@ -7,7 +7,9 @@ const popupMessageSchema = new mongoose.Schema(
     postedAt: { type: Date, required: true, default: Date.now },
     isDraft: { type: Boolean, required: true, default: false },
     visibleToTeachers: { type: Boolean, required: true, default: true },
-    visibleToStudents: { type: Boolean, required: true, default: true }
+    visibleToStudents: { type: Boolean, required: true, default: true },
+    visibleFrom: { type: String, required: false },
+    visibleUntil: { type: String, required: false }
   },
   { timestamps: true }
 )

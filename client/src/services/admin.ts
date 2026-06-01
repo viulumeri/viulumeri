@@ -30,6 +30,9 @@ interface AdminPopupMessage {
   isDraft: boolean
   visibleToTeachers: boolean
   visibleToStudents: boolean
+  visibleFrom?: string
+  visibleUntil?: string
+  visibilityStatus?: 'always' | 'upcoming' | 'active' | 'expired'
 }
 
 export const adminService = {
@@ -67,6 +70,8 @@ export const adminService = {
     isDraft?: boolean
     visibleToTeachers?: boolean
     visibleToStudents?: boolean
+    visibleFrom?: string | null
+    visibleUntil?: string | null
   }): Promise<{
     message: AdminPopupMessage
   }> => {
@@ -96,6 +101,8 @@ export const adminService = {
       isDraft: boolean
       visibleToTeachers: boolean
       visibleToStudents: boolean
+      visibleFrom?: string | null
+      visibleUntil?: string | null
     }
   ): Promise<{ message: AdminPopupMessage }> => {
     const response = await axios.patch(

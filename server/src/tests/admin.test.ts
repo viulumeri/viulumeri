@@ -6,6 +6,7 @@ import app from '../app'
 import Teacher from '../models/teacher'
 import Student from '../models/student'
 import Homework from '../models/homework'
+import PopupMessage from '../models/popupMessage'
 
 const api = supertest(app)
 
@@ -206,5 +207,80 @@ describe('DELETE /api/admin/students/:studentId', () => {
       .send({ email, password })
 
     assert.notStrictEqual(signInResponse.status, 200)
+  })
+})
+
+const pad = (value: number): string => String(value).padStart(2, '0')
+
+const toDateKey = (date: Date): string =>
+  `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`
+
+const addDays = (date: Date, days: number): Date => {
+  const nextDate = new Date(date)
+  nextDate.setDate(nextDate.getDate() + days)
+  return nextDate
+}
+
+describe('popup message visibility windows', () => {
+  it('should hide expired popup messages from the public route', async () => {
+    const { sessionCookie } = await TestHelper.createAuthenticatedStudent(api)
+    const today = new Date()
+
+    await PopupMessage.create({
+      title: 'Expired popup',
+      content: 'This should not be shown',
+      postedAt: new Date(),
+      visibleFrom: toDateKey(addDays(today, -5)),
+      visibleUntil: toDateKey(addDays(today, -1))
+    })
+
+    const response = await api
+      .get('/api/popup-messages')
+      .set('Cookie', sessionCookie)
+
+    assert.strictEqual(response.status, 200)
+    assert.strictEqual(response.body.messages.length, 0)
+  })
+
+  it('should include active popup messages in the public route', async () => {
+    const { sessionCookie } = await TestHelper.createAuthenticatedStudent(api)
+    const today = new Date()
+
+    await PopupMessage.create({
+      title: 'Active popup',
+      content: 'This should be shown',
+      postedAt: new Date(),
+      visibleFrom: toDateKey(addDays(today, -1)),
+      visibleUntil: toDateKey(addDays(today, 1))
+    })
+
+    const response = await api
+      .get('/api/popup-messages')
+      .set('Cookie', sessionCookie)
+
+    assert.strictEqual(response.status, 200)
+    assert.strictEqual(response.body.messages.length, 1)
+    assert.strictEqual(response.body.messages[0].title, 'Active popup')
+  })
+
+  it('should mark expired popup messages in the admin route', async () => {
+    const { sessionCookie } = await TestHelper.createAuthenticatedAdmin(api)
+    const today = new Date()
+
+    await PopupMessage.create({
+      title: 'Expired admin popup',
+      content: 'Admin can still see this',
+      postedAt: new Date(),
+      visibleFrom: toDateKey(addDays(today, -5)),
+      visibleUntil: toDateKey(addDays(today, -1))
+    })
+
+    const response = await api
+      .get('/api/admin/popup-messages')
+      .set('Cookie', sessionCookie)
+
+    assert.strictEqual(response.status, 200)
+    assert.strictEqual(response.body.messages.length, 1)
+    assert.strictEqual(response.body.messages[0].visibilityStatus, 'expired')
   })
 })

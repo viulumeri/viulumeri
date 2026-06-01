@@ -9,7 +9,7 @@ import type { StartupAnnouncement } from '../utils/startupAnnouncements'
 const formatPostedAt = (postedAt: string): string => {
   const ms = Date.parse(postedAt)
   if (Number.isNaN(ms)) return postedAt
-  return new Date(ms).toLocaleDateString(undefined, {
+  return new Date(ms).toLocaleDateString('fi-FI', {
     year: 'numeric',
     month: '2-digit',
     day: '2-digit'
@@ -82,14 +82,19 @@ export const StartupAnnouncementsPopup = ({ userId, isPending }: Props) => {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-900/70 p-4"
+      className="fixed inset-x-0 top-4 z-50 flex justify-center px-4 pointer-events-none"
       role="dialog"
-      aria-modal="true"
       aria-label="Ilmoitukset"
     >
-      <div className="w-full max-w-2xl rounded-2xl bg-neutral-800 text-neutral-100">
+      <div className="pointer-events-auto w-full max-w-2xl rounded-2xl border border-neutral-700 bg-neutral-800 text-neutral-100 shadow-2xl shadow-black/40">
         <div className="p-6">
-          <h2 className="text-neutral-100">Ilmoitukset</h2>
+          <div className="flex items-start justify-between gap-4">
+            <h2 className="text-neutral-100">Ilmoitukset</h2>
+            <button type="button" className="button-basic shrink-0" onClick={onOk}>
+              OK
+            </button>
+          </div>
+
           <div className="mt-4 max-h-[60vh] min-w-0 overflow-y-auto overflow-x-hidden space-y-4 pr-2">
             {announcements.map(a => (
               <div
@@ -109,12 +114,6 @@ export const StartupAnnouncementsPopup = ({ userId, isPending }: Props) => {
                 </div>
               </div>
             ))}
-          </div>
-
-          <div className="mt-6 flex justify-center">
-            <button type="button" className="button-basic" onClick={onOk}>
-              OK
-            </button>
           </div>
         </div>
       </div>

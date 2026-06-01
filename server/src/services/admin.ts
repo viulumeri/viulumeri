@@ -5,14 +5,16 @@ import { mapFeedbacksToAdminItems } from '../utils/feedbackHelpers'
 import type { AdminFeedbackItem } from '../../../shared/types'
 
 export const getAdminFeedbacks = async (): Promise<AdminFeedbackItem[]> => {
-  const feedbacks = await Feedback.find().sort({ createdAt: -1 })
+  const feedbacks = await Feedback.find({
+    userType: { $in: ['teacher', 'student'] }
+  }).sort({ createdAt: -1 })
 
-  const teacherUserIds = feedbacks
-    .filter(f => f.userType === 'teacher')
-    .map(f => f.userId)
-  const studentUserIds = feedbacks
-    .filter(f => f.userType === 'student')
-    .map(f => f.userId)
+  const teacherUserIds = [...new Set(
+    feedbacks.filter(f => f.userType === 'teacher').map(f => f.userId)
+  )]
+  const studentUserIds = [...new Set(
+    feedbacks.filter(f => f.userType === 'student').map(f => f.userId)
+  )]
 
   const [teachers, students] = await Promise.all([
     Teacher.find({ userId: { $in: teacherUserIds } }, 'userId name email'),

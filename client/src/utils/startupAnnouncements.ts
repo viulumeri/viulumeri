@@ -5,6 +5,8 @@ export type StartupAnnouncement = {
   content: string
   /** ISO date string (e.g. 2026-05-26 or 2026-05-26T12:00:00Z) */
   postedAt: string
+  visibleToTeachers?: boolean
+  visibleToStudents?: boolean
 }
 
 const ENV_VAR = 'VITE_STARTUP_ANNOUNCEMENTS'

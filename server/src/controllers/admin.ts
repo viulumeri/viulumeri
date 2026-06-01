@@ -111,10 +111,65 @@ adminRouter.get('/popup-messages', async (_request, response) => {
       title: (message as any).title,
       content: (message as any).content,
       postedAt: new Date((message as any).postedAt).toISOString(),
-      isDraft: Boolean((message as any).isDraft)
+      isDraft: Boolean((message as any).isDraft),
+      visibleToTeachers: (message as any).visibleToTeachers !== false,
+      visibleToStudents: (message as any).visibleToStudents !== false
     }))
   })
 })
+
+const readBooleanField = (
+  value: unknown,
+  fallback: boolean
+): boolean => {
+  return typeof value === 'boolean' ? value : fallback
+}
+
+const normalizeVisibility = (requestBody: any) => {
+  const visibleToTeachers = readBooleanField(requestBody?.visibleToTeachers, true)
+  const visibleToStudents = readBooleanField(requestBody?.visibleToStudents, true)
+
+  if (!visibleToTeachers && !visibleToStudents) {
+    return null
+  }
+
+  return { visibleToTeachers, visibleToStudents }
+}
+
+const readVisibilityUpdate = (requestBody: any) => {
+  const hasVisibleToTeachers = Object.prototype.hasOwnProperty.call(
+    requestBody ?? {},
+    'visibleToTeachers'
+  )
+  const hasVisibleToStudents = Object.prototype.hasOwnProperty.call(
+    requestBody ?? {},
+    'visibleToStudents'
+  )
+
+  if (!hasVisibleToTeachers && !hasVisibleToStudents) {
+    return null
+  }
+
+  const visibleToTeachers = hasVisibleToTeachers
+    ? readBooleanField(requestBody?.visibleToTeachers, false)
+    : undefined
+  const visibleToStudents = hasVisibleToStudents
+    ? readBooleanField(requestBody?.visibleToStudents, false)
+    : undefined
+
+  if (visibleToTeachers === undefined && visibleToStudents === undefined) {
+    return null
+  }
+
+  if (visibleToTeachers === false && visibleToStudents === false) {
+    return null
+  }
+
+  return {
+    visibleToTeachers,
+    visibleToStudents
+  }
+}
 
 adminRouter.post('/popup-messages', async (request, response) => {
   const title =
@@ -122,6 +177,7 @@ adminRouter.post('/popup-messages', async (request, response) => {
   const content =
     typeof request.body?.content === 'string' ? request.body.content.trim() : ''
   const isDraft = request.body?.isDraft === true
+  const visibility = normalizeVisibility(request.body)
 
   if (!title) {
     return response.status(400).json({ error: 'Title is required' })
@@ -129,12 +185,16 @@ adminRouter.post('/popup-messages', async (request, response) => {
   if (!content) {
     return response.status(400).json({ error: 'Content is required' })
   }
+  if (!visibility) {
+    return response.status(400).json({ error: 'At least one audience must be selected' })
+  }
 
   const doc = await PopupMessage.create({
     title,
     content,
     postedAt: new Date(),
-    isDraft
+    isDraft,
+    ...visibility
   })
 
   response.status(201).json({
@@ -143,37 +203,69 @@ adminRouter.post('/popup-messages', async (request, response) => {
       title: doc.title,
       content: doc.content,
       postedAt: doc.postedAt.toISOString(),
-      isDraft: doc.isDraft
+      isDraft: doc.isDraft,
+      visibleToTeachers: doc.visibleToTeachers,
+      visibleToStudents: doc.visibleToStudents
     }
   })
 })
 
 adminRouter.patch('/popup-messages/:messageId', async (request, response) => {
-  const isDraft = request.body?.isDraft
-
-  if (typeof isDraft !== 'boolean') {
-    return response.status(400).json({ error: 'isDraft boolean is required' })
-  }
+  const doc = await PopupMessage.findById(request.params.messageId)
 
-  const doc = await PopupMessage.findById(request.params.messageId)
   if (!doc) {
     return response.status(404).json({ error: 'Popup message not found' })
   }
 
-  const wasDraft = doc.isDraft
-  doc.isDraft = isDraft
-  if (wasDraft && !isDraft) {
-    doc.postedAt = new Date()
-  }
-  await doc.save()
-
+  const hasTitle = typeof request.body?.title === 'string'
+  const hasContent = typeof request.body?.content === 'string'
+  const hasIsDraft = typeof request.body?.isDraft === 'boolean'
+  const visibility = readVisibilityUpdate(request.body)
+
+  if (hasTitle) {
+    const title = request.body.title.trim()
+    if (!title) {
+      return response.status(400).json({ error: 'Title is required' })
+    }
+    doc.title = title
+  }
+
+  if (hasContent) {
+    const content = request.body.content.trim()
+    if (!content) {
+      return response.status(400).json({ error: 'Content is required' })
+    }
+    doc.content = content
+  }
+
+  if (hasIsDraft) {
+    const wasDraft = doc.isDraft
+    doc.isDraft = request.body.isDraft
+    if (wasDraft && !doc.isDraft) {
+      doc.postedAt = new Date()
+    }
+  }
+
+  if (visibility) {
+    if (typeof visibility.visibleToTeachers === 'boolean') {
+      doc.visibleToTeachers = visibility.visibleToTeachers
+    }
+    if (typeof visibility.visibleToStudents === 'boolean') {
+      doc.visibleToStudents = visibility.visibleToStudents
+    }
+  }
+
+  await doc.save()
+
   response.json({
     message: {
       id: doc.id,
       title: doc.title,
       content: doc.content,
       postedAt: doc.postedAt.toISOString(),
-      isDraft: doc.isDraft
+      isDraft: doc.isDraft,
+      visibleToTeachers: doc.visibleToTeachers,
+      visibleToStudents: doc.visibleToStudents
     }
   })
 })

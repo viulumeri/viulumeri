@@ -7,6 +7,8 @@ type PopupMessageDTO = {
   title: string
   content: string
   postedAt: string
+  visibleToTeachers: boolean
+  visibleToStudents: boolean
 }
 
 const POPUP_MESSAGES_ENV = 'POPUP_MESSAGES_JSON'
@@ -24,7 +26,9 @@ const parseEnvMessages = (): Omit<PopupMessageDTO, 'id'>[] => {
       .map(m => ({
         title: typeof m.title === 'string' ? m.title : '',
         content: typeof m.content === 'string' ? m.content : '',
-        postedAt: typeof m.postedAt === 'string' ? m.postedAt : new Date().toISOString()
+        postedAt: typeof m.postedAt === 'string' ? m.postedAt : new Date().toISOString(),
+        visibleToTeachers: true,
+        visibleToStudents: true
       }))
       .filter(m => m.title.trim().length > 0 && m.content.trim().length > 0)
   } catch {
@@ -35,7 +39,19 @@ const parseEnvMessages = (): Omit<PopupMessageDTO, 'id'>[] => {
 const popupMessagesRouter = Router()
 
 popupMessagesRouter.get('/', async (_request, response) => {
-  const dbMessages = await PopupMessage.find({ isDraft: { $ne: true } })
+  const userType = _request.session?.user?.userType
+  if (userType !== 'teacher' && userType !== 'student') {
+    response.json({ messages: [] })
+    return
+  }
+
+  const visibilityField =
+    userType === 'teacher' ? 'visibleToTeachers' : 'visibleToStudents'
+
+  const dbMessages = await PopupMessage.find({
+    isDraft: { $ne: true },
+    [visibilityField]: { $ne: false }
+  })
     .sort({ postedAt: -1 })
     .lean()
 
@@ -46,13 +62,17 @@ popupMessagesRouter.get('/', async (_request, response) => {
       id: `env:${m.postedAt}:${m.title}`,
       title: m.title,
       content: m.content,
-      postedAt: m.postedAt
+      postedAt: m.postedAt,
+      visibleToTeachers: true,
+      visibleToStudents: true
     })),
     ...dbMessages.map(m => ({
       id: (m as any)._id.toString(),
       title: (m as any).title,
       content: (m as any).content,
-      postedAt: new Date((m as any).postedAt).toISOString()
+      postedAt: new Date((m as any).postedAt).toISOString(),
+      visibleToTeachers: (m as any).visibleToTeachers !== false,
+      visibleToStudents: (m as any).visibleToStudents !== false
     }))
   ]
 

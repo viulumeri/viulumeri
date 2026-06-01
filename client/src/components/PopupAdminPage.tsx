@@ -3,17 +3,51 @@ import { useNotification } from '../hooks/useNotification'
 import { adminService } from '../services/admin'
 import type { AdminPopupMessage } from '../services/admin'
 
+type AudienceState = {
+  teachers: boolean
+  students: boolean
+}
+
+const DEFAULT_AUDIENCE: AudienceState = {
+  teachers: true,
+  students: true
+}
+
 export const PopupAdminPage = () => {
   const { showError, showSuccess } = useNotification()
 
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
   const [isDraft, setIsDraft] = useState(false)
+  const [audience, setAudience] = useState<AudienceState>(DEFAULT_AUDIENCE)
   const [messages, setMessages] = useState<AdminPopupMessage[]>([])
   const [isLoadingMessages, setIsLoadingMessages] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const [processingId, setProcessingId] = useState<string | null>(null)
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [editTitle, setEditTitle] = useState('')
+  const [editContent, setEditContent] = useState('')
+  const [editIsDraft, setEditIsDraft] = useState(false)
+  const [editAudience, setEditAudience] = useState<AudienceState>(DEFAULT_AUDIENCE)
+
+  const resetCreateForm = () => {
+    setTitle('')
+    setContent('')
+    setIsDraft(false)
+    setAudience(DEFAULT_AUDIENCE)
+  }
+
+  const resetEditForm = () => {
+    setEditingId(null)
+    setEditTitle('')
+    setEditContent('')
+    setEditIsDraft(false)
+    setEditAudience(DEFAULT_AUDIENCE)
+  }
+
+  const hasSelectedAudience = (state: AudienceState) =>
+    state.teachers || state.students
 
   const loadMessages = useCallback(async () => {
     setIsLoadingMessages(true)
@@ -49,18 +83,22 @@ export const PopupAdminPage = () => {
       showError('Kirjoita viesti ennen lähettämistä')
       return
     }
+    if (!hasSelectedAudience(audience)) {
+      showError('Valitse vähintään yksi kohderyhmä')
+      return
+    }
 
     setIsSubmitting(true)
     try {
       await adminService.createPopupMessage({
         title: trimmedTitle,
         content: trimmedContent,
-        isDraft
+        isDraft,
+        visibleToTeachers: audience.teachers,
+        visibleToStudents: audience.students
       })
       showSuccess(isDraft ? 'Luonnos tallennettu' : 'Pop-up lähetetty')
-      setTitle('')
-      setContent('')
-      setIsDraft(false)
+      resetCreateForm()
       await loadMessages()
     } catch (error: unknown) {
       showError(
@@ -90,6 +128,55 @@ export const PopupAdminPage = () => {
       )
     } finally {
       setIsDeleting(false)
+    }
+  }
+
+  const startEditing = (message: AdminPopupMessage) => {
+    setEditingId(message.id)
+    setEditTitle(message.title)
+    setEditContent(message.content)
+    setEditIsDraft(message.isDraft)
+    setEditAudience({
+      teachers: message.visibleToTeachers !== false,
+      students: message.visibleToStudents !== false
+    })
+  }
+
+  const onSaveEdit = async (messageId: string) => {
+    const trimmedTitle = editTitle.trim()
+    const trimmedContent = editContent.trim()
+
+    if (!trimmedTitle) {
+      showError('Kirjoita otsikko ennen tallentamista')
+      return
+    }
+    if (!trimmedContent) {
+      showError('Kirjoita viesti ennen tallentamista')
+      return
+    }
+    if (!hasSelectedAudience(editAudience)) {
+      showError('Valitse vähintään yksi kohderyhmä')
+      return
+    }
+
+    setProcessingId(messageId)
+    try {
+      await adminService.updateAdminPopupMessage(messageId, {
+        title: trimmedTitle,
+        content: trimmedContent,
+        isDraft: editIsDraft,
+        visibleToTeachers: editAudience.teachers,
+        visibleToStudents: editAudience.students
+      })
+      showSuccess(editIsDraft ? 'Luonnos tallennettu' : 'Pop-up päivitetty')
+      resetEditForm()
+      await loadMessages()
+    } catch (error: unknown) {
+      showError(
+        error instanceof Error ? error.message : 'Pop-upin päivitys epäonnistui'
+      )
+    } finally {
+      setProcessingId(null)
     }
   }
 
@@ -138,6 +225,13 @@ export const PopupAdminPage = () => {
     }
   }
 
+  const audienceLabel = (message: AdminPopupMessage) => {
+    const parts: string[] = []
+    if (message.visibleToTeachers !== false) parts.push('Opettajat')
+    if (message.visibleToStudents !== false) parts.push('Oppilaat')
+    return parts.join(', ')
+  }
+
   return (
     <div className="space-y-6 p-6 pb-24">
       <h2>Pop-up</h2>
@@ -177,6 +271,36 @@ export const PopupAdminPage = () => {
               className="w-full bg-neutral-700 border border-neutral-600 rounded-md px-3 py-2 text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               placeholder="Kirjoita viesti tähän..."
             />
+          </div>
+
+          <div className="space-y-2">
+            <p className="block text-sm font-medium text-gray-300">Näkyvyys:</p>
+            <label className="flex items-center gap-2 text-sm text-gray-300">
+              <input
+                type="checkbox"
+                checked={audience.teachers}
+                onChange={event =>
+                  setAudience(current => ({
+                    ...current,
+                    teachers: event.target.checked
+                  }))
+                }
+              />
+              Opettajat
+            </label>
+            <label className="flex items-center gap-2 text-sm text-gray-300">
+              <input
+                type="checkbox"
+                checked={audience.students}
+                onChange={event =>
+                  setAudience(current => ({
+                    ...current,
+                    students: event.target.checked
+                  }))
+                }
+              />
+              Oppilaat
+            </label>
           </div>
 
           <label className="flex items-center gap-2 text-sm text-gray-300">
@@ -220,48 +344,164 @@ export const PopupAdminPage = () => {
           <div className="space-y-3">
             {messages.map(message => {
               const isProcessingThis = processingId === message.id
+              const isEditingThis = editingId === message.id
               return (
                 <div
                   key={message.id}
                   className="rounded-md border border-neutral-700 bg-neutral-800 p-4 space-y-2"
                 >
-                  <div className="flex items-center justify-between gap-4">
-                    <h4 className="text-lg font-semibold break-words">{message.title}</h4>
-                    <span
-                      className={`text-xs px-2 py-1 rounded ${
-                        message.isDraft
-                          ? 'bg-amber-800 text-amber-100'
-                          : 'bg-emerald-800 text-emerald-100'
-                      }`}
-                    >
-                      {message.isDraft ? 'Luonnos' : 'Julkinen'}
-                    </span>
-                  </div>
+                  {isEditingThis ? (
+                    <div className="space-y-3">
+                      <div>
+                        <label
+                          htmlFor={`edit-popup-title-${message.id}`}
+                          className="block text-sm font-medium text-gray-300 mb-1"
+                        >
+                          Otsikko:
+                        </label>
+                        <input
+                          id={`edit-popup-title-${message.id}`}
+                          value={editTitle}
+                          onChange={event => setEditTitle(event.target.value)}
+                          className="w-full bg-neutral-700 border border-neutral-600 rounded-md px-3 py-2 text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        />
+                      </div>
 
-                  <p className="whitespace-pre-wrap text-gray-200 break-words">{message.content}</p>
-                  <p className="text-xs text-gray-400">
-                    {message.isDraft ? 'Luotu' : 'Julkaistu'}:{' '}
-                    {new Date(message.postedAt).toLocaleString()}
-                  </p>
+                      <div>
+                        <label
+                          htmlFor={`edit-popup-content-${message.id}`}
+                          className="block text-sm font-medium text-gray-300 mb-1"
+                        >
+                          Viesti:
+                        </label>
+                        <textarea
+                          id={`edit-popup-content-${message.id}`}
+                          value={editContent}
+                          onChange={event => setEditContent(event.target.value)}
+                          rows={6}
+                          className="w-full bg-neutral-700 border border-neutral-600 rounded-md px-3 py-2 text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        />
+                      </div>
 
-                  <div className="flex flex-wrap gap-2">
-                    <button
-                      type="button"
-                      className="button-basic disabled:opacity-50 disabled:cursor-not-allowed"
-                      disabled={isProcessingThis}
-                      onClick={() => void onToggleDraft(message)}
-                    >
-                      {message.isDraft ? 'Julkaise' : 'Aseta luonnokseksi'}
-                    </button>
-                    <button
-                      type="button"
-                      className="button-basic disabled:opacity-50 disabled:cursor-not-allowed"
-                      disabled={isProcessingThis}
-                      onClick={() => void onDeleteOne(message.id)}
-                    >
-                      Poista
-                    </button>
-                  </div>
+                      <div className="space-y-2">
+                        <p className="block text-sm font-medium text-gray-300">Näkyvyys:</p>
+                        <label className="flex items-center gap-2 text-sm text-gray-300">
+                          <input
+                            type="checkbox"
+                            checked={editAudience.teachers}
+                            onChange={event =>
+                              setEditAudience(current => ({
+                                ...current,
+                                teachers: event.target.checked
+                              }))
+                            }
+                          />
+                          Opettajat
+                        </label>
+                        <label className="flex items-center gap-2 text-sm text-gray-300">
+                          <input
+                            type="checkbox"
+                            checked={editAudience.students}
+                            onChange={event =>
+                              setEditAudience(current => ({
+                                ...current,
+                                students: event.target.checked
+                              }))
+                            }
+                          />
+                          Oppilaat
+                        </label>
+                      </div>
+
+                      <label className="flex items-center gap-2 text-sm text-gray-300">
+                        <input
+                          type="checkbox"
+                          checked={editIsDraft}
+                          onChange={event => setEditIsDraft(event.target.checked)}
+                        />
+                        Luonnos
+                      </label>
+
+                      <p className="text-xs text-gray-400">
+                        {editIsDraft ? 'Luonnos' : 'Julkinen'} · Näkyy:{' '}
+                        {editAudience.teachers ? 'Opettajat' : ''}
+                        {editAudience.teachers && editAudience.students ? ', ' : ''}
+                        {editAudience.students ? 'Oppilaat' : ''}
+                      </p>
+
+                      <div className="flex flex-wrap gap-2">
+                        <button
+                          type="button"
+                          className="button-basic disabled:opacity-50 disabled:cursor-not-allowed"
+                          disabled={isProcessingThis}
+                          onClick={() => void onSaveEdit(message.id)}
+                        >
+                          Tallenna
+                        </button>
+                        <button
+                          type="button"
+                          className="button-basic disabled:opacity-50 disabled:cursor-not-allowed"
+                          disabled={isProcessingThis}
+                          onClick={resetEditForm}
+                        >
+                          Peruuta
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="flex items-start justify-between gap-4">
+                        <h4 className="text-lg font-semibold break-words">{message.title}</h4>
+                        <div className="flex flex-wrap gap-2 justify-end">
+                          <span
+                            className={`text-xs px-2 py-1 rounded ${
+                              message.isDraft
+                                ? 'bg-amber-800 text-amber-100'
+                                : 'bg-emerald-800 text-emerald-100'
+                            }`}
+                          >
+                            {message.isDraft ? 'Luonnos' : 'Julkinen'}
+                          </span>
+                          <span className="text-xs px-2 py-1 rounded bg-neutral-700 text-neutral-100">
+                            {audienceLabel(message)}
+                          </span>
+                        </div>
+                      </div>
+
+                      <p className="whitespace-pre-wrap text-gray-200 break-words">{message.content}</p>
+                      <p className="text-xs text-gray-400">
+                        {message.isDraft ? 'Luotu' : 'Julkaistu'}:{' '}
+                        {new Date(message.postedAt).toLocaleString()}
+                      </p>
+
+                      <div className="flex flex-wrap gap-2">
+                        <button
+                          type="button"
+                          className="button-basic disabled:opacity-50 disabled:cursor-not-allowed"
+                          disabled={isProcessingThis}
+                          onClick={() => startEditing(message)}
+                        >
+                          Muokkaa
+                        </button>
+                        <button
+                          type="button"
+                          className="button-basic disabled:opacity-50 disabled:cursor-not-allowed"
+                          disabled={isProcessingThis}
+                          onClick={() => void onToggleDraft(message)}
+                        >
+                          {message.isDraft ? 'Julkaise' : 'Aseta luonnokseksi'}
+                        </button>
+                        <button
+                          type="button"
+                          className="button-basic disabled:opacity-50 disabled:cursor-not-allowed"
+                          disabled={isProcessingThis}
+                          onClick={() => void onDeleteOne(message.id)}
+                        >
+                          Poista
+                        </button>
+                      </div>
+                    </>
+                  )}
                 </div>
               )
             })}

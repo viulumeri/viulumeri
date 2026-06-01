@@ -1,11 +1,11 @@
 import type { AdminFeedbackItem } from '../../../shared/types'
 
 interface FeedbackDoc {
-  id?: string
+  id: string
   userId: string
-  userType: string
+  userType: AdminFeedbackItem['userType']
   title: string
-  category: string
+  category: AdminFeedbackItem['category']
   message: string
   createdAt: Date
 }

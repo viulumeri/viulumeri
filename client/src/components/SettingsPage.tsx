@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useSession } from '../auth-client'
 import { useDeleteUser, useChangePassword, useLogout } from '../hooks/useAuth'
 import { useField } from '../hooks/useField'
@@ -7,6 +7,9 @@ import { StudentSettings } from './StudentSettings'
 import { TeacherSettings } from './TeacherSettings'
 import { User, Key, Settings, LogOut, Trash2, FileQuestionMark, MessageCircle } from 'lucide-react'
 import { useNotification } from '../hooks/useNotification'
+import { faqService, type FAQ } from '../services/faq'
+import { renderWithLinks } from "../utils/renderLinks"
+
 
 import { Link } from 'react-router-dom'
 export const SettingsPage = () => {
@@ -16,6 +19,8 @@ export const SettingsPage = () => {
   const newPassword = useField('password')
   const confirmPassword = useField('password')
   const [passwordOpen, setPasswordOpen] = useState(false);
+  const [faqs, setFaqs] = useState<FAQ[]>([])
+  const [openFaqId, setOpenFaqId] = useState<string | null>(null)
   const [fqaOpen, setfqaOpen] = useState(false);
   const { showError, showSuccess } = useNotification()
 
@@ -100,13 +105,25 @@ export const SettingsPage = () => {
     logout.mutate()
   }
 
+  useEffect(() => {
+  faqService.getFaqs().then(setFaqs)
+}, [])
+
+const visibleFaqs = faqs
+  .filter((faq) => faq.question.trim())
+  .sort(
+    (a, b) =>
+      new Date(a.createdAt ?? 0).getTime() -
+      new Date(b.createdAt ?? 0).getTime()
+  )
+
   return (
 
     <div className="space-y-4 p-5 pb-24">
-      <h2 className="flex items-center gap-3">
+      <h1 className="flex items-center gap-3">
         <Settings className="w-8 h-8" />
         Asetukset
-      </h2>
+      </h1>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
       <div className="bg-neutral-900 rounded-lg p-2 -mb-4">
@@ -121,11 +138,7 @@ export const SettingsPage = () => {
           </p>
           <p>
             <strong className="text-gray-100">Tyyppi:</strong>{' '}
-            {userType === 'teacher'
-              ? 'Opettaja'
-              : userType === 'student'
-                ? 'Oppilas'
-                : 'Tuntematon'}
+            {userType === 'teacher' ? 'Opettaja' : 'Oppilas'}
           </p>
         </div>
       </div>
@@ -152,7 +165,7 @@ export const SettingsPage = () => {
           onClick={() => setPasswordOpen(!passwordOpen)}
           className="w-full flex items-center justify-between gap-3 mb-1
           bg-neutral-800 hover:bg-neutral-700 border border-neutral-700
-          rounded-md px-4 py-3 text-left transition-colors"
+          rounded-md px-4 py-3 text-left transition-colors px-4 py-3 min-h-[58px]"
         >
           <span className="flex items-center gap-3">
             <Key className="w-6 h-6" />
@@ -217,11 +230,12 @@ export const SettingsPage = () => {
               text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
-          <div className="flex justify-center">
+          <div className="flex justify-center mt-2">
             <button
               type="submit"
               disabled={changePassword.isPending}
-              className="button-basic disabled:opacity-50 rounded-full px-6 py-2 disabled:cursor-not-allowed"
+              className="button-basic disabled:opacity-50
+              rounded-full px-6 py-2 disabled:cursor-not-allowed"
             >
               {changePassword.isPending ? 'Vaihdetaan...' : 'Vaihda salasana'}
             </button>
@@ -236,7 +250,7 @@ export const SettingsPage = () => {
           onClick={() => setfqaOpen(!fqaOpen)}
           className="w-full flex items-center justify-between gap-3 mb-4
           bg-neutral-800 hover:bg-neutral-700 border border-neutral-700
-          rounded-md px-4 py-3 text-left transition-colors"
+          rounded-md px-4 py-3 text-left transition-colors px-4 py-3 min-h-[58px]"
         >
           <span className="flex items-center gap-3">
             <FileQuestionMark className="w-6 h-6" />
@@ -251,29 +265,47 @@ export const SettingsPage = () => {
             ▼
           </span>
         </button>
-        {fqaOpen && (
-        <div className="space-y-3">
-        <h3 className="text-lg font-semibold text-gray-100">
-          Kuinka voin vaihtaa sähköpostiosoitteeni?
-        </h3>
-              <div
-          className="bg-neutral-700 border border-neutral-600 rounded-xl px-4 py-3 text-gray-200 leading-relaxed"
-        >
-          Voit vaihtaa sähköpostiosoitteesi lähettämällä sähköpostia
-          Viulumeren ylläpitäjälle osoitteeseen{' '}
+          {fqaOpen && (
+            <div className="space-y-3">
+              {visibleFaqs.length === 0 ? (
+                <div className="bg-neutral-700 border border-neutral-600 rounded-xl px-4 py-3 text-gray-300 italic">
+                  Ei näytettäviä kysymyksiä
+                </div>
+              ) : (
+                visibleFaqs.map((faq) => (
+                  <div key={faq._id}>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setOpenFaqId(openFaqId === faq._id ? null : faq._id ?? null)
+                      }
+                      className="w-full flex items-center justify-between gap-3 bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 rounded-md px-4 py-3 text-left transition-colors"
+                    >
+                      <span className="font-semibold">{faq.question}</span>
+                      <span className={`transition-transform duration-200 ${openFaqId === faq._id ? 'rotate-180' : ''}`}>
+                        ▼
+                      </span>
+                    </button>
 
-          <a
-            href="mailto:viulumeri@mail.fi"
-            className="text-blue-400 font-semibold hover:underline"
-          >
-            viulumeri@mail.fi
-          </a>
-          . Muista käyttää samaa sähköpostiosoitetta, jolla olet rekisteröitynyt Viulumereen
-          , ja mainitse viestissä uusi haluamasi sähköpostiosoite. Ylläpitäjämme käsittelee
-          pyyntösi mahdollisimman pian ja lähettää vahvistuslinkin uuteen sähköpostiosoitteeseesi.
-        </div>
-      </div>
+                    {openFaqId === faq._id && (
+                      <div className="mt-3 bg-neutral-700 border border-neutral-600 rounded-xl px-4 py-3 text-gray-200 leading-relaxed">
+                        <p>{renderWithLinks(faq.answer)}</p>
+                        <p className="mt-3 text-sm text-gray-400">
+                        {faq.updatedAt &&
+                        faq.createdAt &&
+                        faq.updatedAt !== faq.createdAt
+                          ? `Päivitetty: ${new Date(faq.updatedAt).toLocaleDateString('fi-FI')}`
+                          : faq.createdAt
+                            ? `Lisätty: ${new Date(faq.createdAt).toLocaleDateString('fi-FI')}`
+                            : 'ei tiedossa'}
+                      </p>
+                      </div>
+                    )}
+                  </div>
+                ))
               )}
+            </div>
+          )}
       </div>
 
       <div className="bg-neutral-900 rounded-lg p-3">

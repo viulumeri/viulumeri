@@ -103,11 +103,26 @@ adminRouter.delete('/students/:studentId', async (request, response) => {
   response.status(204).send()
 })
 
+adminRouter.get('/popup-messages', async (_request, response) => {
+  const messages = await PopupMessage.find().sort({ postedAt: -1 }).lean()
+
+  response.json({
+    messages: messages.map(message => ({
+      id: (message as any)._id.toString(),
+      title: (message as any).title,
+      content: (message as any).content,
+      postedAt: new Date((message as any).postedAt).toISOString(),
+      isDraft: Boolean((message as any).isDraft)
+    }))
+  })
+})
+
 adminRouter.post('/popup-messages', async (request, response) => {
   const title =
     typeof request.body?.title === 'string' ? request.body.title.trim() : ''
   const content =
     typeof request.body?.content === 'string' ? request.body.content.trim() : ''
+  const isDraft = request.body?.isDraft === true
 
   if (!title) {
     return response.status(400).json({ error: 'Title is required' })
@@ -119,7 +134,8 @@ adminRouter.post('/popup-messages', async (request, response) => {
   const doc = await PopupMessage.create({
     title,
     content,
-    postedAt: new Date()
+    postedAt: new Date(),
+    isDraft
   })
 
   response.status(201).json({
@@ -127,9 +143,50 @@ adminRouter.post('/popup-messages', async (request, response) => {
       id: doc.id,
       title: doc.title,
       content: doc.content,
-      postedAt: doc.postedAt.toISOString()
+      postedAt: doc.postedAt.toISOString(),
+      isDraft: doc.isDraft
     }
   })
+})
+
+adminRouter.patch('/popup-messages/:messageId', async (request, response) => {
+  const isDraft = request.body?.isDraft
+
+  if (typeof isDraft !== 'boolean') {
+    return response.status(400).json({ error: 'isDraft boolean is required' })
+  }
+
+  const doc = await PopupMessage.findById(request.params.messageId)
+  if (!doc) {
+    return response.status(404).json({ error: 'Popup message not found' })
+  }
+
+  const wasDraft = doc.isDraft
+  doc.isDraft = isDraft
+  if (wasDraft && !isDraft) {
+    doc.postedAt = new Date()
+  }
+  await doc.save()
+
+  response.json({
+    message: {
+      id: doc.id,
+      title: doc.title,
+      content: doc.content,
+      postedAt: doc.postedAt.toISOString(),
+      isDraft: doc.isDraft
+    }
+  })
+})
+
+adminRouter.delete('/popup-messages/:messageId', async (request, response) => {
+  const doc = await PopupMessage.findByIdAndDelete(request.params.messageId)
+
+  if (!doc) {
+    return response.status(404).json({ error: 'Popup message not found' })
+  }
+
+  response.status(204).send()
 })
 
 adminRouter.delete('/popup-messages', async (_request, response) => {

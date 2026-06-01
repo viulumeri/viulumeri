@@ -35,7 +35,9 @@ const parseEnvMessages = (): Omit<PopupMessageDTO, 'id'>[] => {
 const popupMessagesRouter = Router()
 
 popupMessagesRouter.get('/', async (_request, response) => {
-  const dbMessages = await PopupMessage.find().sort({ postedAt: -1 }).lean()
+  const dbMessages = await PopupMessage.find({ isDraft: { $ne: true } })
+    .sort({ postedAt: -1 })
+    .lean()
 
   const envMessages = parseEnvMessages()
 

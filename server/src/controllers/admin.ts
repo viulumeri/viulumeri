@@ -220,8 +220,33 @@ adminRouter.patch('/popup-messages/:messageId', async (request, response) => {
   const hasTitle = typeof request.body?.title === 'string'
   const hasContent = typeof request.body?.content === 'string'
   const hasIsDraft = typeof request.body?.isDraft === 'boolean'
-  const visibility = readVisibilityUpdate(request.body)
 
+  const hasVisibleToTeachers = Object.prototype.hasOwnProperty.call(
+    request.body ?? {},
+    'visibleToTeachers'
+  )
+  const hasVisibleToStudents = Object.prototype.hasOwnProperty.call(
+    request.body ?? {},
+    'visibleToStudents'
+  )
+
+  if (hasVisibleToTeachers && typeof request.body?.visibleToTeachers !== 'boolean') {
+    return response
+      .status(400)
+      .json({ error: 'visibleToTeachers boolean is required' })
+  }
+  if (hasVisibleToStudents && typeof request.body?.visibleToStudents !== 'boolean') {
+    return response
+      .status(400)
+      .json({ error: 'visibleToStudents boolean is required' })
+  }
+
+  const visibility = readVisibilityUpdate(request.body)
+  if ((hasVisibleToTeachers || hasVisibleToStudents) && !visibility) {
+    return response
+      .status(400)
+      .json({ error: 'At least one audience must be selected' })
+  }
   if (hasTitle) {
     const title = request.body.title.trim()
     if (!title) {

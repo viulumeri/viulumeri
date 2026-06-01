@@ -24,6 +24,7 @@ adminRouter.get('/teachers', async (_request, response) => {
 
   const result = teachers.map(teacher => ({
     id: teacher.id,
+    userId: teacher.userId,
     name: teacher.name,
     email: teacher.email,
     studentCount: (teacher.students as any[]).length,
@@ -42,6 +43,7 @@ adminRouter.get('/students', async (_request, response) => {
 
   const result = students.map(student => ({
     id: student.id,
+    userId: student.userId,
     name: student.name,
     email: student.email,
     playedSongs: student.playedSongs,
@@ -55,6 +57,46 @@ adminRouter.get('/students', async (_request, response) => {
   }))
 
   response.json({ students: result })
+})
+
+adminRouter.post('/impersonate', async (request, response) => {
+  const { profileId, profileType } = request.body ?? {}
+
+  if (profileType !== 'teacher' && profileType !== 'student') {
+    return response.status(400).json({ error: 'Invalid profile type' })
+  }
+
+  const profile = profileType === 'teacher'
+    ? await Teacher.findById(profileId)
+    : await Student.findById(profileId)
+
+  if (!profile) {
+    return response.status(404).json({ error: 'Profile not found' })
+  }
+
+  const impersonationResult = await (auth.api as any).impersonateUser({
+    body: { userId: profile.userId },
+    headers: fromNodeHeaders(request.headers)
+  })
+
+  if (!impersonationResult?.session?.token) {
+    return response.status(500).json({ error: 'Failed to create impersonation session' })
+  }
+
+  const expiresAt = new Date(impersonationResult.session.expiresAt)
+
+  response.cookie('better-auth.session_token', impersonationResult.session.token, {
+    httpOnly: true,
+    sameSite: 'lax',
+    secure: process.env.NODE_ENV !== 'test',
+    path: '/',
+    expires: expiresAt
+  })
+
+  response.json({
+    session: impersonationResult.session,
+    user: impersonationResult.user
+  })
 })
 
 adminRouter.delete('/teachers/:teacherId', async (request, response) => {

@@ -110,7 +110,7 @@ export class TestAuthHelper {
     // Also close the global Better Auth database client
     try {
       await client.close()
-    } catch (error) {
+    } catch {
       // Client might already be closed, ignore the error
     }
   }

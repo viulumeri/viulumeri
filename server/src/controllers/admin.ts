@@ -1,4 +1,3 @@
-/// <reference path="../types/express.d.ts" />
 import { Router } from 'express'
 import { fromNodeHeaders } from 'better-auth/node'
 import { requireAdmin } from '../utils/auth-middleware'
@@ -149,24 +148,35 @@ adminRouter.post('/popup-messages', async (request, response) => {
 })
 
 adminRouter.patch('/popup-messages/:messageId', async (request, response) => {
-  const isDraft = request.body?.isDraft
-
-  if (typeof isDraft !== 'boolean') {
+  const isDraft = request.body?.isDraft
+
+
+
+  if (typeof isDraft !== 'boolean') {
+
     return response.status(400).json({ error: 'isDraft boolean is required' })
   }
 
-  const doc = await PopupMessage.findById(request.params.messageId)
+  const doc = await PopupMessage.findById(request.params.messageId)
+
   if (!doc) {
     return response.status(404).json({ error: 'Popup message not found' })
   }
 
-  const wasDraft = doc.isDraft
-  doc.isDraft = isDraft
-  if (wasDraft && !isDraft) {
-    doc.postedAt = new Date()
-  }
-  await doc.save()
-
+  const wasDraft = doc.isDraft
+
+  doc.isDraft = isDraft
+
+  if (wasDraft && !isDraft) {
+
+    doc.postedAt = new Date()
+
+  }
+
+  await doc.save()
+
+
+
   response.json({
     message: {
       id: doc.id,

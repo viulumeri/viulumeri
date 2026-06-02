@@ -60,8 +60,11 @@ export const SettingsPage = () => {
   })
 
   useEffect(() => {
-    faqService.getFaqs().then(setFaqs)
-  }, [])
+    if (isPending || !session) return
+    faqService.getFaqs().then(setFaqs).catch(error => {
+      showError(`Virhe FAQ:ien lataamisessa: ${error.message}`)
+    })
+  }, [isPending, session, showError])
 
   if (isPending) {
     return <div>Ladataan...</div>

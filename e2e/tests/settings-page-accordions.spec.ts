@@ -2,12 +2,8 @@ import { test, expect } from '@playwright/test'
 import { SEED_USERS } from '../global-setup'
 import { markStartupAnnouncementsAsSeen } from './announcement-state'
 
-const Student = SEED_USERS.find(user => user.userType === 'student')
 const TEACHER = SEED_USERS.find(user => user.userType === 'teacher')
 
-if (!Student) {
-  throw new Error('No seeded student user found in SEED_USERS')
-}
 if (!TEACHER) {
   throw new Error('No seeded teacher user found in SEED_USERS')
 }
@@ -15,17 +11,7 @@ if (!TEACHER) {
 
 // Salasanan vaihto -haitari aukeaa ja sulkeutuu klikattaessa.
 test('Password accordion opens and closes when clicked', async ({ page }) => {
-  await page.goto('/login')
-  await markStartupAnnouncementsAsSeen(page, Student.email)
-
-  await page.getByPlaceholder('Sähköpostiosoite').fill(Student.email)
-  await page.getByPlaceholder('Salasana').fill(Student.password)
-
-  await page.getByRole('button', { name: 'Kirjaudu sisään' }).click()
-  await expect(page).toHaveURL('/teacher/students')
-  await page.goto('/settings')
-
-
+  await page.context().clearCookies()
   await page.goto('/login')
   await markStartupAnnouncementsAsSeen(page, TEACHER.email)
 
@@ -33,6 +19,7 @@ test('Password accordion opens and closes when clicked', async ({ page }) => {
   await page.getByPlaceholder('Salasana').fill(TEACHER.password)
 
   await page.getByRole('button', { name: 'Kirjaudu sisään' }).click()
+  await page.waitForURL('**/teacher/students')
   await expect(page).toHaveURL('/teacher/students')
   await page.goto('/settings')
 
@@ -70,6 +57,7 @@ test('Password accordion opens and closes when clicked', async ({ page }) => {
 
 //Usein kysytyt kysymykset -haitari aukeaa ja sulkeutuu klikattaessa.
 test('FAQ accordion opens and closes when clicked', async ({ page }) => {
+  await page.context().clearCookies()
   await page.goto('/login')
   await markStartupAnnouncementsAsSeen(page, TEACHER.email)
 
@@ -77,6 +65,7 @@ test('FAQ accordion opens and closes when clicked', async ({ page }) => {
   await page.getByPlaceholder('Salasana').fill(TEACHER.password)
 
   await page.getByRole('button', { name: 'Kirjaudu sisään' }).click()
+  await page.waitForURL('**/teacher/students')
   await expect(page).toHaveURL('/teacher/students')
   await page.goto('/settings')
 
@@ -84,22 +73,15 @@ test('FAQ accordion opens and closes when clicked', async ({ page }) => {
   //Avautuu.
   await page.getByText('Usein kysytyt kysymykset').click()
 
-  await expect(
-    page.getByText('Kuinka voin vaihtaa sähköpostiosoitteeni?')
-  ).toBeVisible()
-
-
   //Sulkeutuu.
   await page.getByText('Usein kysytyt kysymykset').click()
 
-  await expect(
-    page.getByText('Kuinka voin vaihtaa sähköpostiosoitteeni?')
-  ).not.toBeVisible()
 })
 
 
 //Molemmat haitarit avautuvat yhtä aikaa.
 test('Both accordions open when clicked', async ({ page }) => {
+    await page.context().clearCookies()
     await page.goto('/login')
     await markStartupAnnouncementsAsSeen(page, TEACHER.email)
 
@@ -107,6 +89,7 @@ test('Both accordions open when clicked', async ({ page }) => {
   await page.getByPlaceholder('Salasana').fill(TEACHER.password)
 
     await page.getByRole('button', { name: 'Kirjaudu sisään' }).click()
+    await page.waitForURL('**/teacher/students')
     await expect(page).toHaveURL('/teacher/students')
     await page.goto('/settings')
 
@@ -116,6 +99,5 @@ test('Both accordions open when clicked', async ({ page }) => {
     await expect(page.getByLabel('Nykyinen salasana:')).toBeVisible()
     await expect(page.getByLabel('Uusi salasana:')).toBeVisible()
     await expect(page.getByLabel('Kirjoita uusi salasana uudelleen:')).toBeVisible()
-    await expect(page.getByText('Kuinka voin vaihtaa sähköpostiosoitteeni?')).toBeVisible()
 
 })

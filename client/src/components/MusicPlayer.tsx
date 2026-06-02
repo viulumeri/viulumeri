@@ -80,32 +80,20 @@ export const MusicPlayer = () => {
 
       playersRef.current = new Tone.Players(playerUrls).toDestination()
 
-      const loadPromises: Promise<void>[] = []
+      const loadPromises: Promise<unknown>[] = []
 
       if (tracks.melody) {
-        loadPromises.push(
-          new Promise(resolve => {
-            const melodyPlayer = playersRef.current!.player('melody')
-            if (melodyPlayer.loaded) {
-              resolve()
-            } else {
-              melodyPlayer.load(tracks.melody!).then(() => resolve())
-            }
-          })
-        )
+        const melodyPlayer = playersRef.current!.player('melody')
+        if (!melodyPlayer.loaded) {
+          loadPromises.push(melodyPlayer.load(tracks.melody!))
+        }
       }
 
       if (tracks.backing) {
-        loadPromises.push(
-          new Promise(resolve => {
-            const backingPlayer = playersRef.current!.player('backing')
-            if (backingPlayer.loaded) {
-              resolve()
-            } else {
-              backingPlayer.load(tracks.backing!).then(() => resolve())
-            }
-          })
-        )
+        const backingPlayer = playersRef.current!.player('backing')
+        if (!backingPlayer.loaded) {
+          loadPromises.push(backingPlayer.load(tracks.backing!))
+        }
       }
 
       await Promise.all(loadPromises)

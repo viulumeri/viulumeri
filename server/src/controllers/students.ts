@@ -12,7 +12,8 @@ studentsRouter.get('/', async (request, response) => {
 
   await teacher.populate('students', 'name')
 
-  const students = (teacher.students as any[]).map((s: any) => ({
+  type PopulatedStudent = { id: string; name: string }
+  const students = (teacher.students as unknown as PopulatedStudent[]).map(s => ({
     id: s.id,
     name: s.name
   }))
@@ -33,12 +34,12 @@ studentsRouter.delete('/:studentId', async (request, response) => {
 
   // Remove student from teacher's student list
   teacher.students = teacher.students.filter(
-    (studentId: any) => studentId.toString() !== student.id
+    studentId => studentId.toString() !== student.id
   )
   await teacher.save()
 
   // Remove teacher from student's teacher field
-  student.teacher = null as any
+  student.teacher = null
   await student.save()
 
   response.status(204).send()

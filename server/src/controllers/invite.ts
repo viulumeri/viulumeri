@@ -33,7 +33,7 @@ inviteRouter.get('/:token', async (request, response) => {
     'teacher',
     'name'
   )
-  const currentTeacher = student?.teacher as any | null
+  const currentTeacher = (student?.teacher ?? null) as unknown as { id: string; name: string } | null
 
   return response.json({
     teacher: { id: teacher.id, name: teacher.name },
@@ -62,7 +62,7 @@ inviteRouter.post('/:token/accept', async (request, response) => {
       changed: false
     })
 
-  const ops: Promise<any>[] = [
+  const ops: Promise<unknown>[] = [
     Student.updateOne({ _id: student._id }, { $set: { teacher: teacher._id } }),
     Teacher.updateOne(
       { _id: teacher._id },

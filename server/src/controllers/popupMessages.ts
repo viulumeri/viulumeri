@@ -8,6 +8,13 @@ type PopupMessageDTO = {
   postedAt: string
 }
 
+type PopupMessageLean = {
+  _id: { toString(): string }
+  title: string
+  content: string
+  postedAt: Date
+}
+
 const POPUP_MESSAGES_ENV = 'POPUP_MESSAGES_JSON'
 
 const parseEnvMessages = (): Omit<PopupMessageDTO, 'id'>[] => {
@@ -47,11 +54,11 @@ popupMessagesRouter.get('/', async (_request, response) => {
       content: m.content,
       postedAt: m.postedAt
     })),
-    ...dbMessages.map(m => ({
-      id: (m as any)._id.toString(),
-      title: (m as any).title,
-      content: (m as any).content,
-      postedAt: new Date((m as any).postedAt).toISOString()
+    ...(dbMessages as unknown as PopupMessageLean[]).map(m => ({
+      id: m._id.toString(),
+      title: m.title,
+      content: m.content,
+      postedAt: new Date(m.postedAt).toISOString()
     }))
   ]
 

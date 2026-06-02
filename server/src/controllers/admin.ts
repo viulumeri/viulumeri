@@ -7,6 +7,16 @@ import Student from '../models/student'
 import Homework from '../models/homework'
 import PopupMessage from '../models/popupMessage'
 
+type PopulatedStudent = { id: string; name: string; email: string }
+type PopulatedTeacher = { id: string; name: string; email: string }
+type PopupMessageLean = {
+  _id: { toString(): string }
+  title: string
+  content: string
+  postedAt: Date
+  isDraft: boolean
+}
+
 const adminRouter = Router()
 adminRouter.use(requireAdmin)
 
@@ -25,8 +35,8 @@ adminRouter.get('/teachers', async (_request, response) => {
     id: teacher.id,
     name: teacher.name,
     email: teacher.email,
-    studentCount: (teacher.students as any[]).length,
-    students: (teacher.students as any[]).map(student => ({
+    studentCount: (teacher.students as unknown as PopulatedStudent[]).length,
+    students: (teacher.students as unknown as PopulatedStudent[]).map(student => ({
       id: student.id,
       name: student.name,
       email: student.email
@@ -46,9 +56,9 @@ adminRouter.get('/students', async (_request, response) => {
     playedSongs: student.playedSongs,
     teacher: student.teacher
       ? {
-          id: (student.teacher as any).id,
-          name: (student.teacher as any).name,
-          email: (student.teacher as any).email
+          id: (student.teacher as unknown as PopulatedTeacher).id,
+          name: (student.teacher as unknown as PopulatedTeacher).name,
+          email: (student.teacher as unknown as PopulatedTeacher).email
         }
       : null
   }))
@@ -85,7 +95,7 @@ adminRouter.delete('/students/:studentId', async (request, response) => {
     const teacher = await Teacher.findById(student.teacher)
     if (teacher) {
       teacher.students = teacher.students.filter(
-        (studentId: any) => studentId.toString() !== student.id
+        studentId => studentId.toString() !== student.id
       )
       await teacher.save()
     }
@@ -105,12 +115,12 @@ adminRouter.get('/popup-messages', async (_request, response) => {
   const messages = await PopupMessage.find().sort({ postedAt: -1 }).lean()
 
   response.json({
-    messages: messages.map(message => ({
-      id: (message as any)._id.toString(),
-      title: (message as any).title,
-      content: (message as any).content,
-      postedAt: new Date((message as any).postedAt).toISOString(),
-      isDraft: Boolean((message as any).isDraft)
+    messages: (messages as unknown as PopupMessageLean[]).map(message => ({
+      id: message._id.toString(),
+      title: message.title,
+      content: message.content,
+      postedAt: new Date(message.postedAt).toISOString(),
+      isDraft: Boolean(message.isDraft)
     }))
   })
 })

@@ -17,6 +17,10 @@ type PopupMessageLean = {
   title: string
   content: string
   postedAt: Date
+  visibleToTeachers?: boolean
+  visibleToStudents?: boolean
+  visibleFrom?: string
+  visibleUntil?: string
 }
 
 const POPUP_MESSAGES_ENV = 'POPUP_MESSAGES_JSON'
@@ -75,13 +79,13 @@ popupMessagesRouter.get('/', async (_request, response) => {
   const visibilityField =
     userType === 'teacher' ? 'visibleToTeachers' : 'visibleToStudents'
 
+  const todayKey = getLocalDateKey()
   const dbMessages = await PopupMessage.find({
     isDraft: { $ne: true },
     [visibilityField]: { $ne: false }
   })
     .sort({ postedAt: -1 })
     .lean()
-  const todayKey = getLocalDateKey()
 
   const envMessages = parseEnvMessages()
 
@@ -94,12 +98,18 @@ popupMessagesRouter.get('/', async (_request, response) => {
       visibleToTeachers: true,
       visibleToStudents: true
     })),
-    ...(dbMessages as unknown as PopupMessageLean[]).map(m => ({
-      id: m._id.toString(),
-      title: m.title,
-      content: m.content,
-      postedAt: new Date(m.postedAt).toISOString()
-    }))
+    ...(dbMessages as unknown as PopupMessageLean[])
+      .filter(m => isMessageVisibleNow(m, todayKey))
+      .map(m => ({
+        id: m._id.toString(),
+        title: m.title,
+        content: m.content,
+        postedAt: new Date(m.postedAt).toISOString(),
+        visibleToTeachers: m.visibleToTeachers !== false,
+        visibleToStudents: m.visibleToStudents !== false,
+        visibleFrom: m.visibleFrom,
+        visibleUntil: m.visibleUntil
+      }))
   ]
 
   result.sort((a, b) => {

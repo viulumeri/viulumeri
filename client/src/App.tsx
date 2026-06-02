@@ -23,6 +23,7 @@ import PublicLayout from './components/PublicLayout'
 import { SettingsPage } from './components/SettingsPage'
 import { AdminPanel } from './components/AdminPanel'
 import { PopupAdminPage } from './components/PopupAdminPage'
+import { AdminFeedbackPage } from './components/AdminFeedbackPage'
 import { Route, Routes, Navigate } from 'react-router-dom'
 import { useSession } from './auth-client'
 import type { AppSessionUser } from '../../shared/types'
@@ -208,6 +209,14 @@ const App = () => {
                 element={
                   <AppLayout>
                     <PopupAdminPage />
+                  </AppLayout>
+                }
+              />
+              <Route
+                path="/admin/feedback"
+                element={
+                  <AppLayout>
+                    <AdminFeedbackPage />
                   </AppLayout>
                 }
               />

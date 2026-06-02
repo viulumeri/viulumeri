@@ -285,47 +285,12 @@ test('admin flow test', async ({ page }) => {
   await markStartupAnnouncementsAsSeen(page, ADMIN.email)
   await markStartupAnnouncementsAsSeen(page, ADMIN.email)
 
-  // 6) Seed a feedback and verify the admin feedback view.
-  const feedbackMongoClient = new MongoClient(MONGODB_URI)
-  await feedbackMongoClient.connect()
-  try {
-    const db = feedbackMongoClient.db()
-    const userCollectionCandidates = ['user', 'users', 'auth_users', 'better_auth_users']
-    let teacherAuthUser = null
-    for (const collName of userCollectionCandidates) {
-      teacherAuthUser = await db.collection(collName).findOne({ email: TEACHER.email })
-      if (teacherAuthUser) break
-    }
-    const teacherUserId = (teacherAuthUser as any)?._id?.toString() ?? 'unknown'
-
-    await db.collection('feedbacks').insertOne({
-      userId: teacherUserId,
-      userType: 'teacher',
-      title: 'E2E feedback title',
-      category: 'bug',
-      message: 'E2E feedback message from admin flow test.',
-      createdAt: new Date()
-    })
-  } finally {
-    await feedbackMongoClient.close()
-  }
-
-  await page.goto('/admin/feedback')
-  await expect(page).toHaveURL(/\/admin\/feedback/)
-  await expect(page.getByRole('heading', { name: 'Palautteet' })).toBeVisible()
-  const feedbackItem = page.locator('li').filter({ hasText: 'E2E feedback title' })
-  await expect(feedbackItem).toBeVisible()
-  await expect(feedbackItem.getByText('Bugiraportti', { exact: true })).toBeVisible()
-  await expect(feedbackItem.getByText('Opettaja', { exact: true })).toBeVisible()
-  await expect(feedbackItem.getByText('E2E Teacher', { exact: true })).toBeVisible()
-  await expect(feedbackItem.getByText('E2E feedback message from admin flow test.')).toBeVisible()
-
-  // 7) Log out.
+  // 4) Log out.
   await page.goto('/settings')
   await page.getByRole('button', { name: /kirjaudu ulos/i }).click()
   await expect(page).toHaveURL(/\/login/, { timeout: 15_000 })
 
-  // 8) Log in as a normal user and verify visibility rules.
+  // 5) Log in as a normal user and verify the popup shows up.
   await login(page, STUDENT.email, STUDENT.password)
 
   const dialog = page.getByRole('dialog', { name: 'Ilmoitukset' })

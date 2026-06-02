@@ -7,8 +7,8 @@ import { StudentSettings } from './StudentSettings'
 import { TeacherSettings } from './TeacherSettings'
 import { User, Key, Settings, LogOut, Trash2, FileQuestionMark, MessageCircle } from 'lucide-react'
 import { useNotification } from '../hooks/useNotification'
+import { useNavigate } from 'react-router-dom'
 
-import { Link } from 'react-router-dom'
 export const SettingsPage = () => {
   const { data: session, isPending } = useSession()
   const [isDeleting, setIsDeleting] = useState(false)
@@ -18,6 +18,7 @@ export const SettingsPage = () => {
   const [passwordOpen, setPasswordOpen] = useState(false);
   const [fqaOpen, setfqaOpen] = useState(false);
   const { showError, showSuccess } = useNotification()
+  const navigate = useNavigate()
 
   const deleteUser = useDeleteUser({
     onSuccess: () => {
@@ -282,12 +283,11 @@ export const SettingsPage = () => {
           Palaute
         </h3>
         <div className="flex justify-center">
-          <Link
-            to="/feedback"
+          <button
             className="button-basic inline-flex items-center justify-center px-6 py-2 text-xl rounded-full"
-          >
+            onClick={() => navigate('/feedback')}>
             Anna palautetta
-          </Link>
+          </button>
         </div>
       </div>
 

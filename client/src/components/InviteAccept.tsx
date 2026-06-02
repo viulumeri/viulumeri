@@ -1,4 +1,4 @@
-import { Link, useParams, useNavigate, useLocation } from 'react-router-dom'
+import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import { useInviteDetails, useAcceptInvite } from '../hooks/useInvite'
 import { useSession } from '../auth-client'
 
@@ -19,17 +19,18 @@ export const InviteAccept = () => {
   if (sessionPending) return <div>Ladataan…</div>
 
   if (!session) {
-    return (
-      <div className="space-y-4">
-        <p className="flex justify-center">Kirjaudu sisään vastataksesi kutsuun</p>
-        <Link className="flex justify-center text-gray-300 hover:text-white underline"
-          to={`/login?next=${encodeURIComponent(location.pathname)}`}
-        >
-          Kirjaudu
-        </Link>
-      </div>
-    )
-  }
+     return (
+       <div className="space-y-4">
+         <h2 className="flex justify-center">Kirjaudu sisään vastaanottaaksesi kutsun</h2>
+         <button
+           className="button-basic block mx-auto mt-1"
+           onClick={() => navigate(`/login?next=${encodeURIComponent(location.pathname)}`)}
+         >
+           Kirjaudu sisään
+         </button>
+       </div>
+     )
+   }
 
   if (invitePending) return <div>Ladataan…</div>
 
@@ -70,8 +71,10 @@ export const InviteAccept = () => {
         </>
       ) : (
         <>
-          <h2>Liity opettajan {data.teacher.name} oppilaaksi</h2>
+          <h2 className="inline-flex gap-1">Kutsu oppilaaksi</h2>
+          <h3 className="inline-flex gap-1 mt-1">Opettaja: <strong>{data.teacher.name}</strong></h3>
           <button
+            className="button-basic block mx-auto mt-3 "
             onClick={() => accept.mutate(token!)}
             disabled={accept.isPending}
           >

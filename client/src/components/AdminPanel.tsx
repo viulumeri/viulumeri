@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { Banana, CirclePlus, FileQuestionMark, Pen, Trash2 } from 'lucide-react'
 import { useAdminSummary, useAdminTeachers, useAdminStudents, useDeleteAdminTeacher, useDeleteAdminStudent } from '../hooks/useAdmin'
 import { DropdownSearchbar } from './DropdownSearchbar'
@@ -181,6 +182,13 @@ return (
 
       </div>
 
+
+      <Link
+        to="/admin/feedback"
+        className="inline-block mt-4 mb-4 button-basic"
+      >
+        Palauteet
+      </Link>
 
       <DropdownSearchbar
         onSearchInputChange={handleSearchUserInputChange}

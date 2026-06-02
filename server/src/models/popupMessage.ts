@@ -4,7 +4,8 @@ const popupMessageSchema = new mongoose.Schema(
   {
     title: { type: String, required: true, minlength: 1, maxlength: 200 },
     content: { type: String, required: true, minlength: 1, maxlength: 4000 },
-    postedAt: { type: Date, required: true, default: Date.now }
+    postedAt: { type: Date, required: true, default: Date.now },
+    isDraft: { type: Boolean, required: true, default: false }
   },
   { timestamps: true }
 )

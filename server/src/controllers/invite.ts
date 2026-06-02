@@ -52,7 +52,7 @@ inviteRouter.post('/:token/accept', async (request, response) => {
   const teacher = await Teacher.findById(payload.teacherId)
   if (!teacher) return response.status(404).json({ error: 'Teacher not found' })
 
-  const student = await validateStudentProfile(request.session, response)
+  const student = await validateStudentProfile(request.session!, response)
   if (!student) return
 
   //

@@ -1,23 +1,21 @@
-import type Teacher from '../models/teacher'
-import type Student from '../models/student'
-
-interface SessionUser {
-  id: string
-  email: string
-  name: string
-  userType: 'teacher' | 'student'
-  role: 'admin' | 'user'
-  emailVerified: boolean
-}
+export {}
 
 declare global {
   namespace Express {
     interface Request {
-      session?: { session: unknown; user: SessionUser } | null
-      teacherProfile?: InstanceType<typeof Teacher>
-      studentProfile?: InstanceType<typeof Student>
+      session?: {
+        session: unknown
+        user: {
+          id: string
+          email: string
+          name: string
+          userType: string
+          role?: string | null
+          emailVerified: boolean
+        }
+      } | null
+      teacherProfile?: InstanceType<typeof import('../models/teacher').default>
+      studentProfile?: InstanceType<typeof import('../models/student').default>
     }
   }
 }
-
-export {}

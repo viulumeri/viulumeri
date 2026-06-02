@@ -99,8 +99,8 @@ export const adminService = {
       withCredentials: true
     })
     return response.data
-  }
-  ,
+  },
+  
   stopImpersonating: async (): Promise<void> => {
     await axios.post('/api/auth/admin/stop-impersonating', {}, { withCredentials: true })
   }

@@ -1,7 +1,6 @@
 import { useEffect } from 'react'
 import { useSongsList } from '../hooks/useSongs'
 import { Songslist } from './Songslist'
-import { Header } from './Header'
 import { useOwnPlayedSongs } from '../hooks/usePlayedSongs'
 import { useSession } from '../auth-client'
 import type { AppSessionUser } from '../../../shared/types'

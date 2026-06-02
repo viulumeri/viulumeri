@@ -111,9 +111,9 @@ describe('Students API GET', () => {
     assert.strictEqual(response.body.students.length, 2)
 
     const returnedStudents = response.body.students
-    assert(returnedStudents.every((s: any) => s.id && s.name))
-    assert(returnedStudents.some((s: any) => s.name === 'Student One'))
-    assert(returnedStudents.some((s: any) => s.name === 'Student Two'))
+    assert(returnedStudents.every((s: { id: string; name: string }) => s.id && s.name))
+    assert(returnedStudents.some((s: { name: string }) => s.name === 'Student One'))
+    assert(returnedStudents.some((s: { name: string }) => s.name === 'Student Two'))
   })
 })
 
@@ -255,7 +255,7 @@ describe('Students API GET /:studentId/homework', () => {
     const homeworkList = response.body.homework
     assert(
       homeworkList.every(
-        (h: any) => h.id && h.songs && typeof h.comment === 'string'
+        (h: { id: string; songs: string[]; comment: string }) => h.id && h.songs && typeof h.comment === 'string'
       )
     )
     // Check that order is right:

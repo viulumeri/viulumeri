@@ -1,4 +1,5 @@
-import type { SuperTest, Test } from 'supertest'
+import type { Test } from 'supertest'
+import type TestAgent from 'supertest/lib/agent'
 import { MongoClient } from 'mongodb'
 import mongoose from 'mongoose'
 import { databaseUrl } from './config'
@@ -52,7 +53,7 @@ export class TestHelper {
   }
 
   static async signUpUser(
-    api: SuperTest<Test>,
+    api: TestAgent<Test>,
     userData: {
       email: string
       name: string
@@ -85,7 +86,7 @@ export class TestHelper {
       .updateOne({ email }, { $set: { emailVerified: true } })
   }
 
-  static async signInUser(api: SuperTest<Test>, email: string, password: string) {
+  static async signInUser(api: TestAgent<Test>, email: string, password: string) {
     const response = await api
       .post('/api/auth/sign-in/email')
       .send({ email, password })
@@ -117,7 +118,7 @@ export class TestHelper {
   }
 
   static async createAuthenticatedStudent(
-    api: SuperTest<Test>,
+    api: TestAgent<Test>,
     email?: string,
     name?: string
   ) {
@@ -141,7 +142,7 @@ export class TestHelper {
   }
 
   static async createAuthenticatedTeacher(
-    api: SuperTest<Test>,
+    api: TestAgent<Test>,
     email?: string,
     name?: string
   ) {
@@ -165,7 +166,7 @@ export class TestHelper {
   }
 
   static async createAuthenticatedAdmin(
-    api: SuperTest<Test>,
+    api: TestAgent<Test>,
     email?: string,
     name?: string
   ) {
@@ -198,7 +199,7 @@ export class TestHelper {
   }
 
   static async makeAuthenticatedRequest(
-    api: SuperTest<Test>,
+    api: TestAgent<Test>,
     method: 'get' | 'post' | 'put' | 'delete',
     url: string,
     userType: 'student' | 'teacher',

@@ -1,4 +1,3 @@
-/// <reference path="../types/express.d.ts" />
 import { Router } from 'express'
 import PopupMessage from '../models/popupMessage'
 
@@ -11,6 +10,13 @@ type PopupMessageDTO = {
   visibleToStudents: boolean
   visibleFrom?: string
   visibleUntil?: string
+}
+
+type PopupMessageLean = {
+  _id: { toString(): string }
+  title: string
+  content: string
+  postedAt: Date
 }
 
 const POPUP_MESSAGES_ENV = 'POPUP_MESSAGES_JSON'
@@ -88,20 +94,12 @@ popupMessagesRouter.get('/', async (_request, response) => {
       visibleToTeachers: true,
       visibleToStudents: true
     })),
-    ...dbMessages
-      .filter(message => isMessageVisibleNow(message as any, todayKey))
-      .map(m => ({
-        id: (m as any)._id.toString(),
-        title: (m as any).title,
-        content: (m as any).content,
-        postedAt: new Date((m as any).postedAt).toISOString(),
-        visibleToTeachers: (m as any).visibleToTeachers !== false,
-        visibleToStudents: (m as any).visibleToStudents !== false,
-        visibleFrom:
-          typeof (m as any).visibleFrom === 'string' ? (m as any).visibleFrom : undefined,
-        visibleUntil:
-          typeof (m as any).visibleUntil === 'string' ? (m as any).visibleUntil : undefined
-      }))
+    ...(dbMessages as unknown as PopupMessageLean[]).map(m => ({
+      id: m._id.toString(),
+      title: m.title,
+      content: m.content,
+      postedAt: new Date(m.postedAt).toISOString()
+    }))
   ]
 
   result.sort((a, b) => {

@@ -1,4 +1,3 @@
-/// <reference path="../types/express.d.ts" />
 import { Router } from 'express'
 import { requireStudent, loadStudentProfile } from '../utils/auth-middleware'
 

@@ -1,7 +1,14 @@
-import { describe, it, before, after, beforeEach } from 'node:test'
+import { describe, it, beforeEach } from 'node:test'
 import assert from 'node:assert'
 import { musicService } from '../services/music'
+import type { Song } from '../../../shared/types'
 import path from 'path'
+
+type MusicServiceInternal = {
+  songs: Song[]
+  initialized: boolean
+  processSongFolder(dir: string, folder: string): Promise<Song | null>
+}
 
 const fixturesPath = path.join(__dirname, 'fixtures', 'music')
 const validMusicDir = fixturesPath
@@ -9,7 +16,7 @@ const nonExistentDir = path.join(__dirname, 'non-existent-directory')
 
 describe('MusicService', () => {
   beforeEach(async () => {
-    const service = musicService as any
+    const service = musicService as unknown as MusicServiceInternal
     service.songs = []
     service.initialized = false
   })
@@ -45,7 +52,7 @@ describe('MusicService', () => {
     })
 
     it('should handle missing audio bundle error', async () => {
-      const service = musicService as any
+      const service = musicService as unknown as MusicServiceInternal
 
       await assert.rejects(
         async () => {
@@ -58,7 +65,7 @@ describe('MusicService', () => {
     })
 
     it('should handle missing metadata error', async () => {
-      const service = musicService as any
+      const service = musicService as unknown as MusicServiceInternal
 
       await assert.rejects(
         async () => {
@@ -71,7 +78,7 @@ describe('MusicService', () => {
     })
 
     it('should handle malformed JSON metadata', async () => {
-      const service = musicService as any
+      const service = musicService as unknown as MusicServiceInternal
 
       await assert.rejects(
         async () => {
@@ -119,7 +126,7 @@ describe('MusicService', () => {
     })
 
     it('should return empty array when service has no songs', () => {
-      const service = musicService as any
+      const service = musicService as unknown as MusicServiceInternal
       service.songs = []
       service.initialized = true
 

@@ -41,8 +41,8 @@ homeworkSchema.pre('save', function(next) {
 })
 
 homeworkSchema.set('toJSON', {
-  transform: (_document: any, returnedObject: any) => {
-    returnedObject.id = returnedObject._id.toString()
+  transform: (_document: unknown, returnedObject: Record<string, unknown>) => {
+    returnedObject.id = String(returnedObject._id)
     delete returnedObject._id
     delete returnedObject.__v
   }

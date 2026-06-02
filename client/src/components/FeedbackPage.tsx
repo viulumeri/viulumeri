@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useSubmitFeedback } from '../hooks/useFeedback'
 import type { FeedbackCategory } from '../../../shared/types'
 import { useNotification } from '../hooks/useNotification'
+import { categoryLabel } from '../utils/feedbackLabels'
 
 export const FeedbackPage = () => {
   const [title, setTitle] = useState('')
@@ -97,9 +98,9 @@ export const FeedbackPage = () => {
               onChange={event => setCategory(event.target.value as FeedbackCategory)}
               className="w-full bg-neutral-700 border border-neutral-600 rounded-md px-3 py-2 text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
-              <option value="bug">Bugiraportti</option>
-              <option value="feature">Toive / uusi ominaisuus</option>
-              <option value="other">Muu</option>
+              <option value="bug">{categoryLabel.bug}</option>
+              <option value="feature">{categoryLabel.feature}</option>
+              <option value="other">{categoryLabel.other}</option>
             </select>
           </div>
 

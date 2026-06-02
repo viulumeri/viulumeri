@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { Trash2 } from 'lucide-react'
 import { useAdminSummary, useAdminTeachers, useAdminStudents, useDeleteAdminTeacher, useDeleteAdminStudent } from '../hooks/useAdmin'
 import { DropdownSearchbar } from './DropdownSearchbar'
@@ -94,6 +95,13 @@ export const AdminPanel = () => {
         !error && <div>Ladataan yhteenvedon tietoja...</div>
       )}
 
+
+      <Link
+        to="/admin/feedback"
+        className="inline-block mt-4 mb-4 button-basic"
+      >
+        Palauteet
+      </Link>
 
       <DropdownSearchbar
         onSearchInputChange={handleSearchUserInputChange}

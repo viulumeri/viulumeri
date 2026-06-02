@@ -7,6 +7,7 @@ import Teacher from '../models/teacher'
 import Student from '../models/student'
 import Homework from '../models/homework'
 import PopupMessage from '../models/popupMessage'
+import { getAdminFeedbacks } from '../services/admin'
 
 const adminRouter = Router()
 adminRouter.use(requireAdmin)
@@ -191,6 +192,11 @@ adminRouter.delete('/popup-messages/:messageId', async (request, response) => {
 adminRouter.delete('/popup-messages', async (_request, response) => {
   await PopupMessage.deleteMany({})
   response.status(204).send()
+})
+
+adminRouter.get('/feedbacks', async (_request, response) => {
+  const feedbacks = await getAdminFeedbacks()
+  response.json({ feedbacks })
 })
 
 export default adminRouter

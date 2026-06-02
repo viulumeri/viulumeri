@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useNotification } from '../hooks/useNotification'
 import { adminService } from '../services/admin'
+import { Bell } from 'lucide-react'
 import type { AdminPopupMessage } from '../services/admin'
 
 export const PopupAdminPage = () => {
@@ -139,8 +140,11 @@ export const PopupAdminPage = () => {
   }
 
   return (
-    <div className="space-y-6 p-6 pb-24">
-      <h2>Pop-up</h2>
+    <div className="space-y-4 p-5 pb-24">
+      <h1 className="flex items-center gap-3">
+        <Bell className="w-8 h-8" />
+        Pop-up
+      </h1>
 
       <div className="bg-neutral-900 rounded-lg p-6">
         <h3 className="mb-4">Lähetä pop-up</h3>

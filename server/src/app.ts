@@ -15,6 +15,8 @@ import playedSongsRouter from './controllers/playedSongs'
 import feedbackRouter from './controllers/feedback'
 import adminRouter from './controllers/admin'
 import popupMessagesRouter from './controllers/popupMessages'
+import faqRouter from './controllers/faq'
+import adminFaqRouter from './controllers/adminFaq'
 
 const app = express()
 
@@ -42,6 +44,8 @@ app.use('/api/students', studentsRouter)
 app.use('/api/played-songs', playedSongsRouter)
 app.use('/api/admin', adminRouter)
 app.use('/api/feedback', feedbackRouter)
+app.use('/api/faq', faqRouter)
+app.use('/api/admin/faq', adminFaqRouter)
 
 app.get('/ping', (_req, res) => {
   res.send('pong')

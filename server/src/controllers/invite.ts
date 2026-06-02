@@ -1,4 +1,3 @@
-/// <reference path="../types/express.d.ts" />
 import { Router } from 'express'
 import { requireTeacher, loadTeacherProfile } from '../utils/auth-middleware'
 import { validateStudentProfile } from '../utils/session-helpers'
@@ -34,7 +33,7 @@ inviteRouter.get('/:token', async (request, response) => {
     'teacher',
     'name'
   )
-  const currentTeacher = student?.teacher as any | null
+  const currentTeacher = (student?.teacher ?? null) as unknown as { id: string; name: string } | null
 
   return response.json({
     teacher: { id: teacher.id, name: teacher.name },
@@ -53,7 +52,7 @@ inviteRouter.post('/:token/accept', async (request, response) => {
   const teacher = await Teacher.findById(payload.teacherId)
   if (!teacher) return response.status(404).json({ error: 'Teacher not found' })
 
-  const student = await validateStudentProfile(request.session, response)
+  const student = await validateStudentProfile(request.session!, response)
   if (!student) return
 
   //
@@ -63,7 +62,7 @@ inviteRouter.post('/:token/accept', async (request, response) => {
       changed: false
     })
 
-  const ops: Promise<any>[] = [
+  const ops: Promise<unknown>[] = [
     Student.updateOne({ _id: student._id }, { $set: { teacher: teacher._id } }),
     Teacher.updateOne(
       { _id: teacher._id },

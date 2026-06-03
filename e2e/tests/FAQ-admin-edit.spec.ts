@@ -20,22 +20,27 @@ const closeNotificationsIfOpen = async (page: Page) => {
   }
 }
 
+async function loginAsAdmin(page: Page) {
+  await page.goto('/login')
+
+  await page.getByPlaceholder('Sähköpostiosoite').fill(ADMIN.email)
+  await page.getByPlaceholder('Salasana').fill(ADMIN.password)
+
+  await page.getByRole('button', { name: 'Kirjaudu sisään' }).click()
+  await page.waitForURL(url => !url.pathname.endsWith('/login'), { timeout: 15_000 })
+  await markStartupAnnouncementsAsSeen(page, ADMIN.email)
+  await page.goto('/admin')
+  await expect(page).toHaveURL('/admin')
+}
+
 // Admin voi lisätä uuden kysymyksen
 // "Lisää uusi kysymys" -haitariin ja tarkastella sitä.
 
 //Kirjaudutaan Hallintapaneeli-sivulle adminina.
 test('Admin can add questions for FAQ', async ({ page }) => {
-await page.goto('/login')
-await markStartupAnnouncementsAsSeen(page, ADMIN.email)
+  await loginAsAdmin(page)
 
-await page.getByPlaceholder('Sähköpostiosoite').fill(ADMIN.email)
-await page.getByPlaceholder('Salasana').fill(ADMIN.password)
-
-await page.getByRole('button', { name: 'Kirjaudu sisään' }).click()
-await expect(page).toHaveURL('/admin')
-await page.goto('/admin')
-
-// Avataan 'Lisää uusi kysymys' -haitari.
+  // Avataan 'Lisää uusi kysymys' -haitari.
 const addFaqAccordion = page.getByRole('button', {
   name: 'Lisää uusi kysymys'
 })
@@ -104,17 +109,9 @@ await expect(page.getByText(`Lisätty: ${formattedDate}`)).toBeVisible()
 
 //Kirjaudutaan Hallintapaneeli-sivulle adminina.
 test('Admin can remove questions from FAQ', async ({ page }) => {
-await page.goto('/login')
-await markStartupAnnouncementsAsSeen(page, ADMIN.email)
+  await loginAsAdmin(page)
 
-await page.getByPlaceholder('Sähköpostiosoite').fill(ADMIN.email)
-await page.getByPlaceholder('Salasana').fill(ADMIN.password)
-
-await page.getByRole('button', { name: 'Kirjaudu sisään' }).click()
-await expect(page).toHaveURL('/admin')
-await page.goto('/admin')
-
-// Avataan 'Lisää uusi kysymys' -haitari.
+  // Avataan 'Lisää uusi kysymys' -haitari.
 const addFaqAccordion = page.getByRole('button', {
   name: 'Lisää uusi kysymys'
 })
@@ -173,17 +170,9 @@ await expect(
 
 //Kirjaudutaan Hallintapaneeli-sivulle adminina.
 test('Admin can edit questions in FAQ', async ({ page }) => {
-await page.goto('/login')
-await markStartupAnnouncementsAsSeen(page, ADMIN.email)
+  await loginAsAdmin(page)
 
-await page.getByPlaceholder('Sähköpostiosoite').fill(ADMIN.email)
-await page.getByPlaceholder('Salasana').fill(ADMIN.password)
-
-await page.getByRole('button', { name: 'Kirjaudu sisään' }).click()
-await expect(page).toHaveURL('/admin')
-await page.goto('/admin')
-
-// Avataan 'Lisää uusi kysymys' -haitari.
+  // Avataan 'Lisää uusi kysymys' -haitari.
 const addFaqAccordion = page.getByRole('button', {
   name: 'Lisää uusi kysymys'
 })

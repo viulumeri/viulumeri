@@ -214,6 +214,16 @@ adminRouter.post('/popup-messages', async (request, response) => {
   const content =
     typeof request.body?.content === 'string' ? request.body.content.trim() : ''
   const isDraft = request.body?.isDraft === true
+  const visibleToTeachers = request.body?.visibleToTeachers !== false
+  const visibleToStudents = request.body?.visibleToStudents !== false
+  const visibleFrom =
+    typeof request.body?.visibleFrom === 'string' && request.body.visibleFrom.trim()
+      ? request.body.visibleFrom.trim()
+      : undefined
+  const visibleUntil =
+    typeof request.body?.visibleUntil === 'string' && request.body.visibleUntil.trim()
+      ? request.body.visibleUntil.trim()
+      : undefined
 
   if (!title) {
     return response.status(400).json({ error: 'Title is required' })
@@ -226,7 +236,11 @@ adminRouter.post('/popup-messages', async (request, response) => {
     title,
     content,
     postedAt: new Date(),
-    isDraft
+    isDraft,
+    visibleToTeachers,
+    visibleToStudents,
+    visibleFrom,
+    visibleUntil
   })
 
   response.status(201).json({

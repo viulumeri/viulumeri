@@ -138,7 +138,7 @@ adminRouter.post('/impersonate', async (request, response) => {
   response.cookie('better-auth.session_token', impersonationResult.session.token, {
     httpOnly: true,
     sameSite: 'lax',
-    secure: process.env.NODE_ENV !== 'test',
+    secure: process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'staging',
     path: '/',
     expires: expiresAt
   })

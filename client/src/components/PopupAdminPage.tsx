@@ -467,6 +467,7 @@ export const PopupAdminPage = () => {
           <div className="flex justify-center">
             <button
               type="submit"
+              data-testid="popup-create-submit"
               disabled={isSubmitting}
               className="button-basic disabled:opacity-50 disabled:cursor-not-allowed"
             >

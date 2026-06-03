@@ -114,7 +114,7 @@ export const ResetPassword = () => {
 
   return (
     <div>
-      <h2 className="mb-4">Aseta uusi salasana</h2>
+      <h2 className="mx-auto w-fit mb-4">Aseta uusi salasana</h2>
 
       <form
         onSubmit={handleSubmit}
@@ -170,7 +170,7 @@ export const ResetPassword = () => {
             resetPassword.isPending ||
             !passwordsMatch
           }
-          className="button-basic block mx-auto"
+          className="button-basic active:bg-gray-300 block mx-auto"
         >
           {resetPassword.isPending
             ? 'Vaihdetaan...'
@@ -178,13 +178,13 @@ export const ResetPassword = () => {
         </button>
       </form>
 
-      <div className="mt-4 flex justify-center">
-        <Link
-          to="/login"
-          className="text-gray-300 hover:text-white underline"
+      <div>
+        <button type="button"
+          onClick={() => navigate('/login')}
+          className="back-button-basic active:bg-white/10 block mx-auto mt-4"
         >
-          Takaisin kirjautumiseen
-        </Link>
+          Takaisin
+        </button>
       </div>
     </div>
   )

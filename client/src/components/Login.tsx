@@ -1,6 +1,6 @@
 import { useField } from '../hooks/useField'
 import { useLogin } from '../hooks/useAuth'
-import { useNavigate, Link, useSearchParams } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useSession } from '../auth-client'
 import { useEffect } from 'react'
 import { useNotification } from '../hooks/useNotification'
@@ -67,22 +67,25 @@ export const Login = () => {
         <button
           type="submit"
           disabled={loginMutation.isPending}
-          className="button-basic block mx-auto"
+          className="button-basic active:bg-gray-300 block mx-auto"
         >
           {loginMutation.isPending ? 'Kirjaudutaan…' : 'Kirjaudu sisään'}
         </button>
       </form>
 
-      <div className="mt-6 flex items-center justify-between text-sm">
-        <Link
-          to="/forgot-password"
-          className="text-gray-300 hover:text-white underline"
+      <div>
+        <button type="button"
+          onClick={() => navigate('/forgot-password')}
+          className="back-button-basic active:bg-white/10 block mx-auto mt-4"
         >
           Unohdin salasanani
-        </Link>
-        <Link to="/signup" className="text-gray-300 hover:text-white underline">
+        </button>
+        <button type="button"
+          onClick={() => navigate('/signup')}
+          className="back-button-basic active:bg-white/10 block mx-auto mt-4"
+        >
           Luo uusi käyttäjä
-        </Link>
+        </button>
       </div>
     </div>
   )

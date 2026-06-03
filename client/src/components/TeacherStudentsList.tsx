@@ -8,7 +8,7 @@ type Student = {
   name: string; 
   latestHomework?: {
     practiceCount: number;
-  };
+  } | null
 }
 
 export const TeacherStudentsList = () => {

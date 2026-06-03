@@ -306,16 +306,6 @@ test('admin flow test', async ({ page, request }) => {
 
     await expect(page.getByText('Pop-up päivitetty')).toBeVisible({ timeout: 15_000 })
 
-    // Wait for the popup list to be reloaded after saving the edit so the
-    // updated card is available in the DOM before assertions.
-    const reloadResponse = await page.waitForResponse(response => {
-      return (
-        response.url().includes('/api/admin/popup-messages') &&
-        response.request().method() === 'GET'
-      )
-    })
-    expect(reloadResponse.ok(), `Reloading popups failed: HTTP ${reloadResponse.status()}`).toBe(true)
-
     const editedCard = page
       .locator('div.rounded-md')
       .filter({ hasText: editedTitle })

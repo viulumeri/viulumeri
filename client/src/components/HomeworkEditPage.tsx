@@ -14,7 +14,6 @@ type HomeworkEditState = {
   studentName?: string
   comment?: string
   preselected?: string[]
-  addSongs?: string[]
 }
 
 export const HomeworkEditPage = () => {

@@ -13,7 +13,6 @@ type HomeworkItem = HomeworkListResponse['homework'][number]
 type HomeworkCreateState = {
   studentName?: string
   comment?: string
-  addSongs?: string[]
   preselected?: string[]
 }
 

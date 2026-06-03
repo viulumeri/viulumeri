@@ -1,4 +1,4 @@
-import { test, expect, type Page } from '@playwright/test'
+import { test, expect, type Page, type APIRequestContext } from '@playwright/test'
 import { MongoClient } from 'mongodb'
 import { markStartupAnnouncementsAsSeen } from './announcement-state'
 
@@ -8,17 +8,24 @@ const ADMIN = {
 }
 
 const DELETE_ME = {
-  email: 'e2e-delete-me@example.com'
+  email: 'e2e-delete-me@example.com',
+  password: 'E2eDeleteMe123!',
+  name: 'E2E Delete Me',
+  userType: 'student'
 }
 
 const STUDENT = {
   email: 'e2e-student@example.com',
-  password: 'E2eStudent123!'
+  password: 'E2eStudent123!',
+  name: 'E2E Student',
+  userType: 'student'
 }
 
 const TEACHER = {
   email: 'e2e-teacher@example.com',
-  password: 'E2eTeacher123!'
+  password: 'E2eTeacher123!',
+  name: 'E2E Teacher',
+  userType: 'teacher'
 }
 
 const MONGODB_URI =
@@ -106,7 +113,32 @@ async function createPopupMessage(
   ).toBeVisible({ timeout: 15_000 })
 }
 
-test('admin flow test', async ({ page }) => {
+const USER_COLLECTION_CANDIDATES = [
+  'user',
+  'users',
+  'auth_users',
+  'better_auth_users'
+]
+
+async function ensureUserExists(
+  request: APIRequestContext,
+  user: { email: string; password: string; name: string; userType: string }
+) {
+  const response = await request.post('/api/auth/sign-up/email', { data: user })
+  if (response.ok()) return
+
+  const body = await response.text()
+  const status = response.status()
+  const normalized = body.toLowerCase()
+  const alreadyExists =
+    normalized.includes('exists') || normalized.includes('already')
+
+  if ((status === 400 || status === 409) && alreadyExists) return
+
+  throw new Error(`Failed to seed ${user.email}: ${status} ${body}`)
+}
+
+test('admin flow test', async ({ page, request }) => {
   test.setTimeout(90_000)
 
   const now = new Date()
@@ -128,6 +160,9 @@ test('admin flow test', async ({ page }) => {
   const editableContent = 'Editable popup content.'
   const editedTitle = `E2E edited popup ${Date.now()}`
   const editedContent = 'Edited popup content.'
+
+  await ensureUserExists(request, DELETE_ME)
+  await ensureUserExists(request, TEACHER)
 
   // 1) Log in as admin.
   await login(page, ADMIN.email, ADMIN.password, true)
@@ -213,12 +248,49 @@ test('admin flow test', async ({ page }) => {
     visibleUntil: yesterday
   })
 
+  // 4) Seed a feedback and verify the admin feedback view.
+  const feedbackMongoClient = new MongoClient(MONGODB_URI)
+  await feedbackMongoClient.connect()
+  try {
+    const db = feedbackMongoClient.db()
+    let teacherAuthUser = null
+    for (const collName of USER_COLLECTION_CANDIDATES) {
+      teacherAuthUser = await db.collection(collName).findOne({ email: TEACHER.email })
+      if (teacherAuthUser) break
+    }
+    const teacherUserId = (teacherAuthUser as { _id?: { toString(): string } })?._id?.toString() ?? 'unknown'
+
+    await db.collection('feedbacks').insertOne({
+      userId: teacherUserId,
+      userType: 'teacher',
+      title: 'E2E feedback title',
+      category: 'bug',
+      message: 'E2E feedback message from admin flow test.',
+      createdAt: new Date(),
+      updatedAt: new Date()
+    })
+  } finally {
+    await feedbackMongoClient.close()
+  }
+
+  const feedbackResponsePromise = page.waitForResponse(response => {
+    return (
+      response.url().includes('/api/admin/feedbacks') &&
+      response.request().method() === 'GET'
+    )
+  })
+
   await page.goto('/admin')
   await page.getByRole('link', { name: 'Palautteet' }).click()
+  const feedbackResponse = await feedbackResponsePromise
+  expect(
+    feedbackResponse.ok(),
+    `GET /api/admin/feedbacks failed: HTTP ${feedbackResponse.status()}`
+  ).toBe(true)
   await expect(page).toHaveURL(/\/admin\/feedback/)
   await expect(page.getByRole('heading', { name: 'Palautteet' })).toBeVisible()
   const feedbackItem = page.locator('li').filter({ hasText: 'E2E feedback title' })
-  await expect(feedbackItem).toBeVisible()
+  await expect(feedbackItem).toBeVisible({ timeout: 15_000 })
   await expect(feedbackItem.getByText('Bugiraportti', { exact: true })).toBeVisible()
   await expect(feedbackItem.getByText('Opettaja', { exact: true })).toBeVisible()
   await expect(feedbackItem.getByText('E2E Teacher', { exact: true })).toBeVisible()

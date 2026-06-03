@@ -1,9 +1,5 @@
 import { useQuery, useMutation, useQueryClient, type UseQueryOptions, type UseMutationOptions } from '@tanstack/react-query'
-<<<<<<< HEAD
 import { adminService, type SummaryResponse, type Teacher, type Student, type GetAdminFeedbacksResponse } from '../services/admin'
-=======
-import { adminService, type SummaryResponse, type Teacher, type Student, type ImpersonateAdminRequest, type ImpersonateAdminResponse } from '../services/admin'
->>>>>>> Impersonate
 
 export const useAdminSummary = (
   options?: Omit<UseQueryOptions<SummaryResponse, Error>, 'queryKey' | 'queryFn'>
@@ -70,14 +66,5 @@ export const useDeleteAdminStudent = (
       queryClient.invalidateQueries({ queryKey: ['admin', 'summary'] })
       options?.onSuccess?.(...args)
     },
-  })
-}
-
-export const useImpersonateAdminUser = (
-  options?: UseMutationOptions<ImpersonateAdminResponse, Error, ImpersonateAdminRequest>
-) => {
-  return useMutation({
-    mutationFn: adminService.impersonateUser,
-    ...options
   })
 }

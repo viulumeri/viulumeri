@@ -159,3 +159,4 @@ shared/*.js
 e2e/playwright-report/
 e2e/test-results/
 server/src/homework.ts
+test-results/

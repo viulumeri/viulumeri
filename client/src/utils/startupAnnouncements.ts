@@ -5,6 +5,10 @@ export type StartupAnnouncement = {
   content: string
   /** ISO date string (e.g. 2026-05-26 or 2026-05-26T12:00:00Z) */
   postedAt: string
+  visibleToTeachers?: boolean
+  visibleToStudents?: boolean
+  visibleFrom?: string
+  visibleUntil?: string
 }
 
 const ENV_VAR = 'VITE_STARTUP_ANNOUNCEMENTS'
@@ -39,14 +43,14 @@ export const getStartupAnnouncementsFromEnv = (): StartupAnnouncement[] => {
   }
 }
 
-const announcementKey = (m: StartupAnnouncement): string =>
+export const getAnnouncementKey = (m: StartupAnnouncement): string =>
   m.id || `${m.postedAt}::${m.title}`
 
 export const computeAnnouncementsMarker = (
   announcements: StartupAnnouncement[]
 ): string => {
   if (announcements.length === 0) return ''
-  return announcements.map(announcementKey).sort().join('|')
+  return announcements.map(getAnnouncementKey).sort().join('|')
 }
 
 export const getAnnouncementsStorageKey = (userId: string): string =>

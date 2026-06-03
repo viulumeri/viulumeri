@@ -31,6 +31,11 @@ interface AdminPopupMessage {
   content: string
   postedAt: string
   isDraft: boolean
+  visibleToTeachers: boolean
+  visibleToStudents: boolean
+  visibleFrom?: string
+  visibleUntil?: string
+  visibilityStatus?: 'always' | 'upcoming' | 'active' | 'expired'
 }
 
 export interface ImpersonateAdminRequest {
@@ -82,6 +87,10 @@ export const adminService = {
     title: string
     content: string
     isDraft?: boolean
+    visibleToTeachers?: boolean
+    visibleToStudents?: boolean
+    visibleFrom?: string | null
+    visibleUntil?: string | null
   }): Promise<{
     message: AdminPopupMessage
   }> => {
@@ -98,6 +107,26 @@ export const adminService = {
     const response = await axios.patch(
       `/api/admin/popup-messages/${id}`,
       { isDraft },
+      { withCredentials: true }
+    )
+    return response.data
+  },
+
+  updateAdminPopupMessage: async (
+    id: string,
+    body: {
+      title: string
+      content: string
+      isDraft: boolean
+      visibleToTeachers: boolean
+      visibleToStudents: boolean
+      visibleFrom?: string | null
+      visibleUntil?: string | null
+    }
+  ): Promise<{ message: AdminPopupMessage }> => {
+    const response = await axios.patch(
+      `/api/admin/popup-messages/${id}`,
+      body,
       { withCredentials: true }
     )
     return response.data

@@ -15,6 +15,8 @@ import playedSongsRouter from './controllers/playedSongs'
 import feedbackRouter from './controllers/feedback'
 import adminRouter from './controllers/admin'
 import popupMessagesRouter from './controllers/popupMessages'
+import faqRouter from './controllers/FAQ'
+import adminFaqRouter from './controllers/adminFAQ'
 
 const app = express()
 
@@ -42,6 +44,8 @@ app.use('/api/students', studentsRouter)
 app.use('/api/played-songs', playedSongsRouter)
 app.use('/api/admin', adminRouter)
 app.use('/api/feedback', feedbackRouter)
+app.use('/api/faq', faqRouter)
+app.use('/api/admin/faq', adminFaqRouter)
 
 app.get('/ping', (_req, res) => {
   res.send('pong')
@@ -50,7 +54,7 @@ app.get('/ping', (_req, res) => {
 const clientBuildPath = path.join(__dirname, '../../client/dist')
 app.use(express.static(clientBuildPath))
 
-app.use((req, res, _next) => {
+app.use((req, res) => {
   if (req.originalUrl.startsWith('/api')) {
     res.status(404).json({ message: 'Unknown endpoint!' })
     return

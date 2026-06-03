@@ -1,3 +1,5 @@
+import type { Test } from 'supertest'
+import type TestAgent from 'supertest/lib/agent'
 import { MongoClient } from 'mongodb'
 import mongoose from 'mongoose'
 import { databaseUrl } from './config'
@@ -45,13 +47,13 @@ export class TestHelper {
     // Also close the global Better Auth database client
     try {
       await client.close()
-    } catch (error) {
+    } catch {
       // Client might already be closed, ignore the error
     }
   }
 
   static async signUpUser(
-    api: any,
+    api: TestAgent<Test>,
     userData: {
       email: string
       name: string
@@ -84,7 +86,7 @@ export class TestHelper {
       .updateOne({ email }, { $set: { emailVerified: true } })
   }
 
-  static async signInUser(api: any, email: string, password: string) {
+  static async signInUser(api: TestAgent<Test>, email: string, password: string) {
     const response = await api
       .post('/api/auth/sign-in/email')
       .send({ email, password })
@@ -98,7 +100,7 @@ export class TestHelper {
     return response
   }
 
-  static extractSessionCookie(signInResponse: any): string {
+  static extractSessionCookie(signInResponse: { headers: Record<string, string | string[]> }): string {
     const setCookieHeader = signInResponse.headers['set-cookie']
     const sessionCookie = Array.isArray(setCookieHeader)
       ? setCookieHeader.find((cookie: string) =>
@@ -116,7 +118,7 @@ export class TestHelper {
   }
 
   static async createAuthenticatedStudent(
-    api: any,
+    api: TestAgent<Test>,
     email?: string,
     name?: string
   ) {
@@ -140,7 +142,7 @@ export class TestHelper {
   }
 
   static async createAuthenticatedTeacher(
-    api: any,
+    api: TestAgent<Test>,
     email?: string,
     name?: string
   ) {
@@ -164,7 +166,7 @@ export class TestHelper {
   }
 
   static async createAuthenticatedAdmin(
-    api: any,
+    api: TestAgent<Test>,
     email?: string,
     name?: string
   ) {
@@ -197,11 +199,11 @@ export class TestHelper {
   }
 
   static async makeAuthenticatedRequest(
-    api: any,
+    api: TestAgent<Test>,
     method: 'get' | 'post' | 'put' | 'delete',
     url: string,
     userType: 'student' | 'teacher',
-    data?: any
+    data?: Record<string, unknown>
   ) {
     const authResult =
       userType === 'student'

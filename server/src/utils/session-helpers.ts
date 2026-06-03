@@ -1,8 +1,9 @@
 import type { Response } from 'express'
+import Teacher from '../models/teacher'
 import Student from '../models/student'
 import Homework from '../models/homework'
 
-export const validateStudentProfile = async (session: any, response: Response) => {
+export const validateStudentProfile = async (session: { user: { id: string } }, response: Response) => {
   const student = await Student.findOne({ userId: session.user.id })
   if (!student) {
     response.status(404).json({ error: 'Student profile not found' })
@@ -12,7 +13,7 @@ export const validateStudentProfile = async (session: any, response: Response) =
 }
 
 export const validateTeacherStudentRelationship = async (
-  teacher: any,
+  teacher: InstanceType<typeof Teacher>,
   studentId: string,
   response: Response
 ) => {
@@ -29,7 +30,7 @@ export const validateTeacherStudentRelationship = async (
 }
 
 export const validateHomeworkOwnershipByTeacher = async (
-  teacher: any,
+  teacher: InstanceType<typeof Teacher>,
   homeworkId: string,
   response: Response
 ) => {
@@ -46,7 +47,7 @@ export const validateHomeworkOwnershipByTeacher = async (
 }
 
 export const validateHomeworkOwnershipByStudent = async (
-  student: any,
+  student: InstanceType<typeof Student>,
   homeworkId: string,
   response: Response
 ) => {

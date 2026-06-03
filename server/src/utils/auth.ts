@@ -23,7 +23,7 @@ client
   })
 
 export const auth = betterAuth({
-  database: mongodbAdapter(client.db() as any),
+  database: mongodbAdapter(client.db()),
   plugins:[
     admin()
   ],
@@ -44,14 +44,14 @@ ${url}
 Jos et pyytänyt salasanan palautusta, voit jättää tämän viestin huomioimatta.`
             })
           }
-        : async ({ user }: { user: any }) => {
+        : async ({ user }: { user: { id?: string; email?: string } }) => {
             // Test/E2E: enable the flow without sending email.
             logger.info('Password reset requested (test/E2E)', {
               userId: user?.id,
               email: user?.email
             })
           },
-    onPasswordReset: async ({ user }: { user: any }) => {
+    onPasswordReset: async ({ user }: { user: { id: string; email: string } }) => {
       logger.info('Password reset completed', { userId: user.id, email: user.email })
     }
   },
@@ -150,7 +150,7 @@ Jos et rekisteröitynyt Viulumeri-palveluun, voit jättää tämän viestin huom
       logger.info('Verification email sent successfully', { userId: user.id, email: user.email })
     }
       : undefined,
-    async afterEmailVerification(user: any, request: any) {
+    async afterEmailVerification(user: { id: string; email: string; emailVerified: boolean }, request: { url?: string; headers?: unknown } | undefined) {
   logger.info('Email verification completed successfully', {
     userId: user.id,
     email: user.email,
@@ -163,7 +163,8 @@ Jos et rekisteröitynyt Viulumeri-palveluun, voit jättää tämän viestin huom
   databaseHooks: {
     user: {
       create: {
-        after: async (user: any) => {
+        after: async (rawUser) => {
+          const user = rawUser as typeof rawUser & { userType: 'teacher' | 'student' | 'admin' }
           try {
             if (user.userType === 'teacher') {
               const newTeacher = new Teacher({

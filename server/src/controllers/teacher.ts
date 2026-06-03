@@ -1,4 +1,3 @@
-/// <reference path="../types/express.d.ts" />
 import { Router } from 'express'
 import { requireStudent, loadStudentProfile } from '../utils/auth-middleware'
 import Teacher from '../models/teacher'
@@ -18,10 +17,11 @@ teacherRouter.get('/', async (request, response) => {
     return response.json({ teacher: null })
   }
 
+  const populatedTeacher = student.teacher as unknown as { id: string; name: string }
   response.json({
     teacher: {
-      id: (student.teacher as any).id,
-      name: (student.teacher as any).name
+      id: populatedTeacher.id,
+      name: populatedTeacher.name
     }
   })
 })
@@ -35,13 +35,13 @@ teacherRouter.delete('/', async (request, response) => {
     const teacher = await Teacher.findById(student.teacher)
     if (teacher) {
       teacher.students = teacher.students.filter(
-        (studentId: any) => studentId.toString() !== student.id
+        studentId => studentId.toString() !== student.id
       )
       await teacher.save()
     }
   }
 
-  student.teacher = null as any
+  student.teacher = null
   await student.save()
 
   response.status(204).send()

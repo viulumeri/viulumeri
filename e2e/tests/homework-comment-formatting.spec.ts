@@ -73,11 +73,11 @@ async function loginAs(
   expectedUrlPattern: RegExp
 ) {
   await page.goto('/login')
-  await markStartupAnnouncementsAsSeen(page, credentials.email)
   await page.getByPlaceholder('Sähköpostiosoite').fill(credentials.email)
   await page.getByPlaceholder('Salasana').fill(credentials.password)
   await page.getByRole('button', { name: /kirjaudu sisään/i }).click()
   await page.waitForURL(expectedUrlPattern)
+  await markStartupAnnouncementsAsSeen(page, credentials.email)
 }
 
 test.describe('Homework comment formatting', () => {

@@ -96,3 +96,18 @@ export interface SubmitFeedbackBody {
 export interface SubmitFeedbackResponse {
   ok: boolean
 }
+
+export interface AdminFeedbackItem {
+  id: string
+  title: string
+  category: FeedbackCategory
+  message: string
+  senderName: string
+  senderEmail: string
+  userType: 'teacher' | 'student'
+  createdAt: string
+}
+
+export interface GetAdminFeedbacksResponse {
+  feedbacks: AdminFeedbackItem[]
+}

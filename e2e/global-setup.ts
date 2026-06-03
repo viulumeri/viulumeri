@@ -78,21 +78,31 @@ export default async function globalSetup() {
       const targetCollection =
         (await findUserCollection(db, user.email)) || 'user'
 
+      const updateData: Record<string, unknown> = { emailVerified: true }
+      if (user.userType === 'admin') {
+        updateData.role = 'admin'
+      }
+
       await db.collection(targetCollection).updateOne(
         { email: user.email },
-        { $set: { emailVerified: true } }
+        { $set: updateData }
       )
     }
 
-    const adminCollection =
-      (await findUserCollection(db, 'e2e-admin@example.com')) || 'user'
+    // Ensure admin role is set (in case user was already created)
+    const adminUser = SEED_USERS.find(u => u.userType === 'admin')
+    if (adminUser) {
+      const adminCollection =
+        (await findUserCollection(db, adminUser.email)) || 'user'
 
-    await db.collection(adminCollection).updateOne(
-      { email: 'e2e-admin@example.com' },
-      { $set: { role: 'admin' } }
-    )
+      await db.collection(adminCollection).updateOne(
+        { email: adminUser.email },
+        { $set: { role: 'admin' } }
+      )
+    }
 
     await db.collection('popupmessages').deleteMany({})
+    await db.collection('faqs').deleteMany({})
   } finally {
     await mongoClient.close()
     await context.dispose()

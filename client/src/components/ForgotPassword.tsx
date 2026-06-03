@@ -1,10 +1,11 @@
 import { useField } from '../hooks/useField'
 import { useRequestPasswordReset } from '../hooks/useAuth'
-import { Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { useNotification } from '../hooks/useNotification'
 
 export const ForgotPassword = () => {
   const email = useField('email')
+  const navigate = useNavigate()
   const { showError, showSuccess } = useNotification()
 
   const requestReset = useRequestPasswordReset({
@@ -31,7 +32,7 @@ export const ForgotPassword = () => {
 
   return (
     <div>
-      <h2 className="mb-4">Unohdin salasanani</h2>
+      <h2 className="mx-auto w-fit mb-4">Unohdin salasanani</h2>
 
       <form onSubmit={handleSubmit} className="space-y-5">
         <div>
@@ -48,16 +49,19 @@ export const ForgotPassword = () => {
         <button
           type="submit"
           disabled={requestReset.isPending}
-          className="button-basic block mx-auto"
+          className="button-basic active:bg-gray-300 block mx-auto"
         >
           {requestReset.isPending ? 'Lähetetään…' : 'Lähetä palautuslinkki'}
         </button>
       </form>
 
-      <div className="mt-4 flex justify-center">
-        <Link to="/login" className=" text-gray-300 hover:text-white underline">
-          Takaisin kirjautumiseen
-        </Link>
+      <div>
+        <button type="button"
+          onClick={() => navigate('/login')}
+          className="back-button-basic active:bg-white/10 block mx-auto mt-4"
+        >
+          Takaisin
+        </button>
       </div>
     </div>
   )

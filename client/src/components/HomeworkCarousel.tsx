@@ -90,6 +90,7 @@ export const HomeworkCarousel = ({
         {mode === 'teacher' && studentId && (
           <FloatingActionButton
             to={`/teacher/students/${studentId}/homework/create`}
+            state={location.state}
           />
         )}
       </div>
@@ -127,6 +128,7 @@ export const HomeworkCarousel = ({
         {mode === 'teacher' && studentId && (
           <FloatingActionButton
             to={`/teacher/students/${studentId}/homework/create`}
+            state={location.state}
           />
         )}
       </div>

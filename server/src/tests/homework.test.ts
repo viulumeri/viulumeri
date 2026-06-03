@@ -526,7 +526,7 @@ describe('Homework API PUT /:homeworkId', () => {
       'Teacher One'
     )
 
-    const { user: teacher2User, sessionCookie } = await TestHelper.createAuthenticatedTeacher(
+    const { sessionCookie } = await TestHelper.createAuthenticatedTeacher(
       api,
       'teacher2@edu.hel.fi',
       'Teacher Two'
@@ -539,7 +539,6 @@ describe('Homework API PUT /:homeworkId', () => {
     )
 
     const teacher1 = await Teacher.findOne({ userId: teacher1User.id })
-    const teacher2 = await Teacher.findOne({ userId: teacher2User.id })
     const student = await Student.findOne({ userId: studentUser.id })
 
     // Link student to teacher1
@@ -792,7 +791,7 @@ describe('Homework API DELETE /:homeworkId', () => {
       'Teacher One Delete'
     )
 
-    const { user: teacher2User, sessionCookie } = await TestHelper.createAuthenticatedTeacher(
+    const { sessionCookie } = await TestHelper.createAuthenticatedTeacher(
       api,
       'teacher2.delete@edu.hel.fi',
       'Teacher Two Delete'
@@ -805,7 +804,6 @@ describe('Homework API DELETE /:homeworkId', () => {
     )
 
     const teacher1 = await Teacher.findOne({ userId: teacher1User.id })
-    const teacher2 = await Teacher.findOne({ userId: teacher2User.id })
     const student = await Student.findOne({ userId: studentUser.id })
 
     // Link student to teacher1

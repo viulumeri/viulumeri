@@ -111,9 +111,9 @@ describe('Students API GET', () => {
     assert.strictEqual(response.body.students.length, 2)
 
     const returnedStudents = response.body.students
-    assert(returnedStudents.every((s: any) => s.id && s.name))
-    assert(returnedStudents.some((s: any) => s.name === 'Student One'))
-    assert(returnedStudents.some((s: any) => s.name === 'Student Two'))
+    assert(returnedStudents.every((s: { id: string; name: string }) => s.id && s.name))
+    assert(returnedStudents.some((s: { name: string }) => s.name === 'Student One'))
+    assert(returnedStudents.some((s: { name: string }) => s.name === 'Student Two'))
   })
 })
 
@@ -255,7 +255,7 @@ describe('Students API GET /:studentId/homework', () => {
     const homeworkList = response.body.homework
     assert(
       homeworkList.every(
-        (h: any) => h.id && h.songs && typeof h.comment === 'string'
+        (h: { id: string; songs: string[]; comment: string }) => h.id && h.songs && typeof h.comment === 'string'
       )
     )
     // Check that order is right:
@@ -938,5 +938,93 @@ describe('Students API DELETE /:studentId', () => {
       updatedStudent2!.teacher?.toString(),
       teacher!.id.toString()
     )
+  })
+})
+
+describe('Students API GET / (Practice Count Integration)', () => {
+  it('should return 200 with latestHomework as null if student has never received homework', async () => {
+    const { user: teacherUser, sessionCookie } =
+      await TestHelper.createAuthenticatedTeacher(
+        api,
+        'teacher.dots1@edu.hel.fi',
+        'Teacher Dots One'
+      )
+
+    const { user: studentUser } = await TestHelper.createAuthenticatedStudent(
+      api,
+      'student.dots1@edu.hel.fi',
+      'Student Dots One'
+    )
+
+    const teacher = await Teacher.findOne({ userId: teacherUser.id })
+    const student = await Student.findOne({ userId: studentUser.id })
+
+    student!.teacher = teacher!.id
+    await student!.save()
+    teacher!.students.push(student!.id)
+    await teacher!.save()
+
+    const response = await api.get(url).set('Cookie', sessionCookie)
+
+    assert.strictEqual(response.status, 200)
+    assert(Array.isArray(response.body.students))
+    assert.strictEqual(response.body.students.length, 1)
+    
+    const targetStudent = response.body.students[0]
+    assert.strictEqual(targetStudent.id, student!.id)
+    assert.strictEqual(targetStudent.name, 'Student Dots One')
+    assert.strictEqual(targetStudent.latestHomework, null)
+  })
+
+  it('should correctly include the practiceCount of only the absolute latest homework assignment', async () => {
+    const { user: teacherUser, sessionCookie } =
+      await TestHelper.createAuthenticatedTeacher(
+        api,
+        'teacher.dots2@edu.hel.fi',
+        'Teacher Dots Two'
+      )
+
+    const { user: studentUser } = await TestHelper.createAuthenticatedStudent(
+      api,
+      'student.dots2@edu.hel.fi',
+      'Student Dots Two'
+    )
+
+    const teacher = await Teacher.findOne({ userId: teacherUser.id })
+    const student = await Student.findOne({ userId: studentUser.id })
+
+    student!.teacher = teacher!.id
+    await student!.save()
+    teacher!.students.push(student!.id)
+    await teacher!.save()
+
+    await Homework.create({
+      teacher: teacher!.id,
+      student: student!.id,
+      songs: ['old-song'],
+      comment: 'Older homework',
+      practiceCount: 5,
+      createdAt: new Date(Date.now() - 10000)
+    })
+
+    await Homework.create({
+      teacher: teacher!.id,
+      student: student!.id,
+      songs: ['new-song'],
+      comment: 'Latest homework',
+      practiceCount: 3,
+      createdAt: new Date()
+    })
+
+    const response = await api.get(url).set('Cookie', sessionCookie)
+
+    assert.strictEqual(response.status, 200)
+    assert(Array.isArray(response.body.students))
+    
+    const targetStudent = response.body.students[0]
+    assert.strictEqual(targetStudent.id, student!.id)
+
+    assert(targetStudent.latestHomework)
+    assert.strictEqual(targetStudent.latestHomework.practiceCount, 3)
   })
 })

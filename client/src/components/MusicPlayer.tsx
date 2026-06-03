@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+import { useCallback, useState, useRef, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import * as Tone from 'tone'
 import { useSongById } from '../hooks/useSongs'
@@ -38,14 +38,20 @@ export const MusicPlayer = () => {
   const audioTracksRef = useRef<AudioTracks | null>(null)
   const [hasSlowTrack, setHasSlowTrack] = useState(false)
 
-  const loadSongTracks = async () => {
+const cleanupTransport = useCallback(() => {
+  Tone.Transport.cancel()
+  Tone.Transport.stop()
+  Tone.Transport.position = 0
+}, [])
+
+const loadSongTracks = useCallback(async () => {
   if (!songId || tracksLoaded) return
 
   try {
     setIsLoading(true)
     setAudioError(null)
 
-    let tracks = isPracticeTempo
+    const tracks = isPracticeTempo
       ? await fetchSlowSongTracks(songId)
       : await fetchSongTracks(songId)
 
@@ -53,7 +59,6 @@ export const MusicPlayer = () => {
       console.warn('Slow tempo bundle not found, falling back to normal tempo.')
       setHasSlowTrack(false)
       setIsPracticeTempo(false)
-      setIsLoading(false)
       return
     }
 
@@ -74,32 +79,20 @@ export const MusicPlayer = () => {
 
     playersRef.current = new Tone.Players(playerUrls).toDestination()
 
-    const loadPromises: Promise<void>[] = []
+    const loadPromises: Promise<unknown>[] = []
 
     if (tracks.melody) {
-      loadPromises.push(
-        new Promise(resolve => {
-          const melodyPlayer = playersRef.current!.player('melody')
-          if (melodyPlayer.loaded) {
-            resolve()
-          } else {
-            melodyPlayer.load(tracks.melody!).then(() => resolve())
-          }
-        })
-      )
+      const melodyPlayer = playersRef.current.player('melody')
+      if (!melodyPlayer.loaded) {
+        loadPromises.push(melodyPlayer.load(tracks.melody))
+      }
     }
 
     if (tracks.backing) {
-      loadPromises.push(
-        new Promise(resolve => {
-          const backingPlayer = playersRef.current!.player('backing')
-          if (backingPlayer.loaded) {
-            resolve()
-          } else {
-            backingPlayer.load(tracks.backing!).then(() => resolve())
-          }
-        })
-      )
+      const backingPlayer = playersRef.current.player('backing')
+      if (!backingPlayer.loaded) {
+        loadPromises.push(backingPlayer.load(tracks.backing))
+      }
     }
 
     await Promise.all(loadPromises)
@@ -107,30 +100,30 @@ export const MusicPlayer = () => {
     if (tracks.melody) {
       playersRef.current.player('melody').sync().start(0)
     }
-    if (tracks.backing) {
-      playersRef.current.player('backing').sync().start(0)
-    }
 
     if (tracks.backing) {
+      playersRef.current.player('backing').sync().start(0)
+
       const backingDuration =
         playersRef.current.player('backing').buffer.duration
+
       Tone.Transport.loopStart = 0
       Tone.Transport.loopEnd = backingDuration
       setDuration(backingDuration)
     }
 
     setTracksLoaded(true)
-    setIsLoading(false)
   } catch (err) {
     console.error('Error loading tracks:', err)
     setAudioError(
       err instanceof Error ? err.message : 'Raitojen lataus epäonnistui'
     )
+  } finally {
     setIsLoading(false)
   }
-  }
+}, [songId, tracksLoaded, isPracticeTempo, cleanupTransport])
 
-  const startPlayback = async () => {
+const startPlayback = async () => {
     if (!playersRef.current || !tracksLoaded) return
 
     try {
@@ -163,12 +156,6 @@ export const MusicPlayer = () => {
         URL.revokeObjectURL(audioTracksRef.current.backing)
       audioTracksRef.current = null
     }
-  }
-
-  const cleanupTransport = () => {
-    Tone.Transport.cancel()
-    Tone.Transport.stop()
-    Tone.Transport.position = 0
   }
 
   const pausePlayback = () => {
@@ -245,7 +232,7 @@ export const MusicPlayer = () => {
 
   useEffect(() => {
     loadSongTracks()
-  }, [songId, isPracticeTempo])
+  }, [loadSongTracks])
 
   useEffect(() => {
     if (!isPlaying || !audioTracksRef.current?.backing || !playersRef.current)
@@ -276,7 +263,16 @@ export const MusicPlayer = () => {
       cleanupTransport()
       cleanupAudioUrls()
     }
-  }, [])
+  }, [cleanupTransport])
+
+  useEffect(() => {
+    if (!song?.title) return
+
+    const shouldLoop = song.title.toLowerCase().includes('impro')
+    
+    setIsLooping(shouldLoop)
+    Tone.Transport.loop = shouldLoop
+  }, [song?.title])
 
   if (!songId) {
     return <div>Ei kappaletta</div>
@@ -400,17 +396,17 @@ export const MusicPlayer = () => {
             </div>
 
             <div className="w-16 flex items-center justify-end">
-              <button 
+              <button
                 onClick={togglePracticeTempo}
                 disabled={!hasSlowTrack}
                 title={!hasSlowTrack ? 'Hidasta versiota ei ole saatavilla tästä kappaleesta' : ''}
               >
                 <Snail
                   className={`w-5 h-5 ${
-                    !hasSlowTrack 
+                    !hasSlowTrack
                       ? 'text-gray-600 cursor-not-allowed'
-                      : isPracticeTempo 
-                        ? 'text-yellow-400' 
+                      : isPracticeTempo
+                        ? 'text-yellow-400'
                         : 'text-white'
                   }`}
                 />

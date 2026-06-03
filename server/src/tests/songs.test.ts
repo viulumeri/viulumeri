@@ -50,8 +50,8 @@ describe('Songs API GET /', () => {
     assert(Array.isArray(response.body))
     assert.strictEqual(response.body.length, 2)
 
-    const song1 = response.body.find((s: any) => s.id === 'valid-song-1')
-    const song2 = response.body.find((s: any) => s.id === 'valid-song-2')
+    const song1 = response.body.find((s: { id: string }) => s.id === 'valid-song-1')
+    const song2 = response.body.find((s: { id: string }) => s.id === 'valid-song-2')
 
     assert(song1)
     assert.strictEqual(song1.title, 'Tästä se alkaa')

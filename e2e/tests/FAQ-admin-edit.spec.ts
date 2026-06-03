@@ -1,11 +1,23 @@
 
-import { test, expect } from '@playwright/test'
+import { test, expect, type Page } from '@playwright/test'
 import { SEED_USERS } from '../global-setup'
 import { markStartupAnnouncementsAsSeen } from './announcement-state'
 
 const ADMIN = SEED_USERS.find(user => user.userType === 'admin')
 if (!ADMIN) {
   throw new Error('No seeded admin user found in SEED_USERS')
+}
+
+const closeNotificationsIfOpen = async (page: Page) => {
+  const dialog = page.getByRole('dialog', { name: 'Ilmoitukset' })
+  const okButton = dialog.getByRole('button', { name: 'OK' })
+
+  try {
+    await expect(dialog).toBeVisible({ timeout: 3000 })
+    await okButton.click()
+    await expect(dialog).toBeHidden()
+  } catch {
+  }
 }
 
 // Admin voi lisätä uuden kysymyksen
@@ -71,7 +83,11 @@ await expect(page.getByText(`Lisätty: ${formattedDate}`)).toBeVisible()
 
 //Mennään sivulle Asetukset.
 await page.goto('/settings')
-await page.getByText('Usein kysytyt kysymykset').click()
+await closeNotificationsIfOpen(page)
+
+await page.getByRole('button', {
+  name: /Usein kysytyt kysymykset/
+}).click()
 
 //Tarkistetaan kysymys ja vastaus Asetuksissa.
 await expect(page.getByText(question)).toBeVisible()
@@ -138,9 +154,10 @@ await expect(page.getByText(question)).not.toBeVisible()
 
 // Mennään sivulle Asetukset.
 await page.goto('/settings')
+await closeNotificationsIfOpen(page)
 
 await page.getByRole('button', {
-  name: 'Usein kysytyt kysymykset'
+  name: /Usein kysytyt kysymykset/
 }).click()
 
 // Varmistetaan ettei kysymys näy enää käyttäjälle
@@ -217,6 +234,8 @@ await expect(
 await page.getByRole('button', { name: 'Tallenna', exact: true }).click()
 
 await page.reload()
+await closeNotificationsIfOpen(page)
+
 
 await page.getByRole('button', {
   name: 'Selaa ja muokkaa kysymyksiä'
@@ -250,9 +269,9 @@ await expect(
 
 // Mennään Asetukset-sivulle
 await page.goto('/settings')
-
+await closeNotificationsIfOpen(page)
 await page.getByRole('button', {
-  name: 'Usein kysytyt kysymykset'
+  name: /Usein kysytyt kysymykset/
 }).click()
 
 // Tarkistetaan että muutos näkyy käyttäjän FAQ:ssa

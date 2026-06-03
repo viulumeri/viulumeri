@@ -15,8 +15,8 @@ import playedSongsRouter from './controllers/playedSongs'
 import feedbackRouter from './controllers/feedback'
 import adminRouter from './controllers/admin'
 import popupMessagesRouter from './controllers/popupMessages'
-import faqRouter from './controllers/faq'
-import adminFaqRouter from './controllers/adminFaq'
+import faqRouter from './controllers/FAQ'
+import adminFaqRouter from './controllers/adminFAQ'
 
 const app = express()
 

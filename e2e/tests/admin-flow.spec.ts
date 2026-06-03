@@ -161,7 +161,7 @@ test('admin can delete user, create popup, and user sees popup', async ({ page }
   }
 
   await page.goto('/admin')
-  await page.getByRole('link', { name: 'Palauteet' }).click()
+  await page.getByRole('link', { name: 'Palautteet' }).click()
   await expect(page).toHaveURL(/\/admin\/feedback/)
   await expect(page.getByRole('heading', { name: 'Palautteet' })).toBeVisible()
   const feedbackItem = page.locator('li').filter({ hasText: 'E2E feedback title' })

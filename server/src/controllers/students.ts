@@ -2,6 +2,15 @@ import { Router } from 'express'
 import { requireTeacher, loadTeacherProfile } from '../utils/auth-middleware'
 import { validateTeacherStudentRelationship } from '../utils/session-helpers'
 import Homework from '../models/homework'
+import { Types } from 'mongoose'
+
+import type {} from '../types/express.d.ts'
+
+interface PopulatedStudent {
+  id: string
+  _id: Types.ObjectId
+  name: string
+}
 
 const studentsRouter = Router()
 
@@ -11,12 +20,40 @@ studentsRouter.get('/', async (request, response) => {
   const teacher = request.teacherProfile!
 
   await teacher.populate('students', 'name')
+  const populatedStudents = teacher.students as unknown as PopulatedStudent[]
 
-  type PopulatedStudent = { id: string; name: string }
-  const students = (teacher.students as unknown as PopulatedStudent[]).map(s => ({
-    id: s.id,
-    name: s.name
-  }))
+  const studentIds = populatedStudents.map(s => s._id)
+
+  const latestHomeworks = await Homework.aggregate([
+    { 
+      $match: { student: { $in: studentIds } } 
+    },
+    { 
+      $sort: { createdAt: -1 } 
+    },
+    {
+      $group: {
+        _id: '$student',
+        practiceCount: { $first: '$practiceCount' }
+      }
+    }
+  ])
+
+  const homeworkMap = new Map<string, number>(
+    latestHomeworks.map(h => [h._id.toString(), h.practiceCount])
+  )
+
+  const students = populatedStudents.map(s => {
+    const practiceCount = homeworkMap.get(s.id)
+
+    return {
+      id: s.id,
+      name: s.name,
+      latestHomework: practiceCount !== undefined 
+        ? { practiceCount } 
+        : null
+    }
+  })
 
   response.json({ students })
 })
@@ -34,7 +71,7 @@ studentsRouter.delete('/:studentId', async (request, response) => {
 
   // Remove student from teacher's student list
   teacher.students = teacher.students.filter(
-    studentId => studentId.toString() !== student.id
+    (studentId) => studentId.toString() !== student.id
   )
   await teacher.save()
 

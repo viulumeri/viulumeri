@@ -130,11 +130,9 @@ export const HomeworkCreatePage = () => {
           headingLabel="Tehtävä"
           editableSongs
           onRemoveSong={id => {
-            setSongIds(prev => {
-              const next = prev.filter(x => x !== id)
-              syncDraftState(comment, next)
-              return next
-            })
+            const next = songIds.filter(x => x !== id)
+            setSongIds(next)
+            syncDraftState(comment, next)
           }}
           editableComment
           commentDraft={comment}

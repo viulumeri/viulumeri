@@ -78,12 +78,10 @@ export const HomeworkEditPage = () => {
   })
 
   const removeSong = (id: string) => {
-    setSongIds(prev => {
-      const base = prev ?? editing?.songs ?? []
+      const base = currentSongIds
       const next = base.filter(sid => sid !== id)
+      setSongIds(next)
       syncDraftState(comment, next)
-      return next
-    })
   }
 
   const handleSave = () => {

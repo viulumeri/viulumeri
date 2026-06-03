@@ -265,6 +265,15 @@ const startPlayback = async () => {
     }
   }, [cleanupTransport])
 
+  useEffect(() => {
+    if (!song?.title) return
+
+    const shouldLoop = song.title.toLowerCase().includes('impro')
+    
+    setIsLooping(shouldLoop)
+    Tone.Transport.loop = shouldLoop
+  }, [song?.title])
+
   if (!songId) {
     return <div>Ei kappaletta</div>
   }

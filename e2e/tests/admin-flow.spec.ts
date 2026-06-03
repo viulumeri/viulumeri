@@ -133,7 +133,7 @@ async function ensureUserExists(
   const alreadyExists =
     normalized.includes('exists') || normalized.includes('already')
 
-  if ((status === 400 || status === 409) && alreadyExists) return
+  if ((status === 400 || status === 409 || status === 422) && alreadyExists) return
 
   throw new Error(`Failed to seed ${user.email}: ${status} ${body}`)
 }
@@ -146,26 +146,40 @@ test('admin flow test', async ({ page, request }) => {
   const tomorrow = toDateInputValue(addDays(now, 1))
   const nextWeek = toDateInputValue(addDays(now, 7))
 
-  const draftPopupTitle = `E2E draft popup ${Date.now()}`
+  const runId = Date.now()
+  const draftPopupTitle = `E2E draft popup ${runId}`
   const draftPopupContent = 'Draft popup should never reach end users.'
-  const teacherOnlyTitle = `E2E teacher-only ${Date.now()}`
+  const teacherOnlyTitle = `E2E teacher-only ${runId}`
   const teacherOnlyContent = 'Only teachers should see this.'
-  const expiredTitle = `E2E expired ${Date.now()}`
+  const expiredTitle = `E2E expired ${runId}`
   const expiredContent = 'Expired popup should not be visible.'
-  const upcomingTitle = `E2E upcoming ${Date.now()}`
+  const upcomingTitle = `E2E upcoming ${runId}`
   const upcomingContent = 'Upcoming popup should not be visible yet.'
-  const timedTitle = `E2E timed active ${Date.now()}`
+  const timedTitle = `E2E timed active ${runId}`
   const timedContent = 'Timed popup should be visible right now.'
-  const editableTitle = `E2E editable popup ${Date.now()}`
+  const editableTitle = `E2E editable popup ${runId}`
   const editableContent = 'Editable popup content.'
-  const editedTitle = `E2E edited popup ${Date.now()}`
+  const editedTitle = `E2E edited popup ${runId}`
   const editedContent = 'Edited popup content.'
+  const feedbackTitle = `E2E feedback title ${runId}`
 
   await ensureUserExists(request, DELETE_ME)
   await ensureUserExists(request, TEACHER)
 
-  // 1) Log in as admin.
-  await login(page, ADMIN.email, ADMIN.password, true)
+  const cleanup = async () => {
+    const mongoClient = new MongoClient(MONGODB_URI)
+    await mongoClient.connect()
+    try {
+      await mongoClient.db().collection('popupmessages').deleteMany({})
+      await mongoClient.db().collection('feedbacks').deleteMany({})
+    } finally {
+      await mongoClient.close()
+    }
+  }
+
+  try {
+    // 1) Log in as admin.
+    await login(page, ADMIN.email, ADMIN.password, true)
 
   // 2) Search the test user from AdminPanel and delete them.
   await page.goto('/admin')
@@ -241,37 +255,108 @@ test('admin flow test', async ({ page, request }) => {
     visibleToStudents: false
   })
 
-  await createPopupMessage(page, {
-    title: expiredTitle,
-    content: expiredContent,
-    visibleFrom: yesterday,
-    visibleUntil: yesterday
-  })
-
-  // 4) Seed a feedback and verify the admin feedback view.
-  const feedbackMongoClient = new MongoClient(MONGODB_URI)
-  await feedbackMongoClient.connect()
-  try {
-    const db = feedbackMongoClient.db()
-    let teacherAuthUser = null
-    for (const collName of USER_COLLECTION_CANDIDATES) {
-      teacherAuthUser = await db.collection(collName).findOne({ email: TEACHER.email })
-      if (teacherAuthUser) break
-    }
-    const teacherUserId = (teacherAuthUser as { _id?: { toString(): string } })?._id?.toString() ?? 'unknown'
-
-    await db.collection('feedbacks').insertOne({
-      userId: teacherUserId,
-      userType: 'teacher',
-      title: 'E2E feedback title',
-      category: 'bug',
-      message: 'E2E feedback message from admin flow test.',
-      createdAt: new Date(),
-      updatedAt: new Date()
+    await createPopupMessage(page, {
+      title: expiredTitle,
+      content: expiredContent,
+      visibleFrom: yesterday,
+      visibleUntil: yesterday
     })
-  } finally {
-    await feedbackMongoClient.close()
-  }
+
+    await createPopupMessage(page, {
+      title: upcomingTitle,
+      content: upcomingContent,
+      visibleFrom: tomorrow,
+      visibleUntil: nextWeek
+    })
+
+    await createPopupMessage(page, {
+      title: timedTitle,
+      content: timedContent,
+      visibleFrom: yesterday,
+      visibleUntil: tomorrow
+    })
+
+    await createPopupMessage(page, {
+      title: editableTitle,
+      content: editableContent,
+      visibleFrom: yesterday,
+      visibleUntil: tomorrow
+    })
+
+    // 4) Edit popup title, content, and dates.
+    await page.goto('/admin/popup')
+    const editableCard = page
+      .locator('div.rounded-md')
+      .filter({ hasText: editableTitle })
+      .first()
+
+    await editableCard.getByRole('button', { name: 'Muokkaa' }).click()
+
+    const editTitleInput = page.locator(`input[value="${editableTitle}"]`)
+    const editContentInput = page.locator('textarea', { hasText: editableContent })
+    const editFromInput = page.locator('input[id^="edit-popup-visible-from-"]')
+    const editUntilInput = page.locator('input[id^="edit-popup-visible-until-"]')
+
+    await expect(editTitleInput).toBeVisible()
+    await editTitleInput.fill(editedTitle)
+    await editContentInput.fill(editedContent)
+    await editFromInput.fill(tomorrow)
+    await editUntilInput.fill(nextWeek)
+    await page.getByRole('button', { name: 'Tallenna' }).click()
+
+    await expect(page.getByText('Pop-up päivitetty')).toBeVisible({ timeout: 15_000 })
+
+    const editedCard = page
+      .locator('div.rounded-md')
+      .filter({ hasText: editedTitle })
+      .first()
+    await expect(editedCard.getByText(editedContent)).toBeVisible()
+
+    await editedCard.getByRole('button', { name: 'Muokkaa' }).click()
+    await expect(page.locator(`input[value="${editedTitle}"]`)).toBeVisible()
+    await expect(page.locator('textarea', { hasText: editedContent })).toBeVisible()
+    await expect(page.locator(`input[id^="edit-popup-visible-from-"][value="${tomorrow}"]`)).toBeVisible()
+    await expect(page.locator(`input[id^="edit-popup-visible-until-"][value="${nextWeek}"]`)).toBeVisible()
+    await page.getByRole('button', { name: 'Peruuta' }).click()
+
+    // 5) Toggle draft status and publish again.
+    await editedCard.getByRole('button', { name: 'Aseta luonnokseksi' }).click()
+    await expect(page.getByText('Pop-up asetettu luonnokseksi')).toBeVisible({ timeout: 15_000 })
+
+    const draftCard = page
+      .locator('div.rounded-md')
+      .filter({ hasText: editedTitle })
+      .first()
+    await expect(draftCard.getByText('Luonnos', { exact: true })).toBeVisible()
+
+    await draftCard.getByRole('button', { name: 'Julkaise' }).click()
+    await expect(page.getByText('Luonnos julkaistu')).toBeVisible({ timeout: 15_000 })
+    await markStartupAnnouncementsAsSeen(page, ADMIN.email)
+
+    // 6) Seed a feedback and verify the admin feedback view.
+    const feedbackMongoClient = new MongoClient(MONGODB_URI)
+    await feedbackMongoClient.connect()
+    try {
+      const db = feedbackMongoClient.db()
+      let teacherAuthUser = null
+      for (const collName of USER_COLLECTION_CANDIDATES) {
+        teacherAuthUser = await db.collection(collName).findOne({ email: TEACHER.email })
+        if (teacherAuthUser) break
+      }
+      const teacherUserId = (teacherAuthUser as { _id?: { toString(): string } })?._id?.toString() ?? 'unknown'
+
+      await db.collection('feedbacks').insertOne({
+        userId: teacherUserId,
+        userType: 'teacher',
+        title: feedbackTitle,
+        category: 'bug',
+        message: 'E2E feedback message from admin flow test.',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      })
+    } finally {
+      await feedbackMongoClient.close()
+    }
 
   const feedbackResponsePromise = page.waitForResponse(response => {
     return (
@@ -289,8 +374,8 @@ test('admin flow test', async ({ page, request }) => {
   ).toBe(true)
   await expect(page).toHaveURL(/\/admin\/feedback/)
   await expect(page.getByRole('heading', { name: 'Palautteet' })).toBeVisible()
-  const feedbackItem = page.locator('li').filter({ hasText: 'E2E feedback title' })
-  await expect(feedbackItem).toBeVisible({ timeout: 15_000 })
+    const feedbackItem = page.locator('li').filter({ hasText: feedbackTitle }).first()
+    await expect(feedbackItem).toBeVisible({ timeout: 15_000 })
   await expect(feedbackItem.getByText('Bugiraportti', { exact: true })).toBeVisible()
   await expect(feedbackItem.getByText('Opettaja', { exact: true })).toBeVisible()
   await expect(feedbackItem.getByText('E2E Teacher', { exact: true })).toBeVisible()
@@ -302,7 +387,7 @@ test('admin flow test', async ({ page, request }) => {
   await expect(page).toHaveURL(/\/login/, { timeout: 15_000 })
 
   // 5) Log in as a normal user and verify the popup shows up.
-  await login(page, STUDENT.email, STUDENT.password)
+    await login(page, STUDENT.email, STUDENT.password)
 
   const dialog = page.getByRole('dialog', { name: 'Ilmoitukset' })
   await expect(dialog).toBeVisible({ timeout: 15_000 })
@@ -322,19 +407,14 @@ test('admin flow test', async ({ page, request }) => {
   await page.getByRole('button', { name: /kirjaudu ulos/i }).click()
   await expect(page).toHaveURL(/\/login/, { timeout: 15_000 })
 
-  await login(page, TEACHER.email, TEACHER.password)
+    await login(page, TEACHER.email, TEACHER.password)
   const teacherDialog = page.getByRole('dialog', { name: 'Ilmoitukset' })
   await expect(teacherDialog).toBeVisible({ timeout: 15_000 })
   await expect(teacherDialog).toContainText(teacherOnlyTitle)
   await page.getByRole('button', { name: 'OK' }).click()
   await expect(teacherDialog).not.toBeVisible({ timeout: 15_000 })
 
-  const mongoClient = new MongoClient(MONGODB_URI)
-  await mongoClient.connect()
-  try {
-    await mongoClient.db().collection('popupmessages').deleteMany({})
-    await mongoClient.db().collection('feedbacks').deleteMany({})
   } finally {
-    await mongoClient.close()
+    await cleanup()
   }
 })

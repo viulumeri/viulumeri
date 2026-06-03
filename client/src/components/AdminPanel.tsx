@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Banana, CirclePlus, FileQuestionMark, Pen, Trash2 } from 'lucide-react'
-import { useAdminSummary, useAdminTeachers, useAdminStudents, useDeleteAdminTeacher, useDeleteAdminStudent } from '../hooks/useAdmin'
+import { useAdminSummary, useAdminTeachers, useAdminStudents, useDeleteAdminTeacher, useDeleteAdminStudent, useImpersonateAdminUser } from '../hooks/useAdmin'
 import { DropdownSearchbar } from './DropdownSearchbar'
 import { useNotification } from '../hooks/useNotification'
 import type { Teacher, Student } from '../services/admin'
@@ -37,6 +37,7 @@ export const AdminPanel = () => {
   const [searchResults, setSearchResults] = useState<User[]>([])
   const [selectedUser, setSelectedUser] = useState<Teacher | Student | null>(null)
   const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [impersonatingId, setImpersonatingId] = useState<string | null>(null)
 
   const { showSuccess, showError } = useNotification()
 
@@ -61,6 +62,18 @@ export const AdminPanel = () => {
     onError: (error) => {
       setDeletingId(null)
       showError(`Virhe käyttäjän poistamisessa: ${error.message}`)
+    }
+  })
+
+  const impersonateUser = useImpersonateAdminUser({
+    onSuccess: () => {
+      showSuccess('Kirjaudutaan käyttäjänä sisään...')
+      console.log('Impersonation successful, reloading page to apply new session')
+      window.location.href = '/'
+    },
+    onError: (error) => {
+      setImpersonatingId(null)
+      showError(`Virhe käyttäjän impersonoinnissa: ${error.message}`)
     }
   })
 
@@ -220,18 +233,31 @@ return (
               </>
             )}
           </div>
-          <button
-            onClick={() => {
-              if (deletingId) return
-              if (confirm(`Haluatko varmasti poistaa käyttäjän ${selectedUser.name}? Toimintoa ei voi perua.`)) {
-                setDeletingId(selectedUser.id)
-                if ('studentCount' in selectedUser) {
-                  deleteTeacher.mutate(selectedUser.id)
-                } else {
-                  deleteStudent.mutate(selectedUser.id)
+          <div className="flex flex-wrap gap-3 mt-4">
+            <button
+              onClick={() => {
+                if (impersonatingId) return
+                setImpersonatingId(selectedUser.id)
+                impersonateUser.mutate({ userId: selectedUser.userId })
+              }}
+              disabled={Boolean(deletingId || impersonatingId)}
+              className="bg-blue-600 hover:bg-blue-700 text-white rounded-md px-3 py-2 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {impersonatingId === selectedUser.id ? 'Impersonoidaan...' : 'Kirjaudu käyttäjänä'}
+            </button>
+            <button
+              onClick={() => {
+                if (deletingId) return
+                if (confirm(`Haluatko varmasti poistaa käyttäjän ${selectedUser.name}? Toimintoa ei voi perua.`)) {
+                  setDeletingId(selectedUser.id)
+                  if ('studentCount' in selectedUser) {
+                    deleteTeacher.mutate(selectedUser.id)
+                  } else {
+                    deleteStudent.mutate(selectedUser.id)
+                  }
                 }
               }
-            }}
+            }
             disabled={Boolean(deletingId)}
             className="inline-flex justify-center items-center gap-2 bg-neutral-100 text-black
             rounded-full px-6 py-2 text-xl disabled:opacity-50 disabled:cursor-not-allowed"
@@ -239,6 +265,7 @@ return (
             <Trash2 className="w-4 h-4" />
             {deletingId === selectedUser.id ? 'Poistetaan...' : 'Poista käyttäjä'}
           </button>
+          </div>
         </div>
       )}
       <div className="mt-8 bg-neutral-900 rounded-lg p-4 space-y-4">

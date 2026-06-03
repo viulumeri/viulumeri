@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+import { useCallback, useState, useRef, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import * as Tone from 'tone'
 import { useSongById } from '../hooks/useSongs'
@@ -38,14 +38,14 @@ export const MusicPlayer = () => {
   const audioTracksRef = useRef<AudioTracks | null>(null)
   const [hasSlowTrack, setHasSlowTrack] = useState(false)
 
-  const loadSongTracks = async () => {
+ const loadSongTracks = useCallback(async () => {
   if (!songId || tracksLoaded) return
 
   try {
     setIsLoading(true)
     setAudioError(null)
 
-    let tracks = isPracticeTempo
+    const tracks = isPracticeTempo
       ? await fetchSlowSongTracks(songId)
       : await fetchSongTracks(songId)
 
@@ -121,16 +121,17 @@ export const MusicPlayer = () => {
 
     setTracksLoaded(true)
     setIsLoading(false)
-  } catch (err) {
-    console.error('Error loading tracks:', err)
-    setAudioError(
-      err instanceof Error ? err.message : 'Raitojen lataus epäonnistui'
-    )
-    setIsLoading(false)
-  }
-  }
 
-  const startPlayback = async () => {
+    } catch (err) {
+  console.error('Error loading tracks:', err)
+  setAudioError(
+    err instanceof Error ? err.message : 'Raitojen lataus epäonnistui'
+  )
+  setIsLoading(false)
+}
+}, [songId, tracksLoaded, isPracticeTempo])
+
+const startPlayback = async () => {
     if (!playersRef.current || !tracksLoaded) return
 
     try {
@@ -244,8 +245,8 @@ export const MusicPlayer = () => {
   }, [songId])
 
   useEffect(() => {
-    loadSongTracks()
-  }, [songId, isPracticeTempo])
+  loadSongTracks()
+}, [loadSongTracks])
 
   useEffect(() => {
     if (!isPlaying || !audioTracksRef.current?.backing || !playersRef.current)
@@ -400,17 +401,17 @@ export const MusicPlayer = () => {
             </div>
 
             <div className="w-16 flex items-center justify-end">
-              <button 
+              <button
                 onClick={togglePracticeTempo}
                 disabled={!hasSlowTrack}
                 title={!hasSlowTrack ? 'Hidasta versiota ei ole saatavilla tästä kappaleesta' : ''}
               >
                 <Snail
                   className={`w-5 h-5 ${
-                    !hasSlowTrack 
+                    !hasSlowTrack
                       ? 'text-gray-600 cursor-not-allowed'
-                      : isPracticeTempo 
-                        ? 'text-yellow-400' 
+                      : isPracticeTempo
+                        ? 'text-yellow-400'
                         : 'text-white'
                   }`}
                 />

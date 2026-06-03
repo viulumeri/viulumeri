@@ -59,6 +59,10 @@ export const SettingsPage = () => {
     }
   })
 
+    useEffect(() => {
+  faqService.getFaqs().then(setFaqs)
+}, [])
+
   if (isPending) {
     return <div>Ladataan...</div>
   }
@@ -104,10 +108,6 @@ export const SettingsPage = () => {
   const handleLogout = () => {
     logout.mutate()
   }
-
-  useEffect(() => {
-  faqService.getFaqs().then(setFaqs)
-}, [])
 
 const visibleFaqs = faqs
   .filter((faq) => faq.question.trim())

@@ -112,13 +112,17 @@ adminRouter.post('/impersonate', async (request, response) => {
 
   if (!impersonationResult?.session?.token) {
     return response.status(500).json({ error: 'Failed to create impersonation session' })
-  // Cookie is the source of truth; don't expose the session token in JSON.
-  const { token: _token, ...safeSession } = impersonationResult.session
-
-  }
-    session: safeSession,
-  const expiresAt = new Date(impersonationResult.session.expiresAt)
+  // Cookie is the source of truth; don't expose the session token in JSON.
 
+  const { token: _token, ...safeSession } = impersonationResult.session
+
+
+
+  }
+    session: safeSession,
+
+  const expiresAt = new Date(impersonationResult.session.expiresAt)
+    secure: process.env.NODE_ENV === 'production',
   response.cookie('better-auth.session_token', impersonationResult.session.token, {
     httpOnly: true,
     sameSite: 'lax',

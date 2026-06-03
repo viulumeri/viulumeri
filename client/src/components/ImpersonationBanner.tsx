@@ -6,13 +6,16 @@ import { useState } from 'react';
 
 
 type FloatingSignalProps = {
-  title?: string
-  buttonText?: string
-}
+  title?: string
+  buttonText?: string
+}
+
 
 export default function ImpersonationBanner({
-  title = 'Haluatko lopettaa session?',
-  buttonText = 'Lopeta sessio'
+  title = 'Haluatko lopettaa session?',
+
+  buttonText = 'Lopeta sessio'
+
 }: FloatingSignalProps) {
   const { data: session } = useSession()
 
@@ -27,8 +30,14 @@ export default function ImpersonationBanner({
       showSuccess('Impersonointi lopetettu')
       // reload to pick up restored session
       window.location.reload()
-    } catch (error: any) {
-      showError(`Virhe lopetettaessa impersonointia: ${error?.message || error}`)
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : typeof error === 'object' && error !== null && 'message' in error
+          ? String((error as { message?: unknown }).message)
+          : String(error)
+      showError(`Virhe lopetettaessa impersonointia: ${message}`)
     }
   }
   return (
@@ -77,40 +86,3 @@ export default function ImpersonationBanner({
     </div>
   );
 }
-/* export const ImpersonationBanner = ({ onStopped }: { onStopped?: () => void }) => {
-  const { showSuccess, showError } = useNotification()
-  const { data: session } = useSession()
-
-  const impersonatedName = session?.user?.name ?? undefined
-
-  const handleStop = async () => {
-    try {
-      await adminService.stopImpersonating()
-      showSuccess('Impersonointi lopetettu')
-      onStopped?.()
-      // reload to pick up restored session
-      window.location.reload()
-    } catch (error: any) {
-      showError(`Virhe lopetettaessa impersonointia: ${error?.message || error}`)
-    }
-  }
-  
-
-  return (
-    <div className="fixed right-1/3 top-0 z-50">
-      <div className="bg-yellow-500 text-black p-3 rounded-sm shadow-lg w-72">
-        <div className="font-semibold">Olet käyttäjän {impersonatedName} näkymässä</div>
-        <div className="text-sm mt-1">Voit palata omaan tiliisi painamalla alla.</div>
-        <button
-          className="mt-3 bg-black text-white px-3 py-1 rounded-md text-sm"
-          onClick={handleStop}
-        >
-          Lopeta impersonointi
-        </button>
-      </div>
-    </div> 
-
-  )
-} */
-
-//export default ImpersonationBanner

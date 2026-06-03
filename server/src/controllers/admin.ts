@@ -72,22 +72,34 @@ adminRouter.get('/students', async (_request, response) => {
 adminRouter.post('/impersonate', async (request, response) => {
   const { profileId, profileType } = request.body ?? {}
 
-  if (typeof profileId !== 'string' || !profileId.trim()) {
-    return response.status(400).json({ error: 'Invalid profile id' })
-  }
-
+  if (typeof profileId !== 'string' || !profileId.trim()) {
+
+    return response.status(400).json({ error: 'Invalid profile id' })
+
+  }
+
+
+
   if (profileType !== 'teacher' && profileType !== 'student') {
     return response.status(400).json({ error: 'Invalid profile type' })
   }
 
-  let profile
-  try {
-    profile = profileType === 'teacher'
-      ? await Teacher.findById(profileId)
-      : await Student.findById(profileId)
-  } catch {
-    return response.status(400).json({ error: 'Invalid profile id' })
-  }
+  let profile
+
+  try {
+
+    profile = profileType === 'teacher'
+
+      ? await Teacher.findById(profileId)
+
+      : await Student.findById(profileId)
+
+  } catch {
+
+    return response.status(400).json({ error: 'Invalid profile id' })
+
+  }
+
 
   if (!profile) {
     return response.status(404).json({ error: 'Profile not found' })
@@ -100,8 +112,11 @@ adminRouter.post('/impersonate', async (request, response) => {
 
   if (!impersonationResult?.session?.token) {
     return response.status(500).json({ error: 'Failed to create impersonation session' })
+  // Cookie is the source of truth; don't expose the session token in JSON.
+  const { token: _token, ...safeSession } = impersonationResult.session
+
   }
-
+    session: safeSession,
   const expiresAt = new Date(impersonationResult.session.expiresAt)
 
   response.cookie('better-auth.session_token', impersonationResult.session.token, {

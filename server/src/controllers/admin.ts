@@ -8,6 +8,21 @@ import Homework from '../models/homework'
 import PopupMessage from '../models/popupMessage'
 import { getAdminFeedbacks } from '../services/admin'
 
+type BetterAuthImpersonationResult = {
+  session?: {
+    token: string
+    expiresAt: string
+    [key: string]: unknown
+  }
+  user?: unknown
+}
+type BetterAuthApiWithImpersonation = {
+  impersonateUser: (args: {
+    body: { userId: string }
+    headers: ReturnType<typeof fromNodeHeaders>
+  }) => Promise<BetterAuthImpersonationResult>
+}
+
 type PopulatedStudent = { id: string; name: string; email: string }
 type PopulatedTeacher = { id: string; name: string; email: string }
 type PopupMessageLean = {
@@ -105,7 +120,8 @@ adminRouter.post('/impersonate', async (request, response) => {
     return response.status(404).json({ error: 'Profile not found' })
   }
 
-  const impersonationResult = await (auth.api as any).impersonateUser({
+  const authApi = auth.api as unknown as BetterAuthApiWithImpersonation
+  const impersonationResult = await authApi.impersonateUser({
     body: { userId: profile.userId },
     headers: fromNodeHeaders(request.headers)
   })

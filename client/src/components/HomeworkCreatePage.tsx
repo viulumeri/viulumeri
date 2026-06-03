@@ -12,7 +12,7 @@ type HomeworkItem = HomeworkListResponse['homework'][number]
 
 type HomeworkCreateState = {
   studentName?: string
-  addSongs?: string[]
+  comment?: string
   preselected?: string[]
 }
 
@@ -24,19 +24,19 @@ export const HomeworkCreatePage = () => {
 
   const songsQ = useSongsList()
 
-  const [songIds, setSongIds] = useState<string[]>([])
-  const [comment, setComment] = useState<string>('')
+  const [songIds, setSongIds] = useState<string[]>(state?.preselected ?? [])
+  const [comment, setComment] = useState<string>(state?.comment ?? '')
 
-  useEffect(() => {
-    const ids: string[] = state?.addSongs ?? []
-    if (!ids.length) return
-
-    setSongIds(prev => [...new Set([...prev, ...ids])])
+  const syncDraftState = (nextComment: string, nextSongIds: string[]) => {
     navigate('.', {
       replace: true,
-      state: { ...(state ?? {}), addSongs: undefined }
+      state: {
+        ...(state ?? {}),
+        comment: nextComment,
+        preselected: nextSongIds
+      }
     })
-  }, [navigate, state])
+  }
 
   const songMap = useMemo(
     () =>
@@ -81,7 +81,7 @@ export const HomeworkCreatePage = () => {
         onSuccess: () => {
           showSuccess('Läksy luotu onnistuneesti')
           navigate(`/teacher/students/${studentId}/homework`, {
-            state: location.state,
+            state: { studentName: state?.studentName},
             replace: true
           })
         },
@@ -93,7 +93,7 @@ export const HomeworkCreatePage = () => {
 
   const goToPicker = () => {
     navigate(`/teacher/students/${studentId}/homework/create/select-songs`, {
-      state: { ...(state ?? {}), preselected: songIds }
+      state: { ...(state ?? {}), comment, preselected: songIds }
     })
   }
 
@@ -129,10 +129,17 @@ export const HomeworkCreatePage = () => {
           songMap={songMap}
           headingLabel="Tehtävä"
           editableSongs
-          onRemoveSong={id => setSongIds(prev => prev.filter(x => x !== id))}
+          onRemoveSong={id => {
+            const next = songIds.filter(x => x !== id)
+            setSongIds(next)
+            syncDraftState(comment, next)
+          }}
           editableComment
           commentDraft={comment}
-          onChangeComment={setComment}
+          onChangeComment={next => {
+            setComment(next)
+            syncDraftState(next, songIds)
+          }}
           onAddSong={goToPicker}
         />
       </div>

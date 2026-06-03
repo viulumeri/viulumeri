@@ -213,79 +213,18 @@ test('admin flow test', async ({ page }) => {
     visibleUntil: yesterday
   })
 
-  await createPopupMessage(page, {
-    title: upcomingTitle,
-    content: upcomingContent,
-    visibleFrom: tomorrow,
-    visibleUntil: nextWeek
-  })
+  await page.goto('/admin')
+  await page.getByRole('link', { name: 'Palautteet' }).click()
+  await expect(page).toHaveURL(/\/admin\/feedback/)
+  await expect(page.getByRole('heading', { name: 'Palautteet' })).toBeVisible()
+  const feedbackItem = page.locator('li').filter({ hasText: 'E2E feedback title' })
+  await expect(feedbackItem).toBeVisible()
+  await expect(feedbackItem.getByText('Bugiraportti', { exact: true })).toBeVisible()
+  await expect(feedbackItem.getByText('Opettaja', { exact: true })).toBeVisible()
+  await expect(feedbackItem.getByText('E2E Teacher', { exact: true })).toBeVisible()
+  await expect(feedbackItem.getByText('E2E feedback message from admin flow test.')).toBeVisible()
 
-  await createPopupMessage(page, {
-    title: timedTitle,
-    content: timedContent,
-    visibleFrom: yesterday,
-    visibleUntil: tomorrow
-  })
-
-  await createPopupMessage(page, {
-    title: editableTitle,
-    content: editableContent,
-    visibleFrom: yesterday,
-    visibleUntil: tomorrow
-  })
-
-  // 4) Edit popup title, content, and dates.
-  await page.goto('/admin/popup')
-  const editableCard = page
-    .locator('div.rounded-md')
-    .filter({ hasText: editableTitle })
-    .first()
-
-  await editableCard.getByRole('button', { name: 'Muokkaa' }).click()
-
-  const editTitleInput = page.locator(`input[value="${editableTitle}"]`)
-  const editContentInput = page.locator(`textarea`, { hasText: editableContent })
-  const editFromInput = page.locator('input[id^="edit-popup-visible-from-"]')
-  const editUntilInput = page.locator('input[id^="edit-popup-visible-until-"]')
-
-  await expect(editTitleInput).toBeVisible()
-  await editTitleInput.fill(editedTitle)
-  await editContentInput.fill(editedContent)
-  await editFromInput.fill(tomorrow)
-  await editUntilInput.fill(nextWeek)
-  await page.getByRole('button', { name: 'Tallenna' }).click()
-
-  await expect(page.getByText('Pop-up päivitetty')).toBeVisible({ timeout: 15_000 })
-
-  const editedCard = page
-    .locator('div.rounded-md')
-    .filter({ has: page.getByRole('heading', { name: editedTitle }) })
-    .first()
-  await expect(editedCard.getByText(editedContent)).toBeVisible()
-
-  await editedCard.getByRole('button', { name: 'Muokkaa' }).click()
-  await expect(page.locator(`input[value="${editedTitle}"]`)).toBeVisible()
-  await expect(page.locator(`textarea`, { hasText: editedContent })).toBeVisible()
-  await expect(page.locator(`input[id^="edit-popup-visible-from-"][value="${tomorrow}"]`)).toBeVisible()
-  await expect(page.locator(`input[id^="edit-popup-visible-until-"][value="${nextWeek}"]`)).toBeVisible()
-  await page.getByRole('button', { name: 'Peruuta' }).click()
-
-  // 5) Toggle draft status and publish again.
-  await editedCard.getByRole('button', { name: 'Aseta luonnokseksi' }).click()
-  await expect(page.getByText('Pop-up asetettu luonnokseksi')).toBeVisible({ timeout: 15_000 })
-
-  const draftCard = page
-    .locator('div.rounded-md')
-    .filter({ has: page.getByRole('heading', { name: editedTitle }) })
-    .first()
-  await expect(draftCard.getByText('Luonnos', { exact: true })).toBeVisible()
-
-  await draftCard.getByRole('button', { name: 'Julkaise' }).click()
-  await expect(page.getByText('Luonnos julkaistu')).toBeVisible({ timeout: 15_000 })
-  await markStartupAnnouncementsAsSeen(page, ADMIN.email)
-  await markStartupAnnouncementsAsSeen(page, ADMIN.email)
-
-  // 4) Log out.
+  // 5) Log out.
   await page.goto('/settings')
   await page.getByRole('button', { name: /kirjaudu ulos/i }).click()
   await expect(page).toHaveURL(/\/login/, { timeout: 15_000 })

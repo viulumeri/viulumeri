@@ -68,7 +68,8 @@ export const AdminPanel = () => {
     onSuccess: () => {
       showSuccess('Kirjaudutaan käyttäjänä sisään...')
       window.location.href = '/'
-    }
+    }
+
     onError: (error) => {
       setImpersonatingId(null)
       showError(`Virhe käyttäjän impersonoinnissa: ${error.message}`)
@@ -254,7 +255,7 @@ return (
                     deleteStudent.mutate(selectedUser.id)
                   }
                 }
-              }}
+              disabled={Boolean(deletingId || impersonatingId)}
               disabled={Boolean(deletingId)}
               className="inline-flex justify-center items-center gap-2 bg-neutral-100 text-black
               rounded-full px-6 py-2 text-xl disabled:opacity-50 disabled:cursor-not-allowed"

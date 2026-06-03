@@ -130,7 +130,11 @@ export const HomeworkEditPage = () => {
         />
       </div>
 
-      <FloatingActionButton onClick={handleSave} icon="check" />
+      <FloatingActionButton
+        onClick={handleSave}
+        icon="check"
+        disabled={updateHomework.isPending}
+      />
     </div>
   )
 }

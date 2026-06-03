@@ -137,7 +137,11 @@ export const HomeworkCreatePage = () => {
         />
       </div>
 
-      <FloatingActionButton onClick={handleCreate} icon="check" />
+      <FloatingActionButton
+        onClick={handleCreate}
+        icon="check"
+        disabled={createHw.isPending}
+      />
     </div>
   )
 }

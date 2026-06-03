@@ -1,4 +1,4 @@
-/// <reference path="../types/express.d.ts" />
+import '../types/express'
 import { Router } from 'express'
 import { fromNodeHeaders } from 'better-auth/node'
 import { requireAdmin } from '../utils/auth-middleware'
@@ -22,6 +22,8 @@ type PopupMessageLean = {
   visibleFrom?: string
   visibleUntil?: string
 }
+
+type PopupMessageRequestBody = Record<string, unknown>
 
 const adminRouter = Router()
 adminRouter.use(requireAdmin)
@@ -101,7 +103,7 @@ adminRouter.delete('/students/:studentId', async (request, response) => {
     const teacher = await Teacher.findById(student.teacher)
     if (teacher) {
       teacher.students = teacher.students.filter(
-        (studentId: any) => studentId.toString() !== student.id
+        studentId => studentId.toString() !== student.id
       )
       await teacher.save()
     }
@@ -179,18 +181,19 @@ const getVisibilityStatus = (
   return 'active'
 }
 
-const normalizeVisibilityWindow = (requestBody: any) => {
+const normalizeVisibilityWindow = (requestBody: PopupMessageRequestBody | null | undefined) => {
+  const body = requestBody ?? {}
   const hasVisibleFrom = Object.prototype.hasOwnProperty.call(
-    requestBody ?? {},
+    body,
     'visibleFrom'
   )
   const hasVisibleUntil = Object.prototype.hasOwnProperty.call(
-    requestBody ?? {},
+    body,
     'visibleUntil'
   )
 
-  const visibleFrom = hasVisibleFrom ? readDateField(requestBody?.visibleFrom) : undefined
-  const visibleUntil = hasVisibleUntil ? readDateField(requestBody?.visibleUntil) : undefined
+  const visibleFrom = hasVisibleFrom ? readDateField(body['visibleFrom']) : undefined
+  const visibleUntil = hasVisibleUntil ? readDateField(body['visibleUntil']) : undefined
 
   if (visibleFrom === 'invalid' || visibleUntil === 'invalid') {
     return null
@@ -214,9 +217,10 @@ const readBooleanField = (
   return typeof value === 'boolean' ? value : fallback
 }
 
-const normalizeVisibility = (requestBody: any) => {
-  const visibleToTeachers = readBooleanField(requestBody?.visibleToTeachers, true)
-  const visibleToStudents = readBooleanField(requestBody?.visibleToStudents, true)
+const normalizeVisibility = (requestBody: PopupMessageRequestBody | null | undefined) => {
+  const body = requestBody ?? {}
+  const visibleToTeachers = readBooleanField(body['visibleToTeachers'], true)
+  const visibleToStudents = readBooleanField(body['visibleToStudents'], true)
 
   if (!visibleToTeachers && !visibleToStudents) {
     return null
@@ -225,13 +229,14 @@ const normalizeVisibility = (requestBody: any) => {
   return { visibleToTeachers, visibleToStudents }
 }
 
-const readVisibilityUpdate = (requestBody: any) => {
+const readVisibilityUpdate = (requestBody: PopupMessageRequestBody | null | undefined) => {
+  const body = requestBody ?? {}
   const hasVisibleToTeachers = Object.prototype.hasOwnProperty.call(
-    requestBody ?? {},
+    body,
     'visibleToTeachers'
   )
   const hasVisibleToStudents = Object.prototype.hasOwnProperty.call(
-    requestBody ?? {},
+    body,
     'visibleToStudents'
   )
 
@@ -239,18 +244,18 @@ const readVisibilityUpdate = (requestBody: any) => {
     return null
   }
 
-  if (hasVisibleToTeachers && typeof requestBody?.visibleToTeachers !== 'boolean') {
+  if (hasVisibleToTeachers && typeof body['visibleToTeachers'] !== 'boolean') {
     return null
   }
-  if (hasVisibleToStudents && typeof requestBody?.visibleToStudents !== 'boolean') {
+  if (hasVisibleToStudents && typeof body['visibleToStudents'] !== 'boolean') {
     return null
   }
 
   const visibleToTeachers = hasVisibleToTeachers
-    ? (requestBody.visibleToTeachers as boolean)
+    ? (body['visibleToTeachers'] as boolean)
     : undefined
   const visibleToStudents = hasVisibleToStudents
-    ? (requestBody.visibleToStudents as boolean)
+    ? (body['visibleToStudents'] as boolean)
     : undefined
   if (visibleToTeachers === undefined && visibleToStudents === undefined) {
     return null

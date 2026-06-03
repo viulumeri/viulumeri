@@ -6,8 +6,6 @@ import app from '../app'
 import Teacher from '../models/teacher'
 import Student from '../models/student'
 import Homework from '../models/homework'
-import Feedback from '../models/feedback'
-import PopupMessage from '../models/popupMessage'
 
 const api = supertest(app)
 

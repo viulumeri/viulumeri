@@ -48,6 +48,8 @@ export const Signup = () => {
   }
   return (
     <div>
+      <h2 className="mx-auto w-fit mb-4">Luo uusi käyttäjä</h2>
+
       <form onSubmit={handleSignUp} className="space-y-3">
         <div>
           <input
@@ -154,7 +156,7 @@ export const Signup = () => {
           disabled={signUpMutation.isPending || !passwordsMatch || !password.value || !confirmPassword.value}
           className="button-basic block mx-auto"
         >
-          {signUpMutation.isPending ? 'Luodaan…' : 'Luo uusi käyttäjä'}
+          {signUpMutation.isPending ? 'Luodaan…' : 'Rekisteröidy'}
         </button>
       </form>
 

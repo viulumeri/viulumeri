@@ -2,6 +2,15 @@ import { Router } from 'express'
 import { requireTeacher, loadTeacherProfile } from '../utils/auth-middleware'
 import { validateTeacherStudentRelationship } from '../utils/session-helpers'
 import Homework from '../models/homework'
+import { Types } from 'mongoose'
+
+import '../types/express.d.ts'
+
+interface PopulatedStudent {
+  id: string
+  _id: Types.ObjectId
+  name: string
+}
 
 const studentsRouter = Router()
 
@@ -12,11 +21,24 @@ studentsRouter.get('/', async (request, response) => {
 
   await teacher.populate('students', 'name')
 
-  type PopulatedStudent = { id: string; name: string }
-  const students = (teacher.students as unknown as PopulatedStudent[]).map(s => ({
-    id: s.id,
-    name: s.name
-  }))
+  const populatedStudents = teacher.students as unknown as PopulatedStudent[]
+
+  const students = await Promise.all(
+    populatedStudents.map(async (s) => {
+      const latestHomeworkDoc = await Homework.findOne({ student: s.id })
+        .sort({ createdAt: -1 })
+        .select('practiceCount')
+        .lean()
+
+      return {
+        id: s.id,
+        name: s.name,
+        latestHomework: latestHomeworkDoc 
+          ? { practiceCount: latestHomeworkDoc.practiceCount } 
+          : null
+      }
+    })
+  )
 
   response.json({ students })
 })
@@ -34,12 +56,12 @@ studentsRouter.delete('/:studentId', async (request, response) => {
 
   // Remove student from teacher's student list
   teacher.students = teacher.students.filter(
-    studentId => studentId.toString() !== student.id
+    (studentId) => studentId.toString() !== student.id
   )
   await teacher.save()
 
   // Remove teacher from student's teacher field
-  student.teacher = null
+  student.teacher = null as unknown as Types.ObjectId
   await student.save()
 
   response.status(204).send()

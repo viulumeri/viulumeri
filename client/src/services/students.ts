@@ -1,8 +1,16 @@
 import axios from 'axios'
 
+export interface StudentWithHomework {
+  id: string
+  name: string
+  latestHomework?: {
+    practiceCount: number
+  }
+}
+
 export const studentsService = {
   getStudents: async (): Promise<{
-    students: { id: string; name: string }[]
+    students: StudentWithHomework[]
   }> => {
     const response = await axios.get('/api/students', {
       withCredentials: true

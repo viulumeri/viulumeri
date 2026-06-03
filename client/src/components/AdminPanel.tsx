@@ -67,9 +67,8 @@ export const AdminPanel = () => {
   const impersonateUser = useImpersonateAdminUser({
     onSuccess: () => {
       showSuccess('Kirjaudutaan käyttäjänä sisään...')
-      console.log('Impersonation successful, reloading page to apply new session')
       window.location.href = '/'
-    },
+    }
     onError: (error) => {
       setImpersonatingId(null)
       showError(`Virhe käyttäjän impersonoinnissa: ${error.message}`)

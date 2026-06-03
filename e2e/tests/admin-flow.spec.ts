@@ -133,7 +133,7 @@ async function ensureUserExists(
   const alreadyExists =
     normalized.includes('exists') || normalized.includes('already')
 
-  if ((status === 400 || status === 409) && alreadyExists) return
+  if ((status === 400 || status === 409 || status === 422) && alreadyExists) return
 
   throw new Error(`Failed to seed ${user.email}: ${status} ${body}`)
 }

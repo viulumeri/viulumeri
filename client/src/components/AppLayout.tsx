@@ -12,7 +12,7 @@ export const AppLayout = ({
   const { data: session } = useSession()
 
   const isImpersonating = Boolean(
-    session && (session.session as any)?.impersonatedBy
+    session && (session.session as Record<string, unknown>)?.impersonatedBy
   )
 
   return (

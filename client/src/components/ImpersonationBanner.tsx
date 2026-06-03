@@ -6,16 +6,13 @@ import { useState } from 'react';
 
 
 type FloatingSignalProps = {
-  title?: string;
-  description?: string;
-  buttonText?: string;
-  impersonatedName?: string;
-  onButtonClick?: () => void;
-};
+  title?: string
+  buttonText?: string
+}
 
 export default function ImpersonationBanner({
-  title = "Haluatko lopettaa session?",
-  buttonText = "Lopeta sessio"
+  title = 'Haluatko lopettaa session?',
+  buttonText = 'Lopeta sessio'
 }: FloatingSignalProps) {
   const { data: session } = useSession()
 

@@ -74,14 +74,14 @@ export const Login = () => {
       </form>
 
       <div>
-        <button
+        <button type="button"
           onClick={() => navigate('/forgot-password')}
           className="back-button-basic block mx-auto mt-4"
         >
           Unohdin salasanani
         </button>
-        <button
-          onClick={() => navigate('/SignUp')}
+        <button type="button"
+          onClick={() => navigate('/signup')}
           className="back-button-basic block mx-auto mt-4"
         >
           Luo uusi käyttäjä

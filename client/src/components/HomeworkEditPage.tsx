@@ -70,7 +70,7 @@ export const HomeworkEditPage = () => {
     onSuccess: () => {
       showSuccess('Läksy päivitetty onnistuneesti')
       navigate(`/teacher/students/${studentId}/homework`, {
-        state: location.state,
+        state: { studentName: draftState?.studentName },
         replace: true
       })
     },

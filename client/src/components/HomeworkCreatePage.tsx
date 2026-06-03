@@ -81,7 +81,7 @@ export const HomeworkCreatePage = () => {
         onSuccess: () => {
           showSuccess('Läksy luotu onnistuneesti')
           navigate(`/teacher/students/${studentId}/homework`, {
-            state: location.state,
+            state: { studentName: state?.studentName},
             replace: true
           })
         },

@@ -13,7 +13,6 @@ if (!TEACHER) {
 test('Password accordion opens and closes when clicked', async ({ page }) => {
   await page.context().clearCookies()
   await page.goto('/login')
-  await markStartupAnnouncementsAsSeen(page, TEACHER.email)
 
   await page.getByPlaceholder('Sähköpostiosoite').fill(TEACHER.email)
   await page.getByPlaceholder('Salasana').fill(TEACHER.password)
@@ -21,6 +20,7 @@ test('Password accordion opens and closes when clicked', async ({ page }) => {
   await page.getByRole('button', { name: 'Kirjaudu sisään' }).click()
   await page.waitForURL('**/teacher/students')
   await expect(page).toHaveURL('/teacher/students')
+  await markStartupAnnouncementsAsSeen(page, TEACHER.email)
   await page.goto('/settings')
 
   // Avautuu.
@@ -59,7 +59,6 @@ test('Password accordion opens and closes when clicked', async ({ page }) => {
 test('FAQ accordion opens and closes when clicked', async ({ page }) => {
   await page.context().clearCookies()
   await page.goto('/login')
-  await markStartupAnnouncementsAsSeen(page, TEACHER.email)
 
   await page.getByPlaceholder('Sähköpostiosoite').fill(TEACHER.email)
   await page.getByPlaceholder('Salasana').fill(TEACHER.password)
@@ -67,6 +66,7 @@ test('FAQ accordion opens and closes when clicked', async ({ page }) => {
   await page.getByRole('button', { name: 'Kirjaudu sisään' }).click()
   await page.waitForURL('**/teacher/students')
   await expect(page).toHaveURL('/teacher/students')
+  await markStartupAnnouncementsAsSeen(page, TEACHER.email)
   await page.goto('/settings')
 
 
@@ -83,7 +83,6 @@ test('FAQ accordion opens and closes when clicked', async ({ page }) => {
 test('Both accordions open when clicked', async ({ page }) => {
     await page.context().clearCookies()
     await page.goto('/login')
-    await markStartupAnnouncementsAsSeen(page, TEACHER.email)
 
   await page.getByPlaceholder('Sähköpostiosoite').fill(TEACHER.email)
   await page.getByPlaceholder('Salasana').fill(TEACHER.password)
@@ -91,6 +90,7 @@ test('Both accordions open when clicked', async ({ page }) => {
     await page.getByRole('button', { name: 'Kirjaudu sisään' }).click()
     await page.waitForURL('**/teacher/students')
     await expect(page).toHaveURL('/teacher/students')
+    await markStartupAnnouncementsAsSeen(page, TEACHER.email)
     await page.goto('/settings')
 
     await page.getByText('Salasanan vaihto').click()

@@ -20,25 +20,40 @@ studentsRouter.get('/', async (request, response) => {
   const teacher = request.teacherProfile!
 
   await teacher.populate('students', 'name')
-
   const populatedStudents = teacher.students as unknown as PopulatedStudent[]
 
-  const students = await Promise.all(
-    populatedStudents.map(async (s) => {
-      const latestHomeworkDoc = await Homework.findOne({ student: s.id })
-        .sort({ createdAt: -1 })
-        .select('practiceCount')
-        .lean()
+  const studentIds = populatedStudents.map(s => s._id)
 
-      return {
-        id: s.id,
-        name: s.name,
-        latestHomework: latestHomeworkDoc 
-          ? { practiceCount: latestHomeworkDoc.practiceCount } 
-          : null
+  const latestHomeworks = await Homework.aggregate([
+    { 
+      $match: { student: { $in: studentIds } } 
+    },
+    { 
+      $sort: { createdAt: -1 } 
+    },
+    {
+      $group: {
+        _id: '$student',
+        practiceCount: { $first: '$practiceCount' }
       }
-    })
+    }
+  ])
+
+  const homeworkMap = new Map<string, number>(
+    latestHomeworks.map(h => [h._id.toString(), h.practiceCount])
   )
+
+  const students = populatedStudents.map(s => {
+    const practiceCount = homeworkMap.get(s.id)
+
+    return {
+      id: s.id,
+      name: s.name,
+      latestHomework: practiceCount !== undefined 
+        ? { practiceCount } 
+        : null
+    }
+  })
 
   response.json({ students })
 })
@@ -61,7 +76,7 @@ studentsRouter.delete('/:studentId', async (request, response) => {
   await teacher.save()
 
   // Remove teacher from student's teacher field
-  student.teacher = null as unknown as Types.ObjectId
+  student.teacher = null
   await student.save()
 
   response.status(204).send()

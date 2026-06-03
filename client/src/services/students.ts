@@ -3,9 +3,9 @@ import axios from 'axios'
 export interface StudentWithHomework {
   id: string
   name: string
-  latestHomework?: {
+  latestHomework: {
     practiceCount: number
-  }
+  } | null
 }
 
 export const studentsService = {

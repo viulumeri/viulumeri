@@ -59,9 +59,13 @@ export const SettingsPage = () => {
     }
   })
 
-    useEffect(() => {
-  faqService.getFaqs().then(setFaqs)
-}, [])
+ useEffect(() => {
+  if (isPending || !session) return
+
+  faqService.getFaqs().then(setFaqs).catch(error => {
+    showError(`Virhe FAQ:ien lataamisessa: ${error.message}`)
+  })
+}, [isPending, session, showError])
 
   if (isPending) {
     return <div>Ladataan...</div>
@@ -109,7 +113,9 @@ export const SettingsPage = () => {
     logout.mutate()
   }
 
-const visibleFaqs = faqs
+
+  const visibleFaqs = faqs
+  
   .filter((faq) => faq.question.trim())
   .sort(
     (a, b) =>

@@ -38,7 +38,13 @@ export const MusicPlayer = () => {
   const audioTracksRef = useRef<AudioTracks | null>(null)
   const [hasSlowTrack, setHasSlowTrack] = useState(false)
 
- const loadSongTracks = useCallback(async () => {
+ const cleanupTransport = useCallback(() => {
+  Tone.Transport.cancel()
+  Tone.Transport.stop()
+  Tone.Transport.position = 0
+}, [])
+
+const loadSongTracks = useCallback(async () => {
   if (!songId || tracksLoaded) return
 
   try {
@@ -55,72 +61,73 @@ export const MusicPlayer = () => {
       setIsPracticeTempo(false)
       setIsLoading(false)
       return
-    }
 
-    if (!tracks) {
-      throw new Error('Ääniraitoja ei löytynyt')
-    }
+      if (!tracks) {
+        throw new Error('Ääniraitoja ei löytynyt')
+      }
 
-    audioTracksRef.current = tracks
+      audioTracksRef.current = tracks
 
-    if (playersRef.current) {
-      cleanupTransport()
-      playersRef.current.dispose()
-    }
+      if (playersRef.current) {
+        cleanupTransport()
+        playersRef.current.dispose()
+      }
 
-    const playerUrls: { [key: string]: string } = {}
-    if (tracks.melody) playerUrls.melody = tracks.melody
-    if (tracks.backing) playerUrls.backing = tracks.backing
+      const playerUrls: { [key: string]: string } = {}
+      if (tracks.melody) playerUrls.melody = tracks.melody
+      if (tracks.backing) playerUrls.backing = tracks.backing
 
-    playersRef.current = new Tone.Players(playerUrls).toDestination()
+      playersRef.current = new Tone.Players(playerUrls).toDestination()
 
-    const loadPromises: Promise<void>[] = []
+      const loadPromises: Promise<unknown>[] = []
 
-    if (tracks.melody) {
-      loadPromises.push(
-        new Promise(resolve => {
-          const melodyPlayer = playersRef.current!.player('melody')
-          if (melodyPlayer.loaded) {
-            resolve()
-          } else {
-            melodyPlayer.load(tracks.melody!).then(() => resolve())
-          }
-        })
+      if (tracks.melody) {
+        const melodyPlayer = playersRef.current!.player('melody')
+        if (!melodyPlayer.loaded) {
+          loadPromises.push(melodyPlayer.load(tracks.melody!))
+        }
+      }
+
+      if (tracks.backing) {
+        const backingPlayer = playersRef.current!.player('backing')
+        if (!backingPlayer.loaded) {
+          loadPromises.push(backingPlayer.load(tracks.backing!))
+        }
+      }
+
+      await Promise.all(loadPromises)
+
+      if (tracks.melody) {
+        playersRef.current.player('melody').sync().start(0)
+      }
+      if (tracks.backing) {
+        playersRef.current.player('backing').sync().start(0)
+      }
+
+      if (tracks.backing) {
+        const backingDuration =
+          playersRef.current.player('backing').buffer.duration
+        Tone.Transport.loopStart = 0
+        Tone.Transport.loopEnd = backingDuration
+        setDuration(backingDuration)
+      }
+
+      setTracksLoaded(true)
+      setIsLoading(false)
+    } catch (err) {
+      console.error('Error loading tracks:', err)
+      setAudioError(
+        err instanceof Error ? err.message : 'Raitojen lataus epäonnistui'
       )
+      setIsLoading(false)
     }
 
-    if (tracks.backing) {
-      loadPromises.push(
-        new Promise(resolve => {
-          const backingPlayer = playersRef.current!.player('backing')
-          if (backingPlayer.loaded) {
-            resolve()
-          } else {
-            backingPlayer.load(tracks.backing!).then(() => resolve())
-          }
-        })
-      )
-    }
-
-    await Promise.all(loadPromises)
-
-    if (tracks.melody) {
-      playersRef.current.player('melody').sync().start(0)
-    }
-    if (tracks.backing) {
-      playersRef.current.player('backing').sync().start(0)
-    }
-
-    if (tracks.backing) {
-      const backingDuration =
-        playersRef.current.player('backing').buffer.duration
-      Tone.Transport.loopStart = 0
-      Tone.Transport.loopEnd = backingDuration
-      setDuration(backingDuration)
-    }
-
-    setTracksLoaded(true)
+        setTracksLoaded(true)
     setIsLoading(false)
+  } catch (error) {
+    // mahdollinen catch täällä jos se on alempana
+  }
+}, [songId, tracksLoaded, isPracticeTempo, cleanupTransport])
 
     } catch (err) {
   console.error('Error loading tracks:', err)
@@ -164,12 +171,6 @@ const startPlayback = async () => {
         URL.revokeObjectURL(audioTracksRef.current.backing)
       audioTracksRef.current = null
     }
-  }
-
-  const cleanupTransport = () => {
-    Tone.Transport.cancel()
-    Tone.Transport.stop()
-    Tone.Transport.position = 0
   }
 
   const pausePlayback = () => {
@@ -245,8 +246,8 @@ const startPlayback = async () => {
   }, [songId])
 
   useEffect(() => {
-  loadSongTracks()
-}, [loadSongTracks])
+    loadSongTracks()
+  }, [loadSongTracks])
 
   useEffect(() => {
     if (!isPlaying || !audioTracksRef.current?.backing || !playersRef.current)
@@ -277,7 +278,7 @@ const startPlayback = async () => {
       cleanupTransport()
       cleanupAudioUrls()
     }
-  }, [])
+  }, [cleanupTransport])
 
   if (!songId) {
     return <div>Ei kappaletta</div>

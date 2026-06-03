@@ -54,7 +54,7 @@ app.get('/ping', (_req, res) => {
 const clientBuildPath = path.join(__dirname, '../../client/dist')
 app.use(express.static(clientBuildPath))
 
-app.use((req, res, _next) => {
+app.use((req, res) => {
   if (req.originalUrl.startsWith('/api')) {
     res.status(404).json({ message: 'Unknown endpoint!' })
     return

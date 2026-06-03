@@ -4,7 +4,7 @@ import { validateTeacherStudentRelationship } from '../utils/session-helpers'
 import Homework from '../models/homework'
 import { Types } from 'mongoose'
 
-import '../types/express.d.ts'
+import type {} from '../types/express.d.ts'
 
 interface PopulatedStudent {
   id: string

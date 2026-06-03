@@ -187,7 +187,7 @@ return (
         to="/admin/feedback"
         className="inline-block mt-4 mb-4 button-basic"
       >
-        Palauteet
+        Palautteet
       </Link>
 
       <DropdownSearchbar

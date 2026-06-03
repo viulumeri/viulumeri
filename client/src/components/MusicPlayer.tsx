@@ -110,6 +110,7 @@ const loadSongTracks = useCallback(async () => {
       Tone.Transport.loopStart = 0
       Tone.Transport.loopEnd = backingDuration
       setDuration(backingDuration)
+      Tone.Transport.loop = isLooping
     }
 
     setTracksLoaded(true)
@@ -264,6 +265,16 @@ const startPlayback = async () => {
       cleanupAudioUrls()
     }
   }, [cleanupTransport])
+
+  useEffect(() => {
+  if (song?.title && song.title.toLowerCase().includes('impro')) {
+    setIsLooping(true)
+
+    if (playersRef.current) {
+      Tone.Transport.loop = true
+    }
+  }
+}, [song?.title])
 
   if (!songId) {
     return <div>Ei kappaletta</div>

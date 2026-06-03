@@ -170,7 +170,7 @@ export const ResetPassword = () => {
             resetPassword.isPending ||
             !passwordsMatch
           }
-          className="button-basic block mx-auto"
+          className="button-basic hover:bg-gray-300 block mx-auto"
         >
           {resetPassword.isPending
             ? 'Vaihdetaan...'
@@ -181,7 +181,7 @@ export const ResetPassword = () => {
       <div>
         <button type="button"
           onClick={() => navigate('/login')}
-          className="back-button-basic block mx-auto mt-4"
+          className="back-button-basic hover:bg-white/10 block mx-auto mt-4"
         >
           Takaisin
         </button>

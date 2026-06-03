@@ -67,7 +67,7 @@ export const Login = () => {
         <button
           type="submit"
           disabled={loginMutation.isPending}
-          className="button-basic block mx-auto"
+          className="button-basic hover:bg-gray-300 block mx-auto"
         >
           {loginMutation.isPending ? 'Kirjaudutaan…' : 'Kirjaudu sisään'}
         </button>
@@ -76,13 +76,13 @@ export const Login = () => {
       <div>
         <button type="button"
           onClick={() => navigate('/forgot-password')}
-          className="back-button-basic block mx-auto mt-4"
+          className="back-button-basic hover:bg-white/10 block mx-auto mt-4"
         >
           Unohdin salasanani
         </button>
         <button type="button"
           onClick={() => navigate('/signup')}
-          className="back-button-basic block mx-auto mt-4"
+          className="back-button-basic hover:bg-white/10 block mx-auto mt-4"
         >
           Luo uusi käyttäjä
         </button>

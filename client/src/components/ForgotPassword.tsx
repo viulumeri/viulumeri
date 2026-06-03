@@ -49,7 +49,7 @@ export const ForgotPassword = () => {
         <button
           type="submit"
           disabled={requestReset.isPending}
-          className="button-basic block mx-auto"
+          className="button-basic hover:bg-gray-300 block mx-auto"
         >
           {requestReset.isPending ? 'Lähetetään…' : 'Lähetä palautuslinkki'}
         </button>
@@ -58,7 +58,7 @@ export const ForgotPassword = () => {
       <div>
         <button type="button"
           onClick={() => navigate('/login')}
-          className="back-button-basic block mx-auto mt-4"
+          className="back-button-basic hover:bg-white/10 block mx-auto mt-4"
         >
           Takaisin
         </button>

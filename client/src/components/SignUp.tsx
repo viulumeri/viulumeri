@@ -154,7 +154,7 @@ export const Signup = () => {
         <button
           type="submit"
           disabled={signUpMutation.isPending || !passwordsMatch || !password.value || !confirmPassword.value}
-          className="button-basic hover:bg-gray-300 block mx-auto"
+          className="button-basic active:bg-gray-300 block mx-auto"
         >
           {signUpMutation.isPending ? 'Luodaan…' : 'Rekisteröidy'}
         </button>
@@ -162,7 +162,7 @@ export const Signup = () => {
 
       <button type="button"
         onClick={() => navigate('/login')}
-        className="back-button-basic hover:bg-white/10 block mx-auto mt-4"
+        className="back-button-basic active:bg-white/10 block mx-auto mt-4"
       >
         Takaisin
       </button>

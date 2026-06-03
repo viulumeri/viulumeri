@@ -6,7 +6,7 @@ import { Plus } from 'lucide-react'
 type Student = { 
   id: string; 
   name: string; 
-  latestHomework?: {
+  latestHomework: {
     practiceCount: number;
   } | null
 }

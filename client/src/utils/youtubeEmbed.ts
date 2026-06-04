@@ -13,3 +13,23 @@ export const extractYouTubeVideoId = (url: string): string | null => {
 
   return null
 }
+
+export const processYouTubeEmbeds = (html: string): string => {
+  const parser = new DOMParser()
+  const doc = parser.parseFromString(html, 'text/html')
+
+  doc.querySelectorAll('a[href]').forEach((el) => {
+    const anchor = el as HTMLAnchorElement
+    const videoId = extractYouTubeVideoId(anchor.href)
+    if (!videoId) return
+
+    const iframe = doc.createElement('iframe')
+    iframe.src = `https://www.youtube-nocookie.com/embed/${videoId}`
+    iframe.allowFullscreen = true
+    iframe.setAttribute('allow', 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture')
+
+    anchor.replaceWith(iframe)
+  })
+
+  return doc.body.innerHTML
+}

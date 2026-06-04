@@ -177,7 +177,8 @@ const HomeworkCard = ({
                 [&_ol_ol]:list-[lower-alpha]
                 [&_ol_ol_ol]:list-[lower-roman]
                 [&_li]:my-0.5
-                [&_a]:text-blue-400 [&_a]:underline"
+                [&_a]:text-blue-400 [&_a]:underline
+                [&_iframe]:w-full [&_iframe]:aspect-video [&_iframe]:rounded [&_iframe]:mt-2"
                 dangerouslySetInnerHTML={{ __html: processYouTubeEmbeds(DOMPurify.sanitize(hw.comment, { ADD_ATTR: ['target'] })) }}
               />
             </>

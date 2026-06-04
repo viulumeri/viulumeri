@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import DOMPurify from 'dompurify'
+import { processYouTubeEmbeds } from '../utils/youtubeEmbed'
 import { Ellipsis, X } from 'lucide-react'
 import type { SongListItem, HomeworkListResponse } from '../../../shared/types'
 import SongCard from './SongCard'
@@ -177,7 +178,7 @@ const HomeworkCard = ({
                 [&_ol_ol_ol]:list-[lower-roman]
                 [&_li]:my-0.5
                 [&_a]:text-blue-400 [&_a]:underline"
-                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(hw.comment, { ADD_ATTR: ['target'] }) }}
+                dangerouslySetInnerHTML={{ __html: processYouTubeEmbeds(DOMPurify.sanitize(hw.comment, { ADD_ATTR: ['target'] })) }}
               />
             </>
           )

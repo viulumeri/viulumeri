@@ -1,14 +1,28 @@
 export const extractYouTubeVideoId = (url: string): string | null => {
-  const patterns = [
-    /(?:youtube\.com\/watch\?(?:.*&)?v=)([a-zA-Z0-9_-]{11})/,
-    /(?:youtu\.be\/)([a-zA-Z0-9_-]{11})/,
-    /(?:youtube\.com\/shorts\/)([a-zA-Z0-9_-]{11})/,
-    /(?:youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/,
-  ]
+  let parsed: URL
+  try {
+    parsed = new URL(url)
+  } catch {
+    return null
+  }
 
-  for (const pattern of patterns) {
-    const match = url.match(pattern)
-    if (match) return match[1]
+  const host = parsed.hostname.replace(/^www\./, '')
+  const path = parsed.pathname
+
+  if (host === 'youtube.com') {
+    if (path === '/watch') {
+      const v = parsed.searchParams.get('v')
+      return v && /^[a-zA-Z0-9_-]{11}$/.test(v) ? v : null
+    }
+    if (path.startsWith('/shorts/') || path.startsWith('/embed/')) {
+      const id = path.split('/')[2]
+      return id && /^[a-zA-Z0-9_-]{11}$/.test(id) ? id : null
+    }
+  }
+
+  if (host === 'youtu.be') {
+    const id = path.slice(1)
+    return id && /^[a-zA-Z0-9_-]{11}$/.test(id) ? id : null
   }
 
   return null

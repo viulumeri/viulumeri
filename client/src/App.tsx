@@ -21,9 +21,7 @@ import { FeedbackPage } from './components/FeedbackPage'
 import { AppLayout } from './components/AppLayout'
 import PublicLayout from './components/PublicLayout'
 import { SettingsPage } from './components/SettingsPage'
-import { AdminPanel } from './components/AdminPanel'
-import { PopupAdminPage } from './components/PopupAdminPage'
-import { AdminFeedbackPage } from './components/AdminFeedbackPage'
+import { AdminScrollShell } from './components/AdminScrollShell'
 import { Route, Routes, Navigate } from 'react-router-dom'
 import { useSession } from './auth-client'
 import type { AppSessionUser } from '../../shared/types'
@@ -199,24 +197,24 @@ const App = () => {
               <Route
                 path="/admin"
                 element={
-                  <AppLayout>
-                    <AdminPanel />
+                  <AppLayout showNavbar={false}>
+                    <AdminScrollShell />
                   </AppLayout>
                 }
               />
               <Route
                 path="/admin/popup"
                 element={
-                  <AppLayout>
-                    <PopupAdminPage />
+                  <AppLayout showNavbar={false}>
+                    <AdminScrollShell initialSectionId="popup" />
                   </AppLayout>
                 }
               />
               <Route
                 path="/admin/feedback"
                 element={
-                  <AppLayout>
-                    <AdminFeedbackPage />
+                  <AppLayout showNavbar={false}>
+                    <AdminScrollShell initialSectionId="feedback" />
                   </AppLayout>
                 }
               />

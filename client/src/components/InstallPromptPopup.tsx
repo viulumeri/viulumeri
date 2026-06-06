@@ -51,7 +51,7 @@ export const InstallPromptPopup = ({ userId }: Props) => {
 
   return (
     <div
-      className="fixed inset-x-0 top-40 z-50 flex justify-center px-4 pointer-events-none"
+      className="fixed inset-x-0 top-4 z-50 flex justify-center px-4 pointer-events-none"
       role="dialog"
       aria-label="Asenna sovellus"
     >
@@ -59,7 +59,7 @@ export const InstallPromptPopup = ({ userId }: Props) => {
         <div className="p-6">
             <h1 className="flex justify-center">Tervetuloa Viulumereen</h1>
             <h2 className="mt-5">Sovelluksen asennus</h2>
-          <div className="mt-1 space-y-3 text-neutral-100/90">
+          <div className="mt-1 space-y-3 text-neutral-100/90 overflow-y-auto max-h-[60vh]">
             <p>
               Voit asentaa sovelluksen laitteellesi ja käyttää sitä kuin tavallista sovellusta
             </p>

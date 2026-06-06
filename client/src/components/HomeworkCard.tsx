@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useMemo } from 'react'
 import DOMPurify from 'dompurify'
 import { processYouTubeEmbeds } from '../utils/youtubeEmbed'
 import { Ellipsis, X } from 'lucide-react'
@@ -49,6 +49,11 @@ const HomeworkCard = ({
   onAddSong
 }: Props) => {
   const menuRef = useRef<HTMLDivElement | null>(null)
+
+  const renderedComment = useMemo(
+    () => processYouTubeEmbeds(DOMPurify.sanitize(hw.comment ?? '', { ADD_ATTR: ['target'] })),
+    [hw.comment]
+  )
 
   useEffect(() => {
     function onDocClick(e: MouseEvent) {
@@ -179,7 +184,7 @@ const HomeworkCard = ({
                 [&_li]:my-0.5
                 [&_a]:text-blue-400 [&_a]:underline
                 [&_iframe]:w-full [&_iframe]:aspect-video [&_iframe]:rounded [&_iframe]:mt-2"
-                dangerouslySetInnerHTML={{ __html: processYouTubeEmbeds(DOMPurify.sanitize(hw.comment, { ADD_ATTR: ['target'] })) }}
+                dangerouslySetInnerHTML={{ __html: renderedComment }}
               />
             </>
           )

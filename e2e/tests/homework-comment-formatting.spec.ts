@@ -46,7 +46,8 @@ test.beforeAll(async () => {
     expect(existingHwRes.ok()).toBeTruthy()
     const { homework: existingHomework } = await existingHwRes.json()
     for (const hw of existingHomework) {
-      await teacherCtx.delete(`/api/homework/${hw.id}`)
+      const deleteRes = await teacherCtx.delete(`/api/homework/${hw.id}`)
+      expect(deleteRes.ok()).toBeTruthy()
     }
 
     // Create a homework assignment for the student

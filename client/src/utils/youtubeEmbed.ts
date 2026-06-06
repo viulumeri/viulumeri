@@ -49,3 +49,13 @@ export const processYouTubeEmbeds = (html: string): string => {
 
   return doc.body.innerHTML
 }
+
+export const pauseYouTubeIframes = (container: HTMLElement): void => {
+  container.querySelectorAll<HTMLIFrameElement>('iframe').forEach((iframe) => {
+    if (!iframe.src.includes('youtube-nocookie.com')) return
+    iframe.contentWindow?.postMessage(
+      JSON.stringify({ event: 'command', func: 'pauseVideo', args: [] }),
+      '*'
+    )
+  })
+}

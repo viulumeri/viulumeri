@@ -65,3 +65,9 @@ export async function markStartupAnnouncementsAsSeen(
     value: marker
   })
 }
+
+export async function markInstallPromptAsSeen(page: Page): Promise<void> {
+  await page.evaluate(() => {
+    window.localStorage.setItem('installPromptSeen', 'true')
+  })
+}

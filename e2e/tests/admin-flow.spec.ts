@@ -1,6 +1,6 @@
 import { test, expect, type Page } from '@playwright/test'
 import { MongoClient } from 'mongodb'
-import { markStartupAnnouncementsAsSeen } from './announcement-state'
+import { markInstallPromptAsSeen, markStartupAnnouncementsAsSeen } from './announcement-state'
 
 const ADMIN = {
   email: 'e2e-admin@example.com',
@@ -29,6 +29,7 @@ async function login(
   await page.goto('/login')
   if (suppressAnnouncements) {
     await markStartupAnnouncementsAsSeen(page, email)
+    await markInstallPromptAsSeen(page)
   }
   await page.getByPlaceholder('Sähköpostiosoite').fill(email)
   await page.getByPlaceholder('Salasana').fill(password)
@@ -130,6 +131,7 @@ test('admin can delete user, create popup, and user sees popup', async ({ page }
 
   await expect(page.getByText('Pop-up lähetetty')).toBeVisible({ timeout: 15_000 })
   await markStartupAnnouncementsAsSeen(page, ADMIN.email)
+  await markInstallPromptAsSeen(page)
 
   // 4) Log out.
   await page.goto('/settings')

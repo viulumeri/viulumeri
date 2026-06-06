@@ -1,7 +1,7 @@
 
 import { test, expect, type Page } from '@playwright/test'
 import { SEED_USERS } from '../global-setup'
-import { markStartupAnnouncementsAsSeen } from './announcement-state'
+import { markInstallPromptAsSeen, markStartupAnnouncementsAsSeen } from './announcement-state'
 
 const ADMIN = SEED_USERS.find(user => user.userType === 'admin')
 if (!ADMIN) {
@@ -29,6 +29,7 @@ async function loginAsAdmin(page: Page) {
   await page.getByRole('button', { name: 'Kirjaudu sisään' }).click()
   await page.waitForURL(url => !url.pathname.endsWith('/login'), { timeout: 15_000 })
   await markStartupAnnouncementsAsSeen(page, ADMIN.email)
+  await markInstallPromptAsSeen(page)
   await page.goto('/admin')
   await expect(page).toHaveURL('/admin')
 }

@@ -38,7 +38,7 @@ export const processYouTubeEmbeds = (html: string): string => {
     if (!videoId) return
 
     const iframe = doc.createElement('iframe')
-    iframe.src = `https://www.youtube-nocookie.com/embed/${videoId}`
+    iframe.src = `https://www.youtube-nocookie.com/embed/${videoId}?enablejsapi=1`
     iframe.title = anchor.textContent?.trim() || 'YouTube video'
     iframe.loading = 'lazy'
     iframe.allowFullscreen = true

@@ -74,9 +74,9 @@ const HomeworkCard = ({
     if (!el) return
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (!entry.isIntersecting) pauseYouTubeIframes(el)
+        if (entry.intersectionRatio < 0.5) pauseYouTubeIframes(el)
       },
-      { threshold: 0 }
+      { threshold: [0, 0.5, 1] }
     )
     observer.observe(el)
     return () => observer.disconnect()

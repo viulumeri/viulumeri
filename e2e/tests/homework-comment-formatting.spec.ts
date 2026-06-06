@@ -243,10 +243,11 @@ test.describe.serial('Homework comment formatting', () => {
   })
 
   test('multiple YouTube links are each shown as separate embeds', async ({ browser }) => {
-    // Covers youtube.com/watch and youtu.be link formats
+    // Covers youtube.com/watch, youtu.be, and youtube.com/shorts link formats
     await setComment(
       '<p><a href="https://www.youtube.com/watch?v=testVidId01">video yksi</a></p>' +
-        '<p><a href="https://youtu.be/testVidId02">video kaksi</a></p>'
+        '<p><a href="https://youtu.be/testVidId02">video kaksi</a></p>' +
+        '<p><a href="https://www.youtube.com/shorts/testVidId03">video kolme</a></p>'
     )
 
     const studentPage = await browser.newPage()
@@ -258,6 +259,9 @@ test.describe.serial('Homework comment formatting', () => {
     ).toBeVisible()
     await expect(
       studentPage.locator('iframe[src*="youtube-nocookie.com/embed/testVidId02"]')
+    ).toBeVisible()
+    await expect(
+      studentPage.locator('iframe[src*="youtube-nocookie.com/embed/testVidId03"]')
     ).toBeVisible()
 
     await studentPage.close()

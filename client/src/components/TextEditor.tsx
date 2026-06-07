@@ -12,7 +12,6 @@ type Props = {
 }
 
 const TextEditor = ({ value, onChange, placeholder }: Props) => {
-  const skipNextUpdate = useRef(false)
   const savedSelection = useRef<{ from: number; to: number } | null>(null)
   const [linkDialog, setLinkDialog] = useState<{ url: string; text: string } | null>(null)
 
@@ -27,10 +26,6 @@ const TextEditor = ({ value, onChange, placeholder }: Props) => {
     ],
     content: value,
     onUpdate: ({ editor }) => {
-      if (skipNextUpdate.current) {
-        skipNextUpdate.current = false
-        return
-      }
       onChange(editor.isEmpty ? '' : editor.getHTML())
     },
   })
@@ -48,13 +43,13 @@ const TextEditor = ({ value, onChange, placeholder }: Props) => {
     }),
   })
 
-  // Sync when value is changed externally (e.g. form reset or initial load)
+  // Sync external value changes without triggering onChange
   useEffect(() => {
     if (!editor || editor.isDestroyed) return
+    if (editor.isFocused) return
     const current = editor.getHTML()
     if (current !== value) {
-      skipNextUpdate.current = true
-      editor.commands.setContent(value)
+      editor.commands.setContent(value, { emitUpdate: false })
     }
   }, [value, editor])
 

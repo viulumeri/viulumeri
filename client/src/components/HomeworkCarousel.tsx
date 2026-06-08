@@ -101,6 +101,12 @@ export const HomeworkCarousel = ({
     return () => el.removeEventListener('scroll', handleScroll)
   }, [homework.length])
 
+  const navigateTo = (index: number) => {
+    if (!scrollRef.current) return
+    const cardWidth = window.innerWidth * 0.9 + 16
+    scrollRef.current.scrollTo({ left: index * cardWidth, behavior: 'smooth' })
+  }
+
   if (isPending) return <div className="p-4">Ladataan…</div>
   if (!homework.length) {
     return (

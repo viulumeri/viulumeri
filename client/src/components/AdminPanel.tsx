@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Search, CircleEllipsis } from 'lucide-react'
 import { useAdminTeachers, useAdminStudents, useDeleteAdminTeacher, useDeleteAdminStudent, useImpersonateAdminUser } from '../hooks/useAdmin'
 import { DropdownSearchbar } from './DropdownSearchbar'
@@ -18,7 +18,6 @@ export const AdminPanel = () => {
   const { data: studentsData, error: studentsError } = useAdminStudents()
 
   const [searchUserInput, setSearchUserInput] = useState('')
-  const [searchResults, setSearchResults] = useState<SearchResultUser[]>([])
   const [selectedUser, setSelectedUser] = useState<Teacher | Student | null>(null)
   const [profileExpanded, setProfileExpanded] = useState(false)
   const [actionsOpen, setActionsOpen] = useState(false)
@@ -66,42 +65,45 @@ export const AdminPanel = () => {
   const students = studentsData?.students ?? []
   const error = teachersError || studentsError ? 'Failed to load admin data' : null
 
+  const allUsers = useMemo<SearchResultUser[]>(() => [
+    ...teachers.map((teacher) => ({
+      id: teacher.id,
+      name: teacher.name,
+      email: teacher.email,
+      role: 'teacher' as const
+    })),
+    ...students.map((student) => ({
+      id: student.id,
+      name: student.name,
+      email: student.email,
+      role: 'student' as const
+    }))
+  ], [teachers, students])
+
+  const searchResults = useMemo(() => {
+    const normalizedValue = searchUserInput.trim().toLowerCase()
+
+    if (!normalizedValue) {
+      return allUsers
+    }
+
+    return allUsers.filter((user) =>
+      user.name.toLowerCase().includes(normalizedValue) ||
+      user.email.toLowerCase().includes(normalizedValue)
+    )
+  }, [allUsers, searchUserInput])
+
   const handleSearchUserInputChange = (value: string) => {
     setSearchUserInput(value)
     setSelectedUser(null)
     setActionsOpen(false)
     setProfileExpanded(false)
-
-    const normalizedValue = value.toLowerCase()
-    const teacherMatches = teachers
-      .filter((teacher) =>
-        teacher.name.toLowerCase().includes(normalizedValue) ||
-        teacher.email.toLowerCase().includes(normalizedValue)
-      )
-      .map((teacher) => ({
-        id: teacher.id,
-        name: teacher.name,
-        email: teacher.email,
-        role: 'teacher' as const
-      }))
-
-    const studentMatches = students
-      .filter((student) =>
-        student.name.toLowerCase().includes(normalizedValue) ||
-        student.email.toLowerCase().includes(normalizedValue)
-      )
-      .map((student) => ({
-        id: student.id,
-        name: student.name,
-        email: student.email,
-        role: 'student' as const
-      }))
-
-    setSearchResults([...teacherMatches, ...studentMatches])
   }
 
   const handleResultSelect = (user: SearchResultUser) => {
-    const fullUserData = teachers.find((t) => t.id === user.id) || students.find((s) => s.id === user.id)
+    const fullUserData = user.role === 'teacher'
+      ? teachers.find((teacher) => teacher.id === user.id)
+      : students.find((student) => student.id === user.id)
     if (fullUserData) {
       setSelectedUser(fullUserData)
       setProfileExpanded(false)

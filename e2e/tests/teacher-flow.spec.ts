@@ -11,7 +11,6 @@ async function loginAs(
   expectedUrlPattern: RegExp
 ) {
   await page.goto('/login')
-  await markStartupAnnouncementsAsSeen(page, credentials.email)
   await page.getByPlaceholder('Sähköpostiosoite').fill(credentials.email)
   await page.getByPlaceholder('Salasana').fill(credentials.password)
 
@@ -27,6 +26,7 @@ async function loginAs(
   expect(signInResponse.ok(), `Sign-in failed: HTTP ${signInResponse.status()}`).toBe(true)
 
   await page.waitForURL(expectedUrlPattern, { timeout: 15_000 })
+  await markStartupAnnouncementsAsSeen(page, credentials.email)
 }
 
 test('teacher flow', async ({ page }) => {
@@ -131,7 +131,7 @@ test('teacher flow', async ({ page }) => {
 
     // Bullet list — toolbar button activates list, double-Enter exits it without destroying it
     await page.getByTitle('Lista', { exact: true }).click()
-    await editor.focus()
+    await page.keyboard.press('End')
     await page.keyboard.type('Ohje yksi', { delay: 25 })
     await expect(editor.locator('ul li').filter({ hasText: 'Ohje yksi' })).toBeAttached()
     await page.keyboard.press('Enter')
@@ -142,7 +142,7 @@ test('teacher flow', async ({ page }) => {
 
     // Ordered list — same pattern
     await page.getByTitle('Numeroitu lista').click()
-    await editor.focus()
+    await page.keyboard.press('End')
     await page.keyboard.type('Vaihe yksi', { delay: 25 })
     await expect(editor.locator('ol li').filter({ hasText: 'Vaihe yksi' })).toBeAttached()
     await page.keyboard.press('Enter')

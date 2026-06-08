@@ -2,7 +2,7 @@ import { useState } from 'react'
 
 const STORAGE_KEY = 'installPromptSeen'
 
-const StepImage = ({ srcs, alt, children }: { srcs: string[]; alt: string; children: React.ReactNode }) => {
+const StepImage = ({ srcs, alts, children }: { srcs: string[]; alts: string[]; children: React.ReactNode }) => {
   const [open, setOpen] = useState(false)
   return (
     <div>
@@ -22,7 +22,7 @@ const StepImage = ({ srcs, alt, children }: { srcs: string[]; alt: string; child
             <img
               key={src}
               src={src}
-              alt={`${alt} ${i + 1}`}
+              alt={alts[i]}
               className="rounded-lg h-64 w-auto shrink-0 object-contain"
             />
           ))}
@@ -67,17 +67,17 @@ export const InstallPromptPopup = ({ userId }: Props) => {
                 <p className="font-semibold mb-1">Android</p>
                 <p>1. Asenna joko:</p>
                 <div className="flex items-start gap-2">
-                  <StepImage srcs={["/PWA-install-instructions/prompt.jpg"]} alt="Asennusilmoitus">
+                  <StepImage srcs={["/PWA-install-instructions/prompt.jpg"]} alts={["Asennusilmoitus"]}>
                   <p className="pl-4 text-sm">a. automaattisen asennusilmoituksen kautta</p>
                   </StepImage>
                 </div>
                 <div className="flex items-start gap-2 mt-2">
-                  <StepImage srcs={["/PWA-install-instructions/addtohomescreen.jpg", "/PWA-install-instructions/choose.jpg"]} alt="lisää aloitusnäyttöön, valitse install">
+                  <StepImage srcs={["/PWA-install-instructions/addtohomescreen.jpg", "/PWA-install-instructions/choose.jpg"]} alts={["Aloitusnäyttöön lisäys", "Valitse install"]}>
                   <p className="pl-4 text-sm">b. selaimen valikon (⋮) kautta valitsemalla <span className="italic">Lisää aloitusnäyttöön</span></p>
                   </StepImage>
                 </div>
                 <div className="flex gap-10 mt-2">
-                  <StepImage srcs={["/PWA-install-instructions/prompt2.jpg"]} alt="paina asenna">
+                  <StepImage srcs={["/PWA-install-instructions/prompt2.jpg"]} alts={["paina asenna"]}>
                   <p className="mt-2">2. Paina <span className="italic">Asenna</span></p>
                   </StepImage>
                 </div>

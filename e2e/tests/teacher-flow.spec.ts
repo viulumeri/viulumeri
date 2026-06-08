@@ -60,6 +60,32 @@ test('teacher flow', async ({ page }) => {
     // 1. Teacher logs in
     await loginAs(page, TEACHER, /\/teacher\//)
 
+    // Verify that teacher sees install prompt
+    await expect(page.getByText('Sovelluksen asennus')).toBeVisible({ timeout: 15_000 })
+
+    // Verify that the prompt can be reopened and shows image
+    await page.getByRole('button', { name: '▼ kuva' }).first().click()
+    await expect(page.getByAltText('Asennusilmoitus')).toBeVisible()
+
+    // Close the image view
+    await page.getByRole('button', { name: '▲ piilota' }).first().click()
+    await expect(page.getByAltText('Asennusilmoitus')).toBeHidden()
+
+    // Open second image and verify it shows up, close it again
+    await page.getByRole('button', { name: '▼ kuva' }).nth(1).click()
+    await expect(page.getByAltText('Aloitusnäyttöön lisäys')).toBeVisible()
+    await expect(page.getByAltText('Valitse install')).toBeVisible()
+
+    await page.getByRole('button', { name: '▲ piilota' }).first().click()
+    await expect(page.getByAltText('Aloitusnäyttöön lisäys')).toBeHidden()
+    await expect(page.getByAltText('Valitse install')).toBeHidden()
+
+    // Dismiss the prompt and verify it doesn't reappear
+    await page.getByRole('button', { name: 'OK' }).click()
+    await expect(page.getByText('Sovelluksen asennus')).toBeHidden()
+    await page.reload()
+    await expect(page.getByText('Sovelluksen asennus')).toBeHidden()
+
     // 2. Teacher creates an invite link
     await page.goto('/invite')
     const inviteResponsePromise = page.waitForResponse(

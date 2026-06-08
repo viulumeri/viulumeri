@@ -70,7 +70,7 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 1 : 1,
+  workers: 1,
   reporter: process.env.CI ? [['html'], ['github']] : 'html',
   webServer,
   use: {

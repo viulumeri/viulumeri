@@ -483,7 +483,7 @@ return (
                   </>
                 ) : (
                   <>
-                    <div className="bg-neutral-700 border border-neutral-600 rounded-xl px-4 py-3 text-gray-200">
+                    <div className="bg-neutral-700 border border-neutral-600 rounded-xl px-4 py-3 text-gray-200 whitespace-pre-wrap">
                       {renderWithLinks(faq.answer)}
                     </div>
                     <div className="space-y-2">

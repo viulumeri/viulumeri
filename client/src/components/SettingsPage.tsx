@@ -295,7 +295,7 @@ export const SettingsPage = () => {
 
                     {openFaqId === faq._id && (
                       <div className="mt-3 bg-neutral-700 border border-neutral-600 rounded-xl px-4 py-3 text-gray-200 leading-relaxed">
-                        <p>{renderWithLinks(faq.answer)}</p>
+                        <div>{renderWithLinks(faq.answer)}</div>
                         <p className="mt-3 text-sm text-gray-400">
                         {faq.updatedAt &&
                         faq.createdAt &&

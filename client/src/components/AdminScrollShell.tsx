@@ -1,15 +1,15 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import type { ReactElement } from 'react'
-import { Banana, Bell, MessageSquare } from 'lucide-react'
+import { Banana, Bell, MessageSquare, UserRound } from 'lucide-react'
 import { AdminPanel } from './AdminPanel'
 import { PopupAdminPage } from './PopupAdminPage'
 import { AdminFeedbackPage } from './AdminFeedbackPage'
+import { AdminUserViewPage } from './AdminUserViewPage'
 
 type AdminSection = {
   id: string
   label: string
   icon: React.ComponentType<{ className?: string }>
-  render: () => ReactElement
+  render: () => React.ReactElement
 }
 
 type Props = {
@@ -36,13 +36,19 @@ export const AdminScrollShell = ({ initialSectionId }: Props) => {
         label: 'Palautteet',
         icon: MessageSquare,
         render: () => <AdminFeedbackPage />
+      },
+      {
+        id: 'user-view',
+        label: 'Käyttäjänäkymä',
+        icon: UserRound,
+        render: () => <AdminUserViewPage />
       }
     ],
     []
   )
 
   const containerRef = useRef<HTMLDivElement | null>(null)
-  const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({})
+  const sectionRefs = useRef<Record<string, HTMLElement | null>>({})
   const scrollLockIdRef = useRef<string | null>(null)
   const scrollLockTimeoutRef = useRef<number | null>(null)
   const [activeId, setActiveId] = useState(

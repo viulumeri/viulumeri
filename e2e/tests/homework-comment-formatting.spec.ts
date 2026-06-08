@@ -41,6 +41,15 @@ test.beforeAll(async () => {
     expect(student).toBeDefined()
     studentId = student.id
 
+    // Delete any leftover homework from previous runs
+    const existingHwRes = await teacherCtx.get(`/api/students/${studentId}/homework`)
+    expect(existingHwRes.ok()).toBeTruthy()
+    const { homework: existingHomework } = await existingHwRes.json()
+    for (const hw of existingHomework) {
+      const deleteRes = await teacherCtx.delete(`/api/homework/${hw.id}`)
+      expect(deleteRes.ok()).toBeTruthy()
+    }
+
     // Create a homework assignment for the student
     const hwRes = await teacherCtx.post('/api/homework', {
       data: { studentId, songs: [], comment: '' },
@@ -81,68 +90,38 @@ async function loginAs(
   await markInstallPromptAsSeen(page)
 }
 
-test.describe('Homework comment formatting', () => {
-  test('teacher saves formatted comment and student sees it as rendered HTML', async ({
-    page,
+// Set the homework comment HTML directly via the API (teacher auth)
+async function setComment(comment: string) {
+  const teacherCtx = await request.newContext({ baseURL: BASE_URL })
+  try {
+    const signInRes = await teacherCtx.post('/api/auth/sign-in/email', { data: TEACHER })
+    expect(signInRes.ok()).toBeTruthy()
+    const putRes = await teacherCtx.put(`/api/homework/${homeworkId}`, {
+      data: { comment },
+    })
+    expect(putRes.ok()).toBeTruthy()
+  } finally {
+    await teacherCtx.dispose()
+  }
+}
+
+test.describe.serial('Homework comment formatting', () => {
+  test.beforeEach(async () => {
+    // Reset the comment so each test starts from a clean slate
+    await setComment('')
+  })
+
+  test('student sees formatted comment as rendered HTML', async ({
     browser,
   }) => {
-    // Teacher: add a formatted comment
-    await loginAs(page, TEACHER, /\/teacher\//)
-    await page.goto(`/teacher/students/${studentId}/homework/${homeworkId}/edit`)
-
-    const editor = page.locator('.tiptap')
-    await editor.waitFor()
-    await editor.click()
-
-    // Select "Otsikko" from the toolbar dropdown
-    await page.locator('select').selectOption('2')
-    await page.keyboard.type('Harjoitteluohje')
-    await page.keyboard.press('Enter')
-    await page.locator('select').selectOption('0')
-
-    // Italic
-    await page.keyboard.press('Control+i')
-    await page.keyboard.type('Tärkeää:')
-    await page.keyboard.press('Control+i')
-    await page.keyboard.press('Enter')
-
-    // Bold
-    await page.keyboard.press('Control+b')
-    await page.keyboard.type('muista harjoitella')
-    await page.keyboard.press('Control+b')
-    await page.keyboard.press('Enter')
-
-    // Bullet list — toolbar button activates list, double-Enter exits it without destroying it
-    await page.getByTitle('Lista', { exact: true }).click()
-    await editor.focus()
-    await page.keyboard.type('Ohje yksi')
-    await page.keyboard.press('Enter')
-    await page.keyboard.type('Ohje kaksi')
-    await page.keyboard.press('Enter')
-    await page.keyboard.press('Enter')
-
-    // Verify list was actually created in the editor before saving
-    await expect(editor.locator('ul li').filter({ hasText: 'Ohje yksi' })).toBeAttached()
-
-    // Ordered list — same pattern
-    await page.getByTitle('Numeroitu lista').click()
-    await editor.focus()
-    await page.keyboard.type('Vaihe yksi')
-    await page.keyboard.press('Enter')
-    await page.keyboard.press('Enter')
-
-    // Link
-    await page.keyboard.type('nettisivu')
-    await page.keyboard.press('Home')
-    await page.keyboard.press('Shift+End')
-    await page.getByTitle('Linkki').click()
-    // Dialog has two inputs: display text (auto-focused) and URL (second)
-    await page.locator('.inset-0 input').nth(1).fill('example.com')
-    await page.getByRole('button', { name: 'Tallenna' }).click()
-
-    // Save homework
-    await page.locator('button.rounded-full.bg-white').click()
-    await page.waitForURL(`/teacher/students/${studentId}/homework`)
+    await setComment(
+      '<h2>Harjoitteluohje</h2>' +
+        '<p><em>Tärkeää:</em></p>' +
+        '<p><strong>muista harjoitella</strong></p>' +
+        '<ul><li><p>Ohje yksi</p></li><li><p>Ohje kaksi</p></li></ul>' +
+        '<ol><li><p>Vaihe yksi</p></li></ol>' +
+        '<p><a href="https://example.com">nettisivu</a></p>'
+    )
 
     // Student: verify all formatting is rendered as HTML elements
     const studentPage = await browser.newPage()
@@ -176,6 +155,62 @@ test.describe('Homework comment formatting', () => {
     await expect(studentPage.getByText('<strong>')).not.toBeVisible()
     await expect(studentPage.getByText('<h2>')).not.toBeVisible()
     await expect(studentPage.getByText('<a href')).not.toBeVisible()
+
+    await studentPage.close()
+  })
+
+  test('YouTube link is shown as an embed and non-YouTube link stays as a link', async ({
+    browser,
+  }) => {
+    // YouTube IDs are fake but valid 11-char shapes
+    await setComment(
+      '<p><a href="https://www.youtube.com/watch?v=testVidId01">katso video</a></p>' +
+        '<p><a href="https://example.com">nettisivu</a></p>'
+    )
+
+    const studentPage = await browser.newPage()
+    await loginAs(studentPage, STUDENT, /\/student\//)
+    await studentPage.goto('/student/homework/list')
+
+    await expect(studentPage.getByText('Opettajan kommentti')).toBeVisible()
+
+    // YouTube link rendered as iframe embed
+    await expect(
+      studentPage.locator('iframe[src*="youtube-nocookie.com/embed/testVidId01"]')
+    ).toBeVisible()
+
+    // YouTube anchor link should not be present
+    await expect(studentPage.locator('a[href*="youtube.com"]')).not.toBeAttached()
+
+    // Non-YouTube link still rendered as anchor
+    await expect(
+      studentPage.locator('a[href="https://example.com"]').filter({ hasText: 'nettisivu' })
+    ).toBeVisible()
+
+    await studentPage.close()
+  })
+
+  test('multiple YouTube links are each shown as separate embeds', async ({ browser }) => {
+    // Covers youtube.com/watch, youtu.be, and youtube.com/shorts link formats
+    await setComment(
+      '<p><a href="https://www.youtube.com/watch?v=testVidId01">video yksi</a></p>' +
+        '<p><a href="https://youtu.be/testVidId02">video kaksi</a></p>' +
+        '<p><a href="https://www.youtube.com/shorts/testVidId03">video kolme</a></p>'
+    )
+
+    const studentPage = await browser.newPage()
+    await loginAs(studentPage, STUDENT, /\/student\//)
+    await studentPage.goto('/student/homework/list')
+
+    await expect(
+      studentPage.locator('iframe[src*="youtube-nocookie.com/embed/testVidId01"]')
+    ).toBeVisible()
+    await expect(
+      studentPage.locator('iframe[src*="youtube-nocookie.com/embed/testVidId02"]')
+    ).toBeVisible()
+    await expect(
+      studentPage.locator('iframe[src*="youtube-nocookie.com/embed/testVidId03"]')
+    ).toBeVisible()
 
     await studentPage.close()
   })

@@ -162,6 +162,18 @@ export const adminService = {
     })
     return response.data
   },
+
+  updateAdminFeedbackReadStatus: async (
+    id: string,
+    isRead: boolean
+  ): Promise<{ feedback: { id: string; isRead: boolean } }> => {
+    const response = await axios.patch(
+      `/api/admin/feedbacks/${id}`,
+      { isRead },
+      { withCredentials: true }
+    )
+    return response.data
+  },
   // Call the better-auth admin plugin endpoint directly so the library
   // sets the auth cookies on the response (browser will receive Set-Cookie).
   impersonateUser: async (body: ImpersonateAdminRequest): Promise<ImpersonateAdminResponse> => {

@@ -61,10 +61,17 @@ test('teacher flow', async ({ page }) => {
     await loginAs(page, TEACHER, /\/teacher\//)
 
     // 2. Teacher creates an invite link
-    const inviteRes = await teacherCtx.post('/api/invites')
-    expect(inviteRes.ok()).toBeTruthy()
-    const { inviteUrl } = await inviteRes.json()
+    await page.goto('/invite')
+    const inviteResponsePromise = page.waitForResponse(
+      response =>
+        response.url().includes('/api/invites') && response.request().method() === 'POST'
+    )
+    await page.getByRole('button', { name: 'Luo kutsulinkki' }).click()
+    const inviteResponse = await inviteResponsePromise
+    expect(inviteResponse.ok()).toBeTruthy()
+    const { inviteUrl } = await inviteResponse.json()
     const token = inviteUrl.split('/invite/')[1]
+    await expect(page.locator('input[readonly]')).toBeVisible({ timeout: 15_000 })
 
     // 3. Student accepts the invite
     const acceptRes = await studentCtx.post(`/api/invites/${token}/accept`)
@@ -82,14 +89,17 @@ test('teacher flow', async ({ page }) => {
     studentId = student.id
 
     // 5. Teacher creates homework for the student
-    const hwRes = await teacherCtx.post('/api/homework', {
-      data: { studentId, songs: [], comment: '' },
-    })
-    expect(hwRes.ok()).toBeTruthy()
-    const hw = await hwRes.json()
+    await page.goto(`/teacher/students/${studentId}/homework/create`)
+    const createHwResponsePromise = page.waitForResponse(
+      response =>
+        response.url().includes('/api/homework') && response.request().method() === 'POST'
+    )
+    await page.locator('button.rounded-full.bg-white').click()
+    const createHwResponse = await createHwResponsePromise
+    expect(createHwResponse.ok()).toBeTruthy()
+    const hw = await createHwResponse.json()
     homeworkId = hw.id
-
-    await page.goto(`/teacher/students/${studentId}/homework`)
+    await page.waitForURL(`/teacher/students/${studentId}/homework`)
     await expect(page.getByRole('heading', { name: 'Tehtävä', exact: true })).toBeVisible({ timeout: 15_000 })
 
     // 6. Teacher writes a rich-text comment using the TipTap editor
@@ -152,7 +162,7 @@ test('teacher flow', async ({ page }) => {
     await page.locator('button.rounded-full.bg-white').click()
     await page.waitForURL(`/teacher/students/${studentId}/homework`)
 
-    // 7. Teacher edits the homework comment via the UI
+    // 7. Teacher edits the homework comment
     await page.goto(`/teacher/students/${studentId}/homework/${homeworkId}/edit`)
 
     const editEditor = page.locator('.tiptap')

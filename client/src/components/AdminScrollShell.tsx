@@ -77,9 +77,8 @@ export const AdminScrollShell = ({ initialSectionId }: Props) => {
   )
   const [showLabel, setShowLabel] = useState(false)
   const [labelFading, setLabelFading] = useState(false)
-  const [navDimmed, setNavDimmed] = useState(false)
+  const [navHidden, setNavHidden] = useState(false)
 
-  const activeIndex = sections.findIndex(section => section.id === activeId)
   const activeSection = sections.find(section => section.id === activeId)
 
   useEffect(() => {
@@ -115,51 +114,47 @@ export const AdminScrollShell = ({ initialSectionId }: Props) => {
     const container = containerRef.current
     if (!container) return
 
+    const getNearestSectionId = () => {
+      let nearestId = sections[0].id
+      let nearestDistance = Number.POSITIVE_INFINITY
+
+      sections.forEach(section => {
+        const node = sectionRefs.current[section.id]
+        if (!node) return
+        const distance = Math.abs(node.offsetTop - container.scrollTop)
+        if (distance < nearestDistance) {
+          nearestDistance = distance
+          nearestId = section.id
+        }
+      })
+
+      return nearestId
+    }
+
     const handleScroll = () => {
       const lockId = scrollLockIdRef.current
-      if (!lockId) return
+      if (lockId) {
+        const target = sectionRefs.current[lockId]
+        if (!target) return
 
-      const target = sectionRefs.current[lockId]
-      if (!target) return
-
-      const distance = Math.abs(target.offsetTop - container.scrollTop)
-      if (distance < 8) {
-        scrollLockIdRef.current = null
-        if (scrollLockTimeoutRef.current) {
-          window.clearTimeout(scrollLockTimeoutRef.current)
-          scrollLockTimeoutRef.current = null
+        const distance = Math.abs(target.offsetTop - container.scrollTop)
+        if (distance < 8) {
+          scrollLockIdRef.current = null
+          if (scrollLockTimeoutRef.current) {
+            window.clearTimeout(scrollLockTimeoutRef.current)
+            scrollLockTimeoutRef.current = null
+          }
         }
+      }
+
+      const nextId = getNearestSectionId()
+      if (!lockId || lockId === nextId) {
+        setActiveId(nextId)
       }
     }
 
     container.addEventListener('scroll', handleScroll, { passive: true })
     return () => container.removeEventListener('scroll', handleScroll)
-  }, [])
-
-  useEffect(() => {
-    const container = containerRef.current
-    if (!container) return
-
-    const observer = new IntersectionObserver(
-      entries => {
-        const visible = entries
-          .filter(entry => entry.isIntersecting)
-          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)
-
-        if (visible[0]?.target) {
-          const nextId = visible[0].target.getAttribute('data-section-id')
-          const lockId = scrollLockIdRef.current
-          if (nextId && (!lockId || lockId === nextId)) setActiveId(nextId)
-        }
-      },
-      { root: container, threshold: [0.4, 0.7] }
-    )
-
-    Object.values(sectionRefs.current).forEach(section => {
-      if (section) observer.observe(section)
-    })
-
-    return () => observer.disconnect()
   }, [sections])
 
   const scrollToSection = (id: string) => {
@@ -184,54 +179,48 @@ export const AdminScrollShell = ({ initialSectionId }: Props) => {
   }
 
   useEffect(() => {
-    const isDesktop = window.matchMedia('(min-width: 640px)')
-    if (!isDesktop.matches) {
-      setNavDimmed(false)
-      return
+    const container = containerRef.current
+    if (!container) return
+
+    let hideTimeout: number | null = null
+
+    const scheduleHide = () => {
+      if (hideTimeout) window.clearTimeout(hideTimeout)
+      hideTimeout = window.setTimeout(() => setNavHidden(true), 900)
     }
 
-    let idleTimeout: number | null = null
-
-    const scheduleDim = () => {
-      if (idleTimeout) window.clearTimeout(idleTimeout)
-      idleTimeout = window.setTimeout(() => setNavDimmed(true), 1500)
+    const revealNav = () => {
+      setNavHidden(false)
+      scheduleHide()
     }
 
-    const handleMove = (event: MouseEvent) => {
-      if (event.clientX < 120) {
-        setNavDimmed(false)
-        scheduleDim()
+    const handleMouseMove = (event: MouseEvent) => {
+      if (event.clientX < 140) {
+        revealNav()
       }
     }
 
-    scheduleDim()
-    window.addEventListener('mousemove', handleMove)
-    const mqListener = (event: MediaQueryListEvent) => {
-      if (!event.matches) {
-        setNavDimmed(false)
-        if (idleTimeout) window.clearTimeout(idleTimeout)
-        idleTimeout = null
-      } else {
-        scheduleDim()
-      }
-    }
-    isDesktop.addEventListener('change', mqListener)
+    const handleScroll = () => revealNav()
+
+    // Show briefly on mount, then hide.
+    revealNav()
+
+    window.addEventListener('mousemove', handleMouseMove)
+    container.addEventListener('scroll', handleScroll, { passive: true })
 
     return () => {
-      window.removeEventListener('mousemove', handleMove)
-      isDesktop.removeEventListener('change', mqListener)
-      if (idleTimeout) window.clearTimeout(idleTimeout)
+      window.removeEventListener('mousemove', handleMouseMove)
+      container.removeEventListener('scroll', handleScroll)
+      if (hideTimeout) window.clearTimeout(hideTimeout)
     }
   }, [])
 
   return (
     <div className="relative">
       <aside
-        className={`fixed left-2 top-1/2 -translate-y-1/2 z-40 hidden sm:flex flex-col gap-3 transition-opacity duration-300 ${
-          navDimmed ? 'opacity-20' : 'opacity-100'
+        className={`fixed left-2 top-1/2 -translate-y-1/2 z-40 flex flex-col gap-3 transition-all duration-300 ${
+          navHidden ? 'opacity-0 pointer-events-none -translate-x-3' : 'opacity-100'
         }`}
-        onMouseEnter={() => setNavDimmed(false)}
-        onMouseLeave={() => setNavDimmed(true)}
       >
         {sections.map(section => {
           const Icon = section.icon
@@ -277,10 +266,9 @@ export const AdminScrollShell = ({ initialSectionId }: Props) => {
 
       <div
         ref={containerRef}
-        className="h-screen overflow-y-auto snap-y snap-mandatory scrollbar-hide pl-0 sm:pl-16"
+        className="h-screen overflow-y-auto snap-y snap-mandatory scrollbar-hide pl-10 sm:pl-18"
       >
-        {sections.map((section, index) => {
-          const shouldRender = Math.abs(index - activeIndex) <= 1
+        {sections.map(section => {
           const isActive = section.id === activeId
           return (
             <section
@@ -292,11 +280,11 @@ export const AdminScrollShell = ({ initialSectionId }: Props) => {
               className={`min-h-screen snap-start snap-always flex items-stretch transition duration-500 ${
                 isActive
                   ? 'opacity-100 translate-y-0'
-                  : 'opacity-70 translate-y-3'
+                  : 'opacity-85 translate-y-0'
               }`}
             >
               <div className="w-full">
-                {shouldRender ? section.render() : <div className="min-h-screen" />}
+                {section.render()}
               </div>
             </section>
           )

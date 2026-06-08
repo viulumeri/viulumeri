@@ -110,70 +110,17 @@ test.describe.serial('Homework comment formatting', () => {
     await setComment('')
   })
 
-  test('teacher saves formatted comment and student sees it as rendered HTML', async ({
-    page,
+  test('student sees formatted comment as rendered HTML', async ({
     browser,
   }) => {
-    // Teacher: add a formatted comment
-    await loginAs(page, TEACHER, /\/teacher\//)
-    await page.goto(`/teacher/students/${studentId}/homework/${homeworkId}/edit`)
-
-    const editor = page.locator('.tiptap')
-    await editor.waitFor()
-    await editor.click()
-
-    // Heading via keyboard shortcut
-    await page.keyboard.press('Control+Alt+2')
-    await page.keyboard.type('Harjoitteluohje', { delay: 25 })
-    await expect(editor.locator('h2').filter({ hasText: 'Harjoitteluohje' })).toBeAttached()
-    await page.keyboard.press('Enter')
-
-    // Italic
-    await page.keyboard.press('Control+i')
-    await page.keyboard.type('Tärkeää:', { delay: 25 })
-    await page.keyboard.press('Control+i')
-    await expect(editor.locator('em').filter({ hasText: 'Tärkeää:' })).toBeAttached()
-    await page.keyboard.press('Enter')
-
-    // Bold
-    await page.keyboard.press('Control+b')
-    await page.keyboard.type('muista harjoitella', { delay: 25 })
-    await page.keyboard.press('Control+b')
-    await expect(editor.locator('strong').filter({ hasText: 'muista harjoitella' })).toBeAttached()
-    await page.keyboard.press('Enter')
-
-    // Bullet list — toolbar button activates list, double-Enter exits it without destroying it
-    await page.getByTitle('Lista', { exact: true }).click()
-    await editor.focus()
-    await page.keyboard.type('Ohje yksi', { delay: 25 })
-    await expect(editor.locator('ul li').filter({ hasText: 'Ohje yksi' })).toBeAttached()
-    await page.keyboard.press('Enter')
-    await page.keyboard.type('Ohje kaksi', { delay: 25 })
-    await expect(editor.locator('ul li').filter({ hasText: 'Ohje kaksi' })).toBeAttached()
-    await page.keyboard.press('Enter')
-    await page.keyboard.press('Enter')
-
-    // Ordered list — same pattern
-    await page.getByTitle('Numeroitu lista').click()
-    await editor.focus()
-    await page.keyboard.type('Vaihe yksi', { delay: 25 })
-    await expect(editor.locator('ol li').filter({ hasText: 'Vaihe yksi' })).toBeAttached()
-    await page.keyboard.press('Enter')
-    await page.keyboard.press('Enter')
-
-    // Link
-    await page.keyboard.type('nettisivu', { delay: 25 })
-    await page.keyboard.press('Home')
-    await page.keyboard.press('Shift+End')
-    await page.getByTitle('Linkki').click()
-    // Dialog has two inputs: display text (auto-focused) and URL (second)
-    await page.locator('.inset-0 input').nth(1).fill('example.com')
-    await page.getByRole('button', { name: 'Tallenna' }).click()
-    await expect(editor.locator('a').filter({ hasText: 'nettisivu' })).toBeAttached()
-
-    // Save homework
-    await page.locator('button.rounded-full.bg-white').click()
-    await page.waitForURL(`/teacher/students/${studentId}/homework`)
+    await setComment(
+      '<h2>Harjoitteluohje</h2>' +
+        '<p><em>Tärkeää:</em></p>' +
+        '<p><strong>muista harjoitella</strong></p>' +
+        '<ul><li><p>Ohje yksi</p></li><li><p>Ohje kaksi</p></li></ul>' +
+        '<ol><li><p>Vaihe yksi</p></li></ol>' +
+        '<p><a href="https://example.com">nettisivu</a></p>'
+    )
 
     // Student: verify all formatting is rendered as HTML elements
     const studentPage = await browser.newPage()

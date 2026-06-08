@@ -38,7 +38,7 @@ export const processYouTubeEmbeds = (html: string): string => {
     if (!videoId) return
 
     const iframe = doc.createElement('iframe')
-    iframe.src = `https://www.youtube-nocookie.com/embed/${videoId}`
+    iframe.src = `https://www.youtube-nocookie.com/embed/${videoId}?enablejsapi=1`
     iframe.title = anchor.textContent?.trim() || 'YouTube video'
     iframe.loading = 'lazy'
     iframe.allowFullscreen = true
@@ -48,4 +48,21 @@ export const processYouTubeEmbeds = (html: string): string => {
   })
 
   return doc.body.innerHTML
+}
+
+export const pauseYouTubeIframes = (container: HTMLElement): void => {
+  container.querySelectorAll<HTMLIFrameElement>('iframe').forEach((iframe) => {
+    let origin: string
+    try {
+      const url = new URL(iframe.src)
+      if (url.hostname !== 'www.youtube-nocookie.com') return
+      origin = url.origin
+    } catch {
+      return
+    }
+    iframe.contentWindow?.postMessage(
+      JSON.stringify({ event: 'command', func: 'pauseVideo', args: [] }),
+      origin
+    )
+  })
 }

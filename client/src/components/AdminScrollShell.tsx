@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import type { ReactElement } from 'react'
 import { Banana, Bell, MessageSquare } from 'lucide-react'
 import { AdminPanel } from './AdminPanel'
 import { PopupAdminPage } from './PopupAdminPage'
@@ -8,7 +9,7 @@ type AdminSection = {
   id: string
   label: string
   icon: React.ComponentType<{ className?: string }>
-  render: () => JSX.Element
+  render: () => ReactElement
 }
 
 type Props = {
@@ -246,7 +247,7 @@ export const AdminScrollShell = ({ initialSectionId }: Props) => {
               key={section.id}
               data-section-id={section.id}
               ref={node => {
-                sectionRefs.current[section.id] = node
+                sectionRefs.current[section.id] = node as HTMLDivElement | null
               }}
               className={`min-h-screen snap-start flex items-stretch transition duration-500 ${
                 isActive

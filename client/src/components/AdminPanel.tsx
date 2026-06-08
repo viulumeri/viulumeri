@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Banana, CirclePlus, FileQuestionMark, Pen, Trash2 } from 'lucide-react'
+import { Banana, CirclePlus, FileQuestionMark, Pen, CircleEllipsis } from 'lucide-react'
 import { useAdminSummary, useAdminTeachers, useAdminStudents, useDeleteAdminTeacher, useDeleteAdminStudent, useImpersonateAdminUser } from '../hooks/useAdmin'
 import { DropdownSearchbar } from './DropdownSearchbar'
 import { useNotification } from '../hooks/useNotification'
@@ -9,10 +9,11 @@ import { faqService, type FAQ } from '../services/faq'
 import { renderWithLinks } from "../utils/renderLinks"
 
 
-interface User {
+interface SearchResultUser {
   id: string
   name: string
   email: string
+  role: 'teacher' | 'student'
 }
 
 export const AdminPanel = () => {
@@ -28,13 +29,14 @@ export const AdminPanel = () => {
   const [editQuestion, setEditQuestion] = useState('')
   const [editAnswer, setEditAnswer] = useState('')
 
-  const { data: summaryData } = useAdminSummary()
   const { data: teachersData, error: teachersError } = useAdminTeachers()
   const { data: studentsData, error: studentsError } = useAdminStudents()
 
   const [searchUserInput, setSearchUserInput] = useState('')
-  const [searchResults, setSearchResults] = useState<User[]>([])
+  const [searchResults, setSearchResults] = useState<SearchResultUser[]>([])
   const [selectedUser, setSelectedUser] = useState<Teacher | Student | null>(null)
+  const [profileExpanded, setProfileExpanded] = useState(false)
+  const [actionsOpen, setActionsOpen] = useState(false)
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [impersonatingId, setImpersonatingId] = useState<string | null>(null)
 
@@ -82,10 +84,35 @@ export const AdminPanel = () => {
   const handleSearchUserInputChange = (value: string) => {
     setSearchUserInput(value)
     setSelectedUser(null)
-    setSearchResults([...teachers, ...students].filter(user =>
-      user.name.toLowerCase().includes(value.toLowerCase()) ||
-      user.email.toLowerCase().includes(value.toLowerCase())
-    ))
+    setActionsOpen(false)
+    setProfileExpanded(false)
+
+    const normalizedValue = value.toLowerCase()
+    const teacherMatches = teachers
+      .filter((teacher) =>
+        teacher.name.toLowerCase().includes(normalizedValue) ||
+        teacher.email.toLowerCase().includes(normalizedValue)
+      )
+      .map((teacher) => ({
+        id: teacher.id,
+        name: teacher.name,
+        email: teacher.email,
+        role: 'teacher' as const
+      }))
+
+    const studentMatches = students
+      .filter((student) =>
+        student.name.toLowerCase().includes(normalizedValue) ||
+        student.email.toLowerCase().includes(normalizedValue)
+      )
+      .map((student) => ({
+        id: student.id,
+        name: student.name,
+        email: student.email,
+        role: 'student' as const
+      }))
+
+    setSearchResults([...teacherMatches, ...studentMatches])
   }
 
  const handleCreateFaq = async () => {
@@ -103,10 +130,12 @@ export const AdminPanel = () => {
   await loadFaqs()
 }
 
-  const handleResultSelect = (user: User) => {
-    const fullUserData = teachers.find(t => t.id === user.id) || students.find(s => s.id === user.id)
+  const handleResultSelect = (user: SearchResultUser) => {
+    const fullUserData = teachers.find((t) => t.id === user.id) || students.find((s) => s.id === user.id)
     if (fullUserData) {
       setSelectedUser(fullUserData)
+      setProfileExpanded(false)
+      setActionsOpen(false)
     }
   }
 
@@ -170,36 +199,19 @@ return (
         <Banana className="w-8 h-8" />
         Ylläpitopaneeli
       </h1>
-       <div className="bg-neutral-900 rounded-lg p-2 -mb-4">
-      <div className="space-y-2 text-gray-300">
-          <p>
-
-          </p>
-
-      <p>Tämä on superkäyttäjän hallintapaneelin kanta.
-        Tässä voidaan myöhemmin näyttää järjestelmän tilanne ja hallintatoiminnot..</p>
-    </div>
-      {error && <div className="error">{error}</div>}
-
-      {summaryData ? (
-        <div className="admin-summary">
-          <div>Opettajia: {summaryData.teacherCount}</div>
-          <div>Oppilaita: {summaryData.studentCount}</div>
-          <div>Tehtäviä: {summaryData.homeworkCount}</div>
-        </div>
-      ) : (
-        !error && <div>Ladataan yhteenvedon tietoja...</div>
-      )}
-
-      </div>
-
-
+      
       <Link
         to="/admin/feedback"
         className="inline-block mt-4 mb-4 button-basic"
       >
         Palautteet
       </Link>
+
+      {error && (
+        <div className="mb-4 rounded-lg border border-rose-600 bg-rose-950/30 px-4 py-3 text-sm text-rose-200">
+          {error}
+        </div>
+      )}
 
       <DropdownSearchbar
         onSearchInputChange={handleSearchUserInputChange}
@@ -210,7 +222,97 @@ return (
       />
 
       {selectedUser && (
-        <div className="mt-6 p-4 bg-neutral-800 rounded-lg">
+        <div className="relative mt-6 p-4 bg-neutral-800 rounded-lg">
+          <div className="flex flex-col gap-3">
+            <div className="grid grid-cols-[2fr_2fr_1fr_auto] gap-4 text-neutral-400 text-sm font-semibold">
+              <div>Nimi</div>
+              <div>Sähköposti</div>
+              <div>Rooli</div>
+              <div className="text-right">Toiminnot</div>
+            </div>
+            <div className="grid grid-cols-[2fr_2fr_1fr_auto] gap-4 items-center py-2 border-t border-neutral-700">
+              <div>{selectedUser.name}</div>
+              <div>{selectedUser.email}</div>
+              <div>{'studentCount' in selectedUser ? 'Opettaja' : 'Oppilas'}</div>
+              <div className="relative text-right">
+                <button
+                  type="button"
+                  onClick={() => setActionsOpen((prev) => !prev)}
+                  className="inline-flex items-center justify-center p-2 rounded-full bg-neutral-700 hover:bg-neutral-600"
+                >
+                  <CircleEllipsis />
+                </button>
+                {actionsOpen && (
+                  <div className="absolute right-0 mt-2 w-48 bg-neutral-900 border border-neutral-700 rounded-lg shadow-xl z-20">
+                    <button
+                      type="button"
+                      disabled={Boolean(impersonatingId)}
+                      onClick={() => {
+                        if (impersonatingId) return
+                        setActionsOpen(false)
+                        setImpersonatingId(selectedUser.userId)
+                        impersonateUser.mutate({ userId: selectedUser.userId })
+                      }}
+                      className="w-full px-4 py-3 text-left text-sm hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      {impersonatingId === selectedUser.userId ? 'Impersonoidaan...' : 'Impersonoi'}
+                    </button>
+                    <button
+                      type="button"
+                      disabled={Boolean(deletingId)}
+                      onClick={() => {
+                        if (deletingId) return
+                        setActionsOpen(false)
+                        if (confirm(`Haluatko varmasti poistaa käyttäjän ${selectedUser.name}? Toimintoa ei voi perua.`)) {
+                          setDeletingId(selectedUser.id)
+                          if ('studentCount' in selectedUser) {
+                            deleteTeacher.mutate(selectedUser.id)
+                          } else {
+                            deleteStudent.mutate(selectedUser.id)
+                          }
+                        }
+                      }}
+                      className="w-full px-4 py-3 text-left text-sm text-rose-400 hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      {deletingId === selectedUser.id ? 'Poistetaan...' : 'Poista käyttäjä'}
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-4 border-t border-neutral-700 pt-4">
+            <button
+              type="button"
+              onClick={() => setProfileExpanded((prev) => !prev)}
+              className="inline-flex items-center gap-2 text-sm text-brand hover:text-brand-strong"
+            >
+              {profileExpanded ? 'Piilota profiili' : 'Laajenna profiili'}
+            </button>
+
+            {profileExpanded && (
+              <div className="mt-3 space-y-2 text-sm text-neutral-200">
+                {'studentCount' in selectedUser ? (
+                  <>
+                    <div><span className="font-semibold">Oppilaita:</span> {selectedUser.studentCount}</div>
+                    <div><span className="font-semibold">Oppilaat:</span> {selectedUser.students.length}</div>
+                  </>
+                ) : (
+                  <>
+                    <div><span className="font-semibold">Opettajia:</span> {selectedUser.teacher ? 1 : 0}</div>
+                    {selectedUser.teacher ? (
+                      <div><span className="font-semibold">Opettaja:</span> {selectedUser.teacher.name} ({selectedUser.teacher.email})</div>
+                    ) : (
+                      <div>Opettajaa ei ole asetettu</div>
+                    )}
+                  </>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+/*         <div className="mt-6 p-4 bg-neutral-800 rounded-lg">
           <h2 className="text-lg font-bold mb-3">{selectedUser.name}</h2>
           <div className="space-y-2">
             <p><strong>Email:</strong> {selectedUser.email}</p>
@@ -263,7 +365,7 @@ return (
               {deletingId === selectedUser.id ? 'Poistetaan...' : 'Poista käyttäjä'}
             </button>
           </div>
-        </div>
+        </div> */
       )}
       <div className="mt-8 bg-neutral-900 rounded-lg p-4 space-y-4">
 

@@ -222,6 +222,14 @@ const App = () => {
                 }
               />
               <Route
+                path="/admin/faq"
+                element={
+                  <AppLayout showNavbar={false}>
+                    <AdminScrollShell initialSectionId="faq" />
+                  </AppLayout>
+                }
+              />
+              <Route
                 path="/admin/user-view"
                 element={
                   <AppLayout showNavbar={false}>
@@ -275,9 +283,7 @@ const App = () => {
                 : userType === 'student'
                   ? '/student/homework'
                   : userType === 'admin'
-                    ? isAdminRegularUserView
-                      ? '/student/homework'
-                      : '/admin'
+                    ? '/admin'
                     : '/login'
             }
             
@@ -299,9 +305,7 @@ const App = () => {
                   : userType === 'student'
                     ? '/student/homework'
                     : userType === 'admin'
-                      ? isAdminRegularUserView
-                        ? '/student/homework'
-                        : '/admin'
+                      ? '/admin'
                       : '/login'
               }
               replace

@@ -53,6 +53,22 @@ export const useAdminFeedbacks = (
     ...options
   })
 
+export const useUpdateAdminFeedbackReadStatus = (
+  options?: UseMutationOptions<{ feedback: { id: string; isRead: boolean } }, Error, { id: string; isRead: boolean }>
+) => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ id, isRead }) =>
+      adminService.updateAdminFeedbackReadStatus(id, isRead),
+    ...options,
+    onSuccess: (...args) => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'feedbacks'] })
+      options?.onSuccess?.(...args)
+    }
+  })
+}
+
 export const useDeleteAdminStudent = (
   options?: UseMutationOptions<void, Error, string>
 ) => {

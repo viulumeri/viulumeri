@@ -1,9 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Banana, Bell, MessageSquare, UserRound } from 'lucide-react'
+import { Banana, Bell, MessageSquare, UserRound, FileQuestionMark, Search } from 'lucide-react'
 import { AdminPanel } from './AdminPanel'
 import { PopupAdminPage } from './PopupAdminPage'
 import { AdminFeedbackPage } from './AdminFeedbackPage'
 import { AdminUserViewPage } from './AdminUserViewPage'
+import { AdminFaqPage } from './AdminFaqPage'
+import { AdminDashboardPage } from './AdminDashboardPage'
+import { useAdminFeedbacks } from '../hooks/useAdmin'
 
 type AdminSection = {
   id: string
@@ -17,12 +20,22 @@ type Props = {
 }
 
 export const AdminScrollShell = ({ initialSectionId }: Props) => {
+  const { data: feedbackData } = useAdminFeedbacks({ refetchInterval: 30000 })
+  const unreadFeedbackCount =
+    (feedbackData?.feedbacks ?? []).filter(feedback => !feedback.isRead).length
+
   const sections = useMemo<AdminSection[]>(
     () => [
       {
         id: 'overview',
-        label: 'Hallinta',
+        label: 'Ylläpitopaneeli',
         icon: Banana,
+        render: () => <AdminDashboardPage />
+      },
+      {
+        id: 'users',
+        label: 'Käyttäjähaku',
+        icon: Search,
         render: () => <AdminPanel />
       },
       {
@@ -36,6 +49,12 @@ export const AdminScrollShell = ({ initialSectionId }: Props) => {
         label: 'Palautteet',
         icon: MessageSquare,
         render: () => <AdminFeedbackPage />
+      },
+      {
+        id: 'faq',
+        label: 'FAQ',
+        icon: FileQuestionMark,
+        render: () => <AdminFaqPage />
       },
       {
         id: 'user-view',
@@ -65,9 +84,10 @@ export const AdminScrollShell = ({ initialSectionId }: Props) => {
 
   useEffect(() => {
     if (!initialSectionId) return
+    const container = containerRef.current
     const target = sectionRefs.current[initialSectionId]
-    if (target) {
-      target.scrollIntoView({ behavior: 'auto', block: 'start' })
+    if (target && container) {
+      container.scrollTo({ top: target.offsetTop, behavior: 'auto' })
       setActiveId(initialSectionId)
     }
   }, [initialSectionId])
@@ -98,8 +118,10 @@ export const AdminScrollShell = ({ initialSectionId }: Props) => {
     const handleScroll = () => {
       const lockId = scrollLockIdRef.current
       if (!lockId) return
+
       const target = sectionRefs.current[lockId]
       if (!target) return
+
       const distance = Math.abs(target.offsetTop - container.scrollTop)
       if (distance < 8) {
         scrollLockIdRef.current = null
@@ -113,6 +135,53 @@ export const AdminScrollShell = ({ initialSectionId }: Props) => {
     container.addEventListener('scroll', handleScroll, { passive: true })
     return () => container.removeEventListener('scroll', handleScroll)
   }, [])
+
+  useEffect(() => {
+    const container = containerRef.current
+    if (!container) return
+
+    const observer = new IntersectionObserver(
+      entries => {
+        const visible = entries
+          .filter(entry => entry.isIntersecting)
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)
+
+        if (visible[0]?.target) {
+          const nextId = visible[0].target.getAttribute('data-section-id')
+          const lockId = scrollLockIdRef.current
+          if (nextId && (!lockId || lockId === nextId)) setActiveId(nextId)
+        }
+      },
+      { root: container, threshold: [0.4, 0.7] }
+    )
+
+    Object.values(sectionRefs.current).forEach(section => {
+      if (section) observer.observe(section)
+    })
+
+    return () => observer.disconnect()
+  }, [sections])
+
+  const scrollToSection = (id: string) => {
+    const container = containerRef.current
+    const target = sectionRefs.current[id]
+    if (target && container) {
+      scrollLockIdRef.current = id
+      if (scrollLockTimeoutRef.current) {
+        window.clearTimeout(scrollLockTimeoutRef.current)
+      }
+      scrollLockTimeoutRef.current = window.setTimeout(() => {
+        scrollLockIdRef.current = null
+        scrollLockTimeoutRef.current = null
+      }, 800)
+      const targetTop = target.offsetTop
+      setActiveId(id)
+      container.scrollTo({ top: targetTop, behavior: 'auto' })
+      window.requestAnimationFrame(() => {
+        container.scrollTo({ top: targetTop, behavior: 'auto' })
+      })
+    }
+  }
 
   useEffect(() => {
     const isDesktop = window.matchMedia('(min-width: 640px)')
@@ -155,48 +224,6 @@ export const AdminScrollShell = ({ initialSectionId }: Props) => {
     }
   }, [])
 
-  useEffect(() => {
-    const container = containerRef.current
-    if (!container) return
-
-    const observer = new IntersectionObserver(
-      entries => {
-        const visible = entries
-          .filter(entry => entry.isIntersecting)
-          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)
-
-        if (visible[0]?.target) {
-          const nextId = visible[0].target.getAttribute('data-section-id')
-          const lockId = scrollLockIdRef.current
-          if (nextId && (!lockId || lockId === nextId)) setActiveId(nextId)
-        }
-      },
-      { root: container, threshold: [0.4, 0.7] }
-    )
-
-    Object.values(sectionRefs.current).forEach(section => {
-      if (section) observer.observe(section)
-    })
-
-    return () => observer.disconnect()
-  }, [sections])
-
-  const scrollToSection = (id: string) => {
-    const target = sectionRefs.current[id]
-    if (target) {
-      scrollLockIdRef.current = id
-      if (scrollLockTimeoutRef.current) {
-        window.clearTimeout(scrollLockTimeoutRef.current)
-      }
-      scrollLockTimeoutRef.current = window.setTimeout(() => {
-        scrollLockIdRef.current = null
-        scrollLockTimeoutRef.current = null
-      }, 2200)
-      target.scrollIntoView({ behavior: 'smooth', block: 'start' })
-      setActiveId(id)
-    }
-  }
-
   return (
     <div className="relative">
       <aside
@@ -222,7 +249,14 @@ export const AdminScrollShell = ({ initialSectionId }: Props) => {
               aria-current={isActive ? 'page' : undefined}
               title={section.label}
             >
-              <Icon className="h-5 w-5" />
+              <div className="relative">
+                <Icon className="h-5 w-5" />
+                {section.id === 'feedback' && unreadFeedbackCount > 0 && (
+                  <span className="absolute -top-2 -right-2 min-w-[18px] h-[18px] px-1 rounded-full bg-rose-500 text-[11px] leading-[18px] text-white text-center font-semibold">
+                    {unreadFeedbackCount > 99 ? '99+' : unreadFeedbackCount}
+                  </span>
+                )}
+              </div>
             </button>
           )
         })}
@@ -255,7 +289,7 @@ export const AdminScrollShell = ({ initialSectionId }: Props) => {
               ref={node => {
                 sectionRefs.current[section.id] = node as HTMLDivElement | null
               }}
-              className={`min-h-screen snap-start flex items-stretch transition duration-500 ${
+              className={`min-h-screen snap-start snap-always flex items-stretch transition duration-500 ${
                 isActive
                   ? 'opacity-100 translate-y-0'
                   : 'opacity-70 translate-y-3'

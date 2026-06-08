@@ -6,6 +6,7 @@ import Teacher from '../models/teacher'
 import Student from '../models/student'
 import Homework from '../models/homework'
 import PopupMessage from '../models/popupMessage'
+import Feedback from '../models/feedback'
 import { getAdminFeedbacks } from '../services/admin'
 
 type BetterAuthImpersonationResult = {
@@ -528,6 +529,28 @@ adminRouter.delete('/popup-messages', async (_request, response) => {
 adminRouter.get('/feedbacks', async (_request, response) => {
   const feedbacks = await getAdminFeedbacks()
   response.json({ feedbacks })
+})
+
+adminRouter.patch('/feedbacks/:feedbackId', async (request, response) => {
+  const isRead = request.body?.isRead
+  if (typeof isRead !== 'boolean') {
+    return response.status(400).json({ error: 'isRead must be boolean' })
+  }
+
+  const feedback = await Feedback.findById(request.params.feedbackId)
+  if (!feedback) {
+    return response.status(404).json({ error: 'Feedback not found' })
+  }
+
+  feedback.isRead = isRead
+  await feedback.save()
+
+  response.json({
+    feedback: {
+      id: String(feedback._id),
+      isRead: feedback.isRead === true
+    }
+  })
 })
 
 export default adminRouter

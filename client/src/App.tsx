@@ -28,6 +28,7 @@ import type { AppSessionUser } from '../../shared/types'
 import { NotificationProvider } from './contexts/NotificationProvider'
 import { NotificationBanner } from './components/NotificationBanner'
 import { StartupAnnouncementsPopup } from './components/StartupAnnouncementsPopup'
+import { isAdminRegularUserViewEnabled } from './utils/adminRegularUserView'
 import './index.css'
 
 const App = () => {
@@ -35,6 +36,8 @@ const App = () => {
   const userType = (session?.user as AppSessionUser | undefined)?.userType
   const role = (session?.user as AppSessionUser | undefined)?.role
   const userId = (session?.user as { id?: string } | undefined)?.id
+  const isAdminRegularUserView =
+    role === 'admin' && isAdminRegularUserViewEnabled()
 
   return (
     
@@ -171,7 +174,7 @@ const App = () => {
           )}
 
           {/* Student-only */}
-          {userType === 'student' && (
+          {(userType === 'student' || isAdminRegularUserView) && (
             <>
               <Route
                 path="/student/homework"
@@ -215,6 +218,14 @@ const App = () => {
                 element={
                   <AppLayout showNavbar={false}>
                     <AdminScrollShell initialSectionId="feedback" />
+                  </AppLayout>
+                }
+              />
+              <Route
+                path="/admin/user-view"
+                element={
+                  <AppLayout showNavbar={false}>
+                    <AdminScrollShell initialSectionId="user-view" />
                   </AppLayout>
                 }
               />
@@ -264,7 +275,9 @@ const App = () => {
                 : userType === 'student'
                   ? '/student/homework'
                   : userType === 'admin'
-                    ? '/admin'
+                    ? isAdminRegularUserView
+                      ? '/student/homework'
+                      : '/admin'
                     : '/login'
             }
             
@@ -286,7 +299,9 @@ const App = () => {
                   : userType === 'student'
                     ? '/student/homework'
                     : userType === 'admin'
-                      ? '/admin'
+                      ? isAdminRegularUserView
+                        ? '/student/homework'
+                        : '/admin'
                       : '/login'
               }
               replace

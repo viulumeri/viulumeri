@@ -253,7 +253,7 @@ export const AdminScrollShell = ({ initialSectionId }: Props) => {
               key={section.id}
               data-section-id={section.id}
               ref={node => {
-                sectionRefs.current[section.id] = node
+                sectionRefs.current[section.id] = node as HTMLDivElement | null
               }}
               className={`min-h-screen snap-start flex items-stretch transition duration-500 ${
                 isActive

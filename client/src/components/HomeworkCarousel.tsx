@@ -74,12 +74,31 @@ export const HomeworkCarousel = ({
   const handlePractice = (homeworkId: string) => practice.mutate(homeworkId)
 
   const scrollRef = useRef<HTMLDivElement | null>(null)
+
+  const [currentIndex, setCurrentIndex] = useState(homework.length - 1)
+
+  useEffect(() => {
+    setCurrentIndex(homework.length - 1)
+  }, [homework.length])
+
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.style.scrollBehavior = 'auto'
       scrollRef.current.scrollLeft = scrollRef.current.scrollWidth
       scrollRef.current.style.scrollBehavior = 'smooth'
     }
+  }, [homework.length])
+
+  useEffect(() => {
+    const el = scrollRef.current
+    if (!el) return
+    const handleScroll = () => {
+      const cardWidth = window.innerWidth * 0.9 + 16
+      const index = Math.round(el.scrollLeft / cardWidth)
+      setCurrentIndex(Math.max(0, Math.min(index, homework.length - 1)))
+    }
+    el.addEventListener('scroll', handleScroll, { passive: true })
+    return () => el.removeEventListener('scroll', handleScroll)
   }, [homework.length])
 
   if (isPending) return <div className="p-4">Ladataan…</div>

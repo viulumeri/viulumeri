@@ -131,7 +131,7 @@ test('teacher flow', async ({ page }) => {
 
     // Bullet list — toolbar button activates list, double-Enter exits it without destroying it
     await page.getByTitle('Lista', { exact: true }).click()
-    await page.keyboard.press('End')
+    await editor.locator('ul').waitFor()
     await page.keyboard.type('Ohje yksi', { delay: 25 })
     await expect(editor.locator('ul li').filter({ hasText: 'Ohje yksi' })).toBeAttached()
     await page.keyboard.press('Enter')
@@ -142,7 +142,7 @@ test('teacher flow', async ({ page }) => {
 
     // Ordered list — same pattern
     await page.getByTitle('Numeroitu lista').click()
-    await page.keyboard.press('End')
+    await editor.locator('ol').waitFor()
     await page.keyboard.type('Vaihe yksi', { delay: 25 })
     await expect(editor.locator('ol li').filter({ hasText: 'Vaihe yksi' })).toBeAttached()
     await page.keyboard.press('Enter')

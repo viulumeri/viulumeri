@@ -13,6 +13,7 @@ type Props = {
 
 const TextEditor = ({ value, onChange, placeholder }: Props) => {
   const savedSelection = useRef<{ from: number; to: number } | null>(null)
+  const isExternalUpdate = useRef(false)
   const [linkDialog, setLinkDialog] = useState<{ url: string; text: string } | null>(null)
 
   const editor = useEditor({
@@ -26,6 +27,7 @@ const TextEditor = ({ value, onChange, placeholder }: Props) => {
     ],
     content: value,
     onUpdate: ({ editor }) => {
+      if (isExternalUpdate.current) return
       onChange(editor.isEmpty ? '' : editor.getHTML())
     },
   })
@@ -49,7 +51,9 @@ const TextEditor = ({ value, onChange, placeholder }: Props) => {
     if (editor.isFocused) return
     const current = editor.getHTML()
     if (current !== value) {
-      editor.commands.setContent(value, { emitUpdate: false })
+      isExternalUpdate.current = true
+      editor.commands.setContent(value)
+      isExternalUpdate.current = false
     }
   }, [value, editor])
 

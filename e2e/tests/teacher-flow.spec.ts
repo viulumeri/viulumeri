@@ -30,7 +30,7 @@ async function loginAs(
 }
 
 test('teacher flow', async ({ page }) => {
-  test.setTimeout(90_000)
+  test.setTimeout(120_000)
 
   const teacherCtx = await request.newContext({ baseURL: BASE_URL })
   const studentCtx = await request.newContext({ baseURL: BASE_URL })
@@ -152,7 +152,29 @@ test('teacher flow', async ({ page }) => {
     await page.locator('button.rounded-full.bg-white').click()
     await page.waitForURL(`/teacher/students/${studentId}/homework`)
 
-    // 7. Teacher deletes the student
+    // 7. Teacher edits the homework comment via the UI
+    await page.goto(`/teacher/students/${studentId}/homework/${homeworkId}/edit`)
+
+    const editEditor = page.locator('.tiptap')
+    await editEditor.waitFor()
+    await editEditor.click()
+
+    // Select all existing content and replace with updated comment
+    await page.keyboard.press('Control+a')
+    await page.keyboard.type('Päivitetty kommentti', { delay: 25 })
+    await expect(editEditor.getByText('Päivitetty kommentti')).toBeAttached()
+
+    const saveEditResponsePromise = page.waitForResponse(
+      response =>
+        response.url().includes(`/api/homework/${homeworkId}`) &&
+        response.request().method() === 'PUT'
+    )
+    await page.locator('button.rounded-full.bg-white').click()
+    const saveEditResponse = await saveEditResponsePromise
+    expect(saveEditResponse.ok()).toBeTruthy()
+    await page.waitForURL(`/teacher/students/${studentId}/homework`)
+
+    // 8. Teacher deletes the student
     await page.goto('/settings')
 
     const deleteStudentResponsePromise = page.waitForResponse(
@@ -168,7 +190,7 @@ test('teacher flow', async ({ page }) => {
 
     await expect(page.getByText('Oppilas poistettu onnistuneesti')).toBeVisible({ timeout: 15_000 })
 
-    // 7. Teacher logs out
+    // 9. Teacher logs out
     await page.goto('/settings')
     await page.getByRole('button', { name: /kirjaudu ulos/i }).click()
     await expect(page).toHaveURL(/\/login/, { timeout: 15_000 })

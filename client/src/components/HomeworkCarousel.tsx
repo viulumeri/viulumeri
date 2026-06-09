@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { useDeleteHomework, usePracticeOnce } from '../hooks/useHomework'
 import { useSongsList } from '../hooks/useSongs'
 import type { SongListItem, HomeworkListResponse } from '../../../shared/types'
@@ -75,6 +76,11 @@ export const HomeworkCarousel = ({
 
   const scrollRef = useRef<HTMLDivElement | null>(null)
 
+  const getCardWidth = () => {
+    const firstCard = scrollRef.current?.firstElementChild?.children[1] as HTMLElement | undefined
+    return firstCard ? firstCard.offsetWidth + 16 : window.innerWidth * 0.9 + 16
+  }
+
   const [currentIndex, setCurrentIndex] = useState(homework.length - 1)
 
   useEffect(() => {
@@ -93,7 +99,7 @@ export const HomeworkCarousel = ({
     const el = scrollRef.current
     if (!el) return
     const handleScroll = () => {
-      const cardWidth = window.innerWidth * 0.9 + 16
+      const cardWidth = getCardWidth()
       const index = Math.round(el.scrollLeft / cardWidth)
       setCurrentIndex(Math.max(0, Math.min(index, homework.length - 1)))
     }
@@ -103,7 +109,7 @@ export const HomeworkCarousel = ({
 
   const navigateTo = (index: number) => {
     if (!scrollRef.current) return
-    const cardWidth = window.innerWidth * 0.9 + 16
+    const cardWidth = getCardWidth()
     scrollRef.current.scrollTo({ left: index * cardWidth, behavior: 'smooth' })
   }
 
@@ -123,11 +129,30 @@ export const HomeworkCarousel = ({
   }
 
   return (
-    <div className="flex flex-col">
-      <div
-        ref={scrollRef}
-        className="overflow-x-auto snap-x snap-mandatory scroll-smooth scrollbar-hide"
-      >
+    <div className="flex flex-col min-h-[100dvh]">
+      <div className="flex-1 relative">
+        {homework.length >= 2 && (
+          <div className="fixed inset-x-0 top-1/2 -translate-y-1/2 z-10 flex justify-between max-w-[calc(56rem+4rem)] mx-auto px-2 pointer-events-none">
+            <button
+              onClick={() => navigateTo(currentIndex - 1)}
+              className="pointer-events-auto cursor-pointer rounded-full bg-black/30 p-2 text-white"
+              aria-label="Edellinen kotitehtävä"
+            >
+              <ChevronLeft size={24} />
+            </button>
+            <button
+              onClick={() => navigateTo(currentIndex + 1)}
+              className="pointer-events-auto cursor-pointer rounded-full bg-black/30 p-2 text-white"
+              aria-label="Seuraava kotitehtävä"
+            >
+              <ChevronRight size={24} />
+            </button>
+          </div>
+        )}
+        <div
+          ref={scrollRef}
+          className="overflow-x-auto snap-x snap-mandatory scroll-smooth scrollbar-hide"
+        >
         <div className="flex gap-4">
           <div className="w-[5vw] flex-shrink-0" />
           {homework
@@ -156,6 +181,7 @@ export const HomeworkCarousel = ({
             state={location.state}
           />
         )}
+        </div>
       </div>
     </div>
   )

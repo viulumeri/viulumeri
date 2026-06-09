@@ -58,7 +58,7 @@ export const DropdownSearchbar = ({
   return (
     <div className="mx-auto max-w-4xl space-y-3">
       <form className="flex items-center max-w-lg mx-auto space-x-2" onSubmit={onSubmit}>
-        <label className="sr-only">Etsi kayttajia</label>
+        <label className="sr-only">Etsi käyttäjiä</label>
         <div className="relative w-full">
           <div className="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
             <Users size={16} strokeWidth={1.5} />
@@ -66,14 +66,15 @@ export const DropdownSearchbar = ({
           <input
             type="text"
             className="px-3 py-2.5 bg-neutral-secondary-medium border border-default-medium rounded-base ps-10 text-heading text-sm focus:ring-brand focus:border-brand rounded-lg w-full placeholder:text-body"
-            placeholder="Etsi kayttajia..."
+            placeholder="Etsi käyttäjiä..."
             onChange={handleInputChange}
             value={searchInput}
           />
         </div>
         <button
           type="submit"
-          className="inline-flex items-center justify-center shrink-0 text-white bg-brand hover:bg-brand-strong active:bg-brand-strong focus-visible:ring-4 focus-visible:ring-brand-medium shadow-xs rounded-base w-10 h-10 focus:outline-none"
+          className="inline-flex items-center justify-center shrink-0 text-white bg-brand hover:bg-brand-strong focus:ring-4 focus:ring-brand-medium shadow-xs rounded-base w-10 h-10 focus:outline-none"
+          
         >
           <ScanSearch size={22} strokeWidth={1.5} />
         </button>
@@ -82,7 +83,7 @@ export const DropdownSearchbar = ({
       <div className="rounded-lg border border-neutral-700 bg-neutral-800">
         <div className="grid grid-cols-[2fr_2fr_1fr] gap-4 px-4 py-3 text-sm font-semibold text-neutral-400">
           <div>Nimi</div>
-          <div>Sahkoposti</div>
+          <div>Sähköposti</div>
           <div>Rooli</div>
         </div>
 
@@ -97,7 +98,7 @@ export const DropdownSearchbar = ({
                   <button
                     type="button"
                     onClick={() => handleResultClick(user)}
-                    className={`grid w-full grid-cols-[2fr_2fr_1fr] gap-4 px-4 py-3 text-left transition-colors hover:bg-neutral-700 active:bg-neutral-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-500 ${isSelected ? 'bg-neutral-700' : ''}`}
+                    className={`grid w-full grid-cols-[2fr_2fr_1fr] gap-4 px-4 py-3 text-left transition-colors hover:bg-neutral-700 ${isSelected ? 'bg-neutral-700' : ''}`}
                   >
                     <div className="font-semibold text-neutral-100">{user.name}</div>
                     <div className="text-sm text-neutral-300">{user.email}</div>
@@ -114,7 +115,7 @@ export const DropdownSearchbar = ({
           </div>
         ) : (
           <div className="border-t border-neutral-700 px-4 py-5 text-sm text-neutral-300">
-            Ei kayttajia
+            Ei käyttäjiä
           </div>
         )}
 
@@ -123,7 +124,7 @@ export const DropdownSearchbar = ({
             type="button"
             onClick={handlePreviousPage}
             disabled={page === 0}
-            className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-neutral-700 bg-neutral-800 text-neutral-100 transition-colors hover:bg-neutral-700 active:bg-neutral-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-500 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-neutral-800 disabled:active:bg-neutral-800"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-neutral-700 bg-neutral-800 text-neutral-100 disabled:cursor-not-allowed disabled:opacity-50"
             aria-label="Edellinen sivu"
           >
             <ChevronLeft size={18} strokeWidth={1.5} />
@@ -135,7 +136,7 @@ export const DropdownSearchbar = ({
             type="button"
             onClick={handleNextPage}
             disabled={page >= totalPages - 1}
-            className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-neutral-700 bg-neutral-800 text-neutral-100 transition-colors hover:bg-neutral-700 active:bg-neutral-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-500 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-neutral-800 disabled:active:bg-neutral-800"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-neutral-700 bg-neutral-800 text-neutral-100 disabled:cursor-not-allowed disabled:opacity-50"
             aria-label="Seuraava sivu"
           >
             <ChevronRight size={18} strokeWidth={1.5} />

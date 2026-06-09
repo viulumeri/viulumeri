@@ -142,10 +142,6 @@ export const AdminPanel = () => {
               <div className="space-y-4">
                 <div className="flex items-center justify-between gap-4">
                   <div className="text-sm text-neutral-300">
-                    <span className="font-semibold text-neutral-100">{selectedUser.name}</span>
-                    <span className="ml-2 text-neutral-400">
-                      {'studentCount' in selectedUser ? 'Opettaja' : 'Oppilas'}
-                    </span>
                     <div className="mt-3 space-y-2 text-sm text-neutral-200">
                       {'studentCount' in selectedUser ? (
                         <>
@@ -192,7 +188,7 @@ export const AdminPanel = () => {
                           onClick={() => {
                             if (deletingId) return
                             setActionsOpen(false)
-                            if (confirm(`Haluatko varmasti poistaa kayttajan ${selectedUser.name}? Toimintoa ei voi perua.`)) {
+                            if (confirm(`Haluatko varmasti poistaa käyttäjän ${selectedUser.name}? Toimintoa ei voi perua.`)) {
                               setDeletingId(selectedUser.id)
                               if ('studentCount' in selectedUser) {
                                 deleteTeacher.mutate(selectedUser.id)
@@ -203,7 +199,7 @@ export const AdminPanel = () => {
                           }}
                           className="w-full px-4 py-3 text-left text-sm text-rose-400 hover:bg-neutral-800 active:bg-neutral-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-500 disabled:cursor-not-allowed disabled:opacity-50"
                         >
-                          {deletingId === selectedUser.id ? 'Poistetaan...' : 'Poista kayttaja'}
+                          {deletingId === selectedUser.id ? 'Poistetaan...' : 'Poista käyttäjä'}
                         </button>
                       </div>
                     )}

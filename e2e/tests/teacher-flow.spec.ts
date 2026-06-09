@@ -36,6 +36,7 @@ test('teacher flow', async ({ page }) => {
   const studentCtx = await request.newContext({ baseURL: BASE_URL })
   let studentId: string | undefined
   let homeworkId: string | undefined
+  let hw2Id: string | undefined
 
   try {
     // Sign in via API to set up state
@@ -108,6 +109,7 @@ test('teacher flow', async ({ page }) => {
     })
     expect(createHw2Res.ok()).toBeTruthy()
     const hw2 = await createHw2Res.json()
+    hw2Id = hw2.id
 
     // 7. Carousel navigation: arrows and dot indicator appear with 2 homeworks
     await page.goto(`/teacher/students/${studentId}/homework`)
@@ -243,6 +245,10 @@ test('teacher flow', async ({ page }) => {
     if (homeworkId) {
       await teacherCtx.post('/api/auth/sign-in/email', { data: TEACHER })
       await teacherCtx.delete(`/api/homework/${homeworkId}`)
+    }
+    // Clean up second homework if test failed before inline cleanup
+    if (hw2Id) {
+      await teacherCtx.delete(`/api/homework/${hw2Id}`)
     }
     // Clean up student relationship if test failed before deletion
     if (studentId) {

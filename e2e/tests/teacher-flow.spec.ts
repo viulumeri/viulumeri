@@ -133,7 +133,8 @@ test('teacher flow', async ({ page }) => {
     await expect(rightArrow).not.toBeDisabled()
 
     // Clean up second homework
-    await teacherCtx.delete(`/api/homework/${hw2.id}`)
+    const deleteHw2Res = await teacherCtx.delete(`/api/homework/${hw2.id}`)
+    expect(deleteHw2Res.ok()).toBeTruthy()
 
     // 8. Teacher writes a rich-text comment using the TipTap editor
     await page.goto(`/teacher/students/${studentId}/homework/${homeworkId}/edit`)

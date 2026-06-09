@@ -147,13 +147,13 @@ export const HomeworkCarousel = ({
             transition: 'transform 250ms ease'
           }}
         >
-          {homework.map((_, i) => {
+          {reversedHomework.map((hw, i) => {
             const dist = Math.abs(i - currentIndex)
             const size = dist === 0 ? 10 : dist === 1 ? 8 : 6
             const bg = dist === 0 ? '#ffffff' : dist === 1 ? '#9ca3af' : '#4b5563'
             return (
               <button
-                key={i}
+                key={hw.id}
                 onClick={() => navigateTo(i)}
                 style={{
                   width: SLOT,

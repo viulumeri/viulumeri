@@ -162,6 +162,7 @@ export const AdminPanel = () => {
                   <div className="relative text-right">
                     <button
                       type="button"
+                      aria-label="Avaa käyttäjätoiminnot"
                       onClick={() => setActionsOpen(prev => !prev)}
                       className="inline-flex items-center justify-center p-2 rounded-full bg-neutral-700 transition-colors hover:bg-neutral-600 active:bg-neutral-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-500"
                     >

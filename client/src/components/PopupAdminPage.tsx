@@ -504,6 +504,7 @@ export const PopupAdminPage = () => {
               return (
                 <div
                   key={message.id}
+                  data-testid="popup-message-card"
                   className="rounded-md border border-neutral-700 bg-neutral-800 p-4 space-y-2"
                 >
                   {isEditingThis ? (

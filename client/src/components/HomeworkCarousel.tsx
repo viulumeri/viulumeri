@@ -135,14 +135,16 @@ export const HomeworkCarousel = ({
           <div className="fixed inset-x-0 top-1/2 -translate-y-1/2 z-10 flex justify-between max-w-[calc(56rem+4rem)] mx-auto px-2 pointer-events-none">
             <button
               onClick={() => navigateTo(currentIndex - 1)}
-              className="pointer-events-auto cursor-pointer rounded-full bg-black/30 p-2 text-white"
+              disabled={currentIndex === 0}
+              className="pointer-events-auto cursor-pointer rounded-full bg-black/30 p-2 text-white disabled:opacity-30 disabled:pointer-events-none"
               aria-label="Edellinen kotitehtävä"
             >
               <ChevronLeft size={24} />
             </button>
             <button
               onClick={() => navigateTo(currentIndex + 1)}
-              className="pointer-events-auto cursor-pointer rounded-full bg-black/30 p-2 text-white"
+              disabled={currentIndex === homework.length - 1}
+              className="pointer-events-auto cursor-pointer rounded-full bg-black/30 p-2 text-white disabled:opacity-30 disabled:pointer-events-none"
               aria-label="Seuraava kotitehtävä"
             >
               <ChevronRight size={24} />

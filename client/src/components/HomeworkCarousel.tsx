@@ -130,20 +130,59 @@ export const HomeworkCarousel = ({
 
   const reversedHomework = homework.slice().reverse()
 
+  const windowSize = Math.min(5, homework.length)
+  const windowStart = Math.max(0, Math.min(currentIndex - 2, homework.length - windowSize))
+
+  const SLOT = 14 // px — uniform slot width for each dot
+
   const dots = homework.length >= 2 ? (
-    <div className="flex justify-center gap-2">
-      {homework.map((_, i) => (
-        <button
-          key={i}
-          onClick={() => navigateTo(i)}
-          className={`rounded-full transition-all duration-200 ${
-            i === currentIndex
-              ? 'w-2.5 h-2.5 bg-white'
-              : 'w-2 h-2 bg-gray-500'
-          }`}
-          aria-label={`Kotitehtävä ${i + 1}`}
-        />
-      ))}
+    <div className="flex justify-center">
+      <div
+        style={{ width: windowSize * SLOT, overflow: 'hidden' }}
+      >
+        <div
+          style={{
+            display: 'flex',
+            transform: `translateX(-${windowStart * SLOT}px)`,
+            transition: 'transform 250ms ease'
+          }}
+        >
+          {homework.map((_, i) => {
+            const dist = Math.abs(i - currentIndex)
+            const size = dist === 0 ? 10 : dist === 1 ? 8 : 6
+            const bg = dist === 0 ? '#ffffff' : dist === 1 ? '#9ca3af' : '#4b5563'
+            return (
+              <button
+                key={i}
+                onClick={() => navigateTo(i)}
+                style={{
+                  width: SLOT,
+                  height: SLOT,
+                  flexShrink: 0,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  background: 'none',
+                  border: 'none',
+                  padding: 0,
+                  cursor: 'pointer'
+                }}
+                aria-label={`Kotitehtävä ${i + 1}`}
+              >
+                <div
+                  style={{
+                    width: size,
+                    height: size,
+                    borderRadius: '50%',
+                    background: bg,
+                    transition: 'width 200ms ease, height 200ms ease, background 200ms ease'
+                  }}
+                />
+              </button>
+            )
+          })}
+        </div>
+      </div>
     </div>
   ) : null
 
@@ -190,7 +229,6 @@ export const HomeworkCarousel = ({
                 onDelete={mode === 'teacher' ? handleDelete : undefined}
                 onPractice={mode === 'student' ? handlePractice : undefined}
                 practicePending={practice.isPending}
-                dotsSlot={index === currentIndex ? dots : undefined}
               />
             ))}
           <div className="w-[5vw] flex-shrink-0" />
@@ -203,6 +241,11 @@ export const HomeworkCarousel = ({
         )}
         </div>
       </div>
+      {homework.length >= 2 && (
+        <div className="fixed bottom-0 left-0 right-0 z-10 flex justify-center pb-16 pt-2 bg-neutral-900">
+          {dots}
+        </div>
+      )}
     </div>
   )
 }

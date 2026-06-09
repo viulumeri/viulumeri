@@ -77,7 +77,7 @@ export const HomeworkCarousel = ({
   const scrollRef = useRef<HTMLDivElement | null>(null)
 
   const getCardWidth = () => {
-    const firstCard = scrollRef.current?.firstElementChild?.children[1] as HTMLElement | undefined
+    const firstCard = scrollRef.current?.querySelector<HTMLElement>('.snap-center')
     return firstCard ? firstCard.offsetWidth + 16 : window.innerWidth * 0.9 + 16
   }
 

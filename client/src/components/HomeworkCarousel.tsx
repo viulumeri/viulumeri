@@ -128,6 +128,25 @@ export const HomeworkCarousel = ({
     )
   }
 
+  const reversedHomework = homework.slice().reverse()
+
+  const dots = homework.length >= 2 ? (
+    <div className="flex justify-center gap-2">
+      {homework.map((_, i) => (
+        <button
+          key={i}
+          onClick={() => navigateTo(i)}
+          className={`rounded-full transition-all duration-200 ${
+            i === currentIndex
+              ? 'w-2.5 h-2.5 bg-white'
+              : 'w-2 h-2 bg-gray-500'
+          }`}
+          aria-label={`Kotitehtävä ${i + 1}`}
+        />
+      ))}
+    </div>
+  ) : null
+
   return (
     <div className="flex flex-col min-h-[100dvh]">
       <div className="flex-1 relative">
@@ -157,9 +176,7 @@ export const HomeworkCarousel = ({
         >
         <div className="flex gap-4">
           <div className="w-[5vw] flex-shrink-0" />
-          {homework
-            .slice()
-            .reverse()
+          {reversedHomework
             .map((hw, index) => (
               <HomeworkCard
                 key={hw.id}
@@ -173,6 +190,7 @@ export const HomeworkCarousel = ({
                 onDelete={mode === 'teacher' ? handleDelete : undefined}
                 onPractice={mode === 'student' ? handlePractice : undefined}
                 practicePending={practice.isPending}
+                dotsSlot={index === currentIndex ? dots : undefined}
               />
             ))}
           <div className="w-[5vw] flex-shrink-0" />

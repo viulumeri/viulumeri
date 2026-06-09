@@ -27,6 +27,7 @@ type Props = {
 
   onPractice?: (hwId: string) => void
   practicePending?: boolean
+  dotsSlot?: React.ReactNode
 }
 
 const HomeworkCard = ({
@@ -46,7 +47,8 @@ const HomeworkCard = ({
   editableComment = false,
   commentDraft,
   onChangeComment,
-  onAddSong
+  onAddSong,
+  dotsSlot
 }: Props) => {
   const menuRef = useRef<HTMLDivElement | null>(null)
   const cardRef = useRef<HTMLDivElement>(null)
@@ -128,9 +130,10 @@ const HomeworkCard = ({
         <h2 className="mb-1">
           {headingLabel ?? (isLatest ? 'Tehtävä' : 'Arkistoitu tehtävä')}
         </h2>
-        <p className="text-xs text-gray-300 mb-12">
+        <p className="text-xs text-gray-300 mb-4">
           {new Date(hw.createdAt).toLocaleDateString()}
         </p>
+        {dotsSlot && <div className="mb-8">{dotsSlot}</div>}
 
         {hw.songs.map(songId => {
           const song = songMap.get(songId)

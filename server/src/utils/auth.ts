@@ -11,7 +11,7 @@ import { admin } from "better-auth/plugins"
 
 type AuthUser = {
   id: string
-  email: string
+  email?: string
   emailVerified?: boolean
   name?: string
 }

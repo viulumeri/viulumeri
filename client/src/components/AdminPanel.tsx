@@ -60,8 +60,8 @@ export const AdminPanel = () => {
     }
   })
 
-  const teachers = teachersData?.teachers ?? []
-  const students = studentsData?.students ?? []
+  const teachers = useMemo(() => teachersData?.teachers ?? [], [teachersData])
+  const students = useMemo(() => studentsData?.students ?? [], [studentsData])
   const error = teachersError || studentsError ? 'Failed to load admin data' : null
 
   const allUsers = useMemo<SearchResultUser[]>(() => [

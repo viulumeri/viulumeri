@@ -10,7 +10,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "healthcheck": "npm run healthcheck --workspace=client && npm run healthcheck --workspace=server",
-    "check:all": "bash scripts/check-all.sh"
+    "check:all": "bash scripts/check-all.sh",
+    "dev": "bash scripts/dev.sh"
   },
   "repository": {
     "type": "git",
@@ -29,6 +30,7 @@
     "rou3": "0.6.3"
   },
   "devDependencies": {
-    "@playwright/test": "^1.60.0"
+    "@playwright/test": "^1.60.0",
+    "concurrently": "^10.0.3"
   }
 }

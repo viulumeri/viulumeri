@@ -30,6 +30,7 @@ import { NotificationBanner } from './components/NotificationBanner'
 import { StartupAnnouncementsPopup } from './components/StartupAnnouncementsPopup'
 import { isAdminRegularUserViewEnabled } from './utils/adminRegularUserView'
 import './index.css'
+import { InstallPromptPopup } from './components/InstallPromptPopup.tsx'
 
 const App = () => {
   const { data: session, isPending } = useSession()
@@ -43,6 +44,7 @@ const App = () => {
     
     <NotificationProvider>
       <NotificationBanner />
+      <InstallPromptPopup userId={userId} />
       <StartupAnnouncementsPopup userId={userId} isPending={isPending} />
       <Routes>
       {/* Public routes */}

@@ -1,5 +1,5 @@
 import { test, expect, request, type Page } from '@playwright/test'
-import { markStartupAnnouncementsAsSeen } from './announcement-state'
+import { markInstallPromptAsSeen, markStartupAnnouncementsAsSeen } from './announcement-state'
 
 const BASE_URL = process.env.BASE_URL || 'http://localhost:3001'
 const TEACHER = { email: 'e2e-teacher@example.com', password: 'E2eTeacher123!' }
@@ -87,6 +87,7 @@ async function loginAs(
   await page.getByRole('button', { name: /kirjaudu sisään/i }).click()
   await page.waitForURL(expectedUrlPattern)
   await markStartupAnnouncementsAsSeen(page, credentials.email)
+  await markInstallPromptAsSeen(page)
 }
 
 async function setComment(comment: string) {

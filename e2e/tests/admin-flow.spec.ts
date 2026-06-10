@@ -1,6 +1,6 @@
 import { test, expect, request, type Page } from '@playwright/test'
 import { MongoClient } from 'mongodb'
-import { markStartupAnnouncementsAsSeen } from './announcement-state'
+import { markInstallPromptAsSeen, markStartupAnnouncementsAsSeen } from './announcement-state'
 
 const ADMIN = {
   email: 'e2e-admin@example.com',
@@ -35,9 +35,17 @@ async function findUserCollection(
   return null
 }
 
-async function login(page: Page, email: string, password: string) {
+async function login(
+  page: Page,
+  email: string,
+  password: string,
+  suppressAnnouncements = true
+) {
   await page.goto('/login')
-  await markStartupAnnouncementsAsSeen(page, email)
+  if (suppressAnnouncements) {
+    await markStartupAnnouncementsAsSeen(page, email)
+    await markInstallPromptAsSeen(page)
+  }
   await page.locator('input[type="email"]').fill(email)
   await page.locator('input[type="password"]').fill(password)
 

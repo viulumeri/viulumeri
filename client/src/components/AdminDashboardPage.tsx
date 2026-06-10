@@ -73,7 +73,7 @@ export const AdminDashboardPage = () => {
   return (
     <div className="space-y-3 p-4 pb-6">
       <h1 className="flex items-center gap-3">
-        <Banana className="w-8 h-8" />
+        <Banana className="text-yellow-500 w-8 h-8" />
         Ylläpitopaneeli
       </h1>
 

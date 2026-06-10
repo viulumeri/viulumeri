@@ -1,5 +1,6 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useMemo } from 'react'
 import DOMPurify from 'dompurify'
+import { processYouTubeEmbeds, pauseYouTubeIframes } from '../utils/youtubeEmbed'
 import { Ellipsis, X } from 'lucide-react'
 import type { SongListItem, HomeworkListResponse } from '../../../shared/types'
 import SongCard from './SongCard'
@@ -48,6 +49,12 @@ const HomeworkCard = ({
   onAddSong
 }: Props) => {
   const menuRef = useRef<HTMLDivElement | null>(null)
+  const cardRef = useRef<HTMLDivElement>(null)
+
+  const renderedComment = useMemo(
+    () => processYouTubeEmbeds(DOMPurify.sanitize(hw.comment ?? '', { ADD_ATTR: ['target'] })),
+    [hw.comment]
+  )
 
   useEffect(() => {
     function onDocClick(e: MouseEvent) {
@@ -62,8 +69,21 @@ const HomeworkCard = ({
     return () => document.removeEventListener('click', onDocClick)
   }, [isMenuOpen, onToggleMenu])
 
+  useEffect(() => {
+    const el = cardRef.current
+    if (!el) return
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.intersectionRatio < 0.5) pauseYouTubeIframes(el)
+      },
+      { threshold: [0, 0.5, 1] }
+    )
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [pauseYouTubeIframes])
+
   return (
-    <div className="snap-center w-[90vw] max-w-4xl flex-shrink-0 rounded-lg pt-4 pb-4 px-8 relative ">
+    <div ref={cardRef} className="snap-center w-[90vw] max-w-4xl flex-shrink-0 rounded-lg pt-4 pb-4 px-8 relative ">
       <div className="overflow-y-auto overflow-x-hidden max-h={[`calc(100dvh-140px)`]} pt-0 pb-16 relative scrollbar-hide">
         {mode === 'teacher' && onToggleMenu && (
           <>
@@ -176,8 +196,9 @@ const HomeworkCard = ({
                 [&_ol_ol]:list-[lower-alpha]
                 [&_ol_ol_ol]:list-[lower-roman]
                 [&_li]:my-0.5
-                [&_a]:text-blue-400 [&_a]:underline"
-                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(hw.comment, { ADD_ATTR: ['target'] }) }}
+                [&_a]:text-blue-400 [&_a]:underline
+                [&_iframe]:w-full [&_iframe]:aspect-video [&_iframe]:rounded [&_iframe]:mt-2"
+                dangerouslySetInnerHTML={{ __html: renderedComment }}
               />
             </>
           )

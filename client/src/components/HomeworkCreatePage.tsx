@@ -69,8 +69,11 @@ export const HomeworkCreatePage = () => {
     }
   }, [songsQ.isError, showError])
 
+  const isSubmittingRef = useRef(false)
+
   const handleCreate = () => {
-    if (!studentId) return
+    if (!studentId || isSubmittingRef.current) return
+    isSubmittingRef.current = true
     createHw.mutate(
       {
         studentId,
@@ -85,8 +88,10 @@ export const HomeworkCreatePage = () => {
             replace: true
           })
         },
-        onError: (err: { message?: string }) =>
+        onError: (err: { message?: string }) => {
+          isSubmittingRef.current = false
           showError(err?.message || 'Läksyn luonti epäonnistui')
+        }
       }
     )
   }
@@ -144,7 +149,11 @@ export const HomeworkCreatePage = () => {
         />
       </div>
 
-      <FloatingActionButton onClick={handleCreate} icon="check" />
+      <FloatingActionButton
+        onClick={handleCreate}
+        icon="check"
+        disabled={createHw.isPending}
+      />
     </div>
   )
 }

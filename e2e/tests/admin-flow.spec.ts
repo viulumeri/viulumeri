@@ -310,7 +310,7 @@ test('admin flow covers dashboard, users, popups, feedback, FAQ, and user view',
         response.request().method() === 'POST'
       )
     })
-    await faqSection.getByRole('button', { name: 'Lisaa kysymys' }).click()
+    await faqSection.getByRole('button', { name: 'Lisää kysymys' }).click()
     const createFaqResponse = await createFaqResponsePromise
     expect(createFaqResponse.ok()).toBe(true)
 

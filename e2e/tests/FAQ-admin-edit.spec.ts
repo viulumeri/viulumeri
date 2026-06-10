@@ -70,7 +70,7 @@ await page.getByPlaceholder(/Kysymys/i).fill(question)
 await page.getByPlaceholder(/Vastaus/i).fill(answer)
 
 // Tallennetaan
-await page.getByRole('button', { name: 'Lisaa kysymys' }).click()
+await page.getByRole('button', { name: 'Lisää kysymys' }).click()
 
 // Tarkistetaan että uusi kysymys näkyy 'Usein kysytyt kysymykset' -haitarissa
 // Hallintapaneelissa.
@@ -82,7 +82,7 @@ await expect(page.getByText(question)).toBeVisible()
 await page.getByText(question).click()
 await expect(page.getByText(answer)).toBeVisible()
 await expect(page.getByText(answer)).toBeVisible()
-await expect(page.getByText(`Lisatty: ${formattedDate}`)).toBeVisible()
+await expect(page.getByText(`Lisätty: ${formattedDate}`)).toBeVisible()
 
 // Tarkistetaan että uusi kysymys näkyy
 // 'Usein kysytyt kysymykset' -haitarissa Asetuksissa.
@@ -136,7 +136,7 @@ await page.getByPlaceholder(/Kysymys/i).fill(question)
 await page.getByPlaceholder(/Vastaus/i).fill(answer)
 
 // Tallennetaan
-await page.getByRole('button', { name: 'Lisaa kysymys' }).click()
+await page.getByRole('button', { name: 'Lisää kysymys' }).click()
 
 // Tarkistetaan että uusi kysymys näkyy 'Usein kysytyt kysymykset' -haitarissa
 // Hallintapaneelissa.
@@ -199,7 +199,7 @@ const today = new Date()
 const formattedDate = `${today.getDate()}.${today.getMonth() + 1}.${today.getFullYear()}`
 
 // Tallennetaan
-await page.getByRole('button', { name: 'Lisaa kysymys' }).click()
+await page.getByRole('button', { name: 'Lisää kysymys' }).click()
 
 // Tarkistetaan että uusi kysymys näkyy 'Usein kysytyt kysymykset' -haitarissa
 // Hallintapaneelissa.

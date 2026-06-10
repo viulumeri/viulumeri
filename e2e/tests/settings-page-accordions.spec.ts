@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test'
 import { SEED_USERS } from '../global-setup'
-import { markStartupAnnouncementsAsSeen } from './announcement-state'
+import { markInstallPromptAsSeen, markStartupAnnouncementsAsSeen } from './announcement-state'
 
 const TEACHER = SEED_USERS.find(user => user.userType === 'teacher')
 
@@ -21,6 +21,7 @@ test('Password accordion opens and closes when clicked', async ({ page }) => {
   await page.waitForURL('**/teacher/students')
   await expect(page).toHaveURL('/teacher/students')
   await markStartupAnnouncementsAsSeen(page, TEACHER.email)
+  await markInstallPromptAsSeen(page)
   await page.goto('/settings')
 
   // Avautuu.
@@ -67,6 +68,7 @@ test('FAQ accordion opens and closes when clicked', async ({ page }) => {
   await page.waitForURL('**/teacher/students')
   await expect(page).toHaveURL('/teacher/students')
   await markStartupAnnouncementsAsSeen(page, TEACHER.email)
+  await markInstallPromptAsSeen(page)
   await page.goto('/settings')
 
 
@@ -91,6 +93,7 @@ test('Both accordions open when clicked', async ({ page }) => {
     await page.waitForURL('**/teacher/students')
     await expect(page).toHaveURL('/teacher/students')
     await markStartupAnnouncementsAsSeen(page, TEACHER.email)
+    await markInstallPromptAsSeen(page)
     await page.goto('/settings')
 
     await page.getByText('Salasanan vaihto').click()

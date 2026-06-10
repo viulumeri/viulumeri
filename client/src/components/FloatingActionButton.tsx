@@ -7,6 +7,7 @@ type Props = {
   onClick?: () => void
   icon?: 'plus' | 'check'
   className?: string
+  disabled?: boolean
 }
 
 export const FloatingActionButton = ({
@@ -14,14 +15,15 @@ export const FloatingActionButton = ({
   state,
   onClick,
   icon = 'plus',
-  className = ''
+  className = '',
+  disabled = false
 }: Props) => {
   const Icon = icon === 'check' ? Check : Plus
   return (
     <div
       className={[
         'fixed left-0 right-0 z-40 flex items-center justify-center',
-        'bottom-18',
+        'bottom-24',
         className
       ].join(' ')}
     >
@@ -36,6 +38,7 @@ export const FloatingActionButton = ({
       ) : (
         <button
           onClick={onClick}
+          disabled={disabled}
           className="bg-white text-black rounded-full w-13 h-13 flex items-center justify-center  border-black border-1"
         >
           <Icon size={28} strokeWidth={2.5} />

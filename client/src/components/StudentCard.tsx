@@ -38,8 +38,12 @@ export const StudentCard = ({ id, name, practiceCount }: Props) => {
       </div>
 
       <h3 className="grid grid-rows-2 w-full leading-tight mt-auto">
-        <span className="truncate text-white font-medium">{firstName}</span>
-        <span className="truncate text-white font-medium">{lastName}</span>
+        <span className="truncate text-white font-bold [text-shadow:_1px_1px_0_rgba(0,0,0,0.4),_-1px_-1px_0_rgba(0,0,0,0.4),_1px_-1px_0_rgba(0,0,0,0.4),_-1px_1px_0_rgba(0,0,0,0.4)]">
+          {firstName}
+        </span>
+        <span className="truncate text-white font-bold [text-shadow:_1px_1px_0_rgba(0,0,0,0.4),_-1px_-1px_0_rgba(0,0,0,0.4),_1px_-1px_0_rgba(0,0,0,0.4),_-1px_1px_0_rgba(0,0,0,0.4)]">
+          {lastName}
+        </span>
       </h3>
     </Link>
   )

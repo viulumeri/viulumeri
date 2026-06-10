@@ -1,7 +1,7 @@
 
 import { test, expect, type Page } from '@playwright/test'
 import { SEED_USERS } from '../global-setup'
-import { markStartupAnnouncementsAsSeen } from './announcement-state'
+import { markInstallPromptAsSeen, markStartupAnnouncementsAsSeen } from './announcement-state'
 
 const ADMIN = SEED_USERS.find(user => user.userType === 'admin')
 if (!ADMIN) {
@@ -29,6 +29,7 @@ async function loginAsAdmin(page: Page) {
   await page.getByRole('button', { name: 'Kirjaudu sisään' }).click()
   await page.waitForURL(url => !url.pathname.endsWith('/login'), { timeout: 15_000 })
   await markStartupAnnouncementsAsSeen(page, ADMIN.email)
+  await markInstallPromptAsSeen(page)
   await page.goto('/admin')
   await expect(page).toHaveURL('/admin')
 }
@@ -69,7 +70,7 @@ await page.getByPlaceholder(/Kysymys/i).fill(question)
 await page.getByPlaceholder(/Vastaus/i).fill(answer)
 
 // Tallennetaan
-await page.getByRole('button', { name: 'Lisää kysymys'}).click()
+await page.getByRole('button', { name: 'Lisaa kysymys' }).click()
 
 // Tarkistetaan että uusi kysymys näkyy 'Usein kysytyt kysymykset' -haitarissa
 // Hallintapaneelissa.
@@ -81,7 +82,7 @@ await expect(page.getByText(question)).toBeVisible()
 await page.getByText(question).click()
 await expect(page.getByText(answer)).toBeVisible()
 await expect(page.getByText(answer)).toBeVisible()
-await expect(page.getByText(`Lisätty: ${formattedDate}`)).toBeVisible()
+await expect(page.getByText(`Lisatty: ${formattedDate}`)).toBeVisible()
 
 // Tarkistetaan että uusi kysymys näkyy
 // 'Usein kysytyt kysymykset' -haitarissa Asetuksissa.
@@ -135,7 +136,7 @@ await page.getByPlaceholder(/Kysymys/i).fill(question)
 await page.getByPlaceholder(/Vastaus/i).fill(answer)
 
 // Tallennetaan
-await page.getByRole('button', { name: 'Lisää kysymys'}).click()
+await page.getByRole('button', { name: 'Lisaa kysymys' }).click()
 
 // Tarkistetaan että uusi kysymys näkyy 'Usein kysytyt kysymykset' -haitarissa
 // Hallintapaneelissa.
@@ -146,7 +147,7 @@ await page.getByText(question).click()
 await expect(page.getByText(answer)).toBeVisible()
 
 // Poistetaan kysymys.
-await page.getByRole('button', { name: 'Poista' }).click()
+await page.getByRole('button', { name: 'Poista', exact: true }).click()
 await expect(page.getByText(question)).not.toBeVisible()
 
 // Mennään sivulle Asetukset.
@@ -198,7 +199,7 @@ const today = new Date()
 const formattedDate = `${today.getDate()}.${today.getMonth() + 1}.${today.getFullYear()}`
 
 // Tallennetaan
-await page.getByRole('button', { name: 'Lisää kysymys'}).click()
+await page.getByRole('button', { name: 'Lisaa kysymys' }).click()
 
 // Tarkistetaan että uusi kysymys näkyy 'Usein kysytyt kysymykset' -haitarissa
 // Hallintapaneelissa.
@@ -244,7 +245,7 @@ await expect(
 ).toBeVisible()
 
 await expect(
-  page.getByText(`Päivitetty: ${formattedDate}`)
+  page.getByText(`Paivitetty: ${formattedDate}`)
 ).toBeVisible()
 
 // Varmistetaan että vanhat arvot poistuivat

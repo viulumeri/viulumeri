@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useNotification } from '../hooks/useNotification'
 import { adminService } from '../services/admin'
-import { Bell } from 'lucide-react'
+import { Bell, Trash2 } from 'lucide-react'
 import type { AdminPopupMessage } from '../services/admin'
+import { notifyAdminPopupsUpdated } from '../utils/adminPopupEvents'
 
 type AudienceState = {
   teachers: boolean
@@ -139,8 +140,10 @@ export const PopupAdminPage = () => {
   const hasSelectedAudience = (state: AudienceState) =>
     state.teachers || state.students
 
-  const loadMessages = useCallback(async () => {
-    setIsLoadingMessages(true)
+  const loadMessages = useCallback(async (options?: { silent?: boolean }) => {
+    if (!options?.silent) {
+      setIsLoadingMessages(true)
+    }
     try {
       const response = await adminService.getAdminPopupMessages()
       setMessages(response.messages)
@@ -151,7 +154,9 @@ export const PopupAdminPage = () => {
           : 'Pop-upien haku epäonnistui'
       )
     } finally {
-      setIsLoadingMessages(false)
+      if (!options?.silent) {
+        setIsLoadingMessages(false)
+      }
     }
   }, [showError])
 
@@ -195,7 +200,8 @@ export const PopupAdminPage = () => {
       })
       showSuccess(isDraft ? 'Luonnos tallennettu' : 'Pop-up lähetetty')
       resetCreateForm()
-      await loadMessages()
+      await loadMessages({ silent: true })
+      notifyAdminPopupsUpdated()
     } catch (error: unknown) {
       showError(
         error instanceof Error ? error.message : 'Pop-upin lähetys epäonnistui'
@@ -217,7 +223,8 @@ export const PopupAdminPage = () => {
     try {
       await adminService.deleteAllPopupMessages()
       showSuccess('Kaikki viestit poistettu')
-      await loadMessages()
+      await loadMessages({ silent: true })
+      notifyAdminPopupsUpdated()
     } catch (error: unknown) {
       showError(
         error instanceof Error ? error.message : 'Poisto epäonnistui'
@@ -276,7 +283,8 @@ export const PopupAdminPage = () => {
       })
       showSuccess(editIsDraft ? 'Luonnos tallennettu' : 'Pop-up päivitetty')
       resetEditForm()
-      await loadMessages()
+      await loadMessages({ silent: true })
+      notifyAdminPopupsUpdated()
     } catch (error: unknown) {
       showError(
         error instanceof Error ? error.message : 'Pop-upin päivitys epäonnistui'
@@ -298,7 +306,8 @@ export const PopupAdminPage = () => {
           ? 'Pop-up asetettu luonnokseksi'
           : 'Luonnos julkaistu'
       )
-      await loadMessages()
+      await loadMessages({ silent: true })
+      notifyAdminPopupsUpdated()
     } catch (error: unknown) {
       showError(
         error instanceof Error ? error.message : 'Tilan päivitys epäonnistui'
@@ -321,7 +330,8 @@ export const PopupAdminPage = () => {
     try {
       await adminService.deleteAdminPopupMessage(id)
       showSuccess('Pop-up poistettu')
-      await loadMessages()
+      await loadMessages({ silent: true })
+      notifyAdminPopupsUpdated()
     } catch (error: unknown) {
       showError(
         error instanceof Error ? error.message : 'Pop-upin poisto epäonnistui'
@@ -494,6 +504,7 @@ export const PopupAdminPage = () => {
               return (
                 <div
                   key={message.id}
+                  data-testid="popup-message-card"
                   className="rounded-md border border-neutral-700 bg-neutral-800 p-4 space-y-2"
                 >
                   {isEditingThis ? (
@@ -675,31 +686,47 @@ export const PopupAdminPage = () => {
                         {buildVisibilitySummary(message)}
                       </p>
 
-                      <div className="flex flex-wrap gap-2">
-                        <button
-                          type="button"
-                          className="button-basic disabled:opacity-50 disabled:cursor-not-allowed"
-                          disabled={isProcessingThis}
-                          onClick={() => startEditing(message)}
-                        >
-                          Muokkaa
-                        </button>
-                        <button
-                          type="button"
-                          className="button-basic disabled:opacity-50 disabled:cursor-not-allowed"
-                          disabled={isProcessingThis}
-                          onClick={() => void onToggleDraft(message)}
-                        >
-                          {message.isDraft ? 'Julkaise' : 'Aseta luonnokseksi'}
-                        </button>
-                        <button
-                          type="button"
-                          className="button-basic disabled:opacity-50 disabled:cursor-not-allowed"
-                          disabled={isProcessingThis}
-                          onClick={() => void onDeleteOne(message.id)}
-                        >
-                          Poista
-                        </button>
+                      <div className="flex flex-wrap items-end justify-between gap-2">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <button
+                            type="button"
+                            className="button-basic disabled:opacity-50 disabled:cursor-not-allowed"
+                            disabled={isProcessingThis}
+                            onClick={() => startEditing(message)}
+                          >
+                            Muokkaa
+                          </button>
+                          <button
+                            type="button"
+                            className="button-basic inline-flex h-10 w-10 items-center justify-center px-0 py-0 text-black disabled:opacity-50 disabled:cursor-not-allowed"
+                            disabled={isProcessingThis}
+                            onClick={() => void onDeleteOne(message.id)}
+                            aria-label="Poista pop-up"
+                            title="Poista pop-up"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm text-gray-200">
+                          <span>Luonnos</span>
+                          <button
+                            type="button"
+                            role="switch"
+                            aria-checked={message.isDraft}
+                            aria-label={`Aseta pop-up ${message.isDraft ? 'julkiseksi' : 'luonnokseksi'}`}
+                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+                              message.isDraft ? 'bg-amber-600' : 'bg-neutral-600'
+                            }`}
+                            disabled={isProcessingThis}
+                            onClick={() => void onToggleDraft(message)}
+                          >
+                            <span
+                              className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${
+                                message.isDraft ? 'translate-x-5' : 'translate-x-1'
+                              }`}
+                            />
+                          </button>
+                        </div>
                       </div>
                     </>
                   )}

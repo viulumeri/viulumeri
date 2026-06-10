@@ -80,7 +80,7 @@ const HomeworkCard = ({
     )
     observer.observe(el)
     return () => observer.disconnect()
-  }, [pauseYouTubeIframes])
+  }, [])
 
   return (
     <div ref={cardRef} className="snap-center w-[90vw] max-w-4xl flex-shrink-0 rounded-lg pt-4 pb-4 px-8 relative ">

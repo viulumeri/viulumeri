@@ -89,38 +89,64 @@ async function loginAs(
   await markStartupAnnouncementsAsSeen(page, credentials.email)
 }
 
-// Set the homework comment HTML directly via the API (teacher auth)
 async function setComment(comment: string) {
   const teacherCtx = await request.newContext({ baseURL: BASE_URL })
+
   try {
-    const signInRes = await teacherCtx.post('/api/auth/sign-in/email', { data: TEACHER })
-    expect(signInRes.ok()).toBeTruthy()
-    const putRes = await teacherCtx.put(`/api/homework/${homeworkId}`, {
-      data: { comment },
+    const signInResponse = await teacherCtx.post('/api/auth/sign-in/email', {
+      data: TEACHER
     })
-    expect(putRes.ok()).toBeTruthy()
+    expect(signInResponse.ok()).toBeTruthy()
+
+    const updateResponse = await teacherCtx.put(`/api/homework/${homeworkId}`, {
+      data: { songs: [], comment }
+    })
+    expect(updateResponse.ok()).toBeTruthy()
   } finally {
     await teacherCtx.dispose()
   }
 }
 
-test.describe.serial('Homework comment formatting', () => {
-  test.beforeEach(async () => {
-    // Reset the comment so each test starts from a clean slate
-    await setComment('')
-  })
-
-  test('student sees formatted comment as rendered HTML', async ({
+test.describe('Homework comment formatting', () => {
+  test('teacher saves formatted comment and student sees it as rendered HTML', async ({
+    page,
     browser,
   }) => {
-    await setComment(
-      '<h2>Harjoitteluohje</h2>' +
-        '<p><em>Tärkeää:</em></p>' +
-        '<p><strong>muista harjoitella</strong></p>' +
-        '<ul><li><p>Ohje yksi</p></li><li><p>Ohje kaksi</p></li></ul>' +
-        '<ol><li><p>Vaihe yksi</p></li></ol>' +
-        '<p><a href="https://example.com">nettisivu</a></p>'
-    )
+    // Teacher: add a formatted comment
+    await loginAs(page, TEACHER, /\/teacher\//)
+    await page.goto(`/teacher/students/${studentId}/homework/${homeworkId}/edit`)
+
+    const editor = page.locator('.tiptap')
+    await editor.waitFor()
+    const formattedComment = [
+      '<h2>Harjoitteluohje</h2>',
+      '<p><em>Tärkeää:</em></p>',
+      '<p><strong>muista harjoitella</strong></p>',
+      '<ul><li><p>Ohje yksi</p></li><li><p>Ohje kaksi</p></li></ul>',
+      '<ol><li><p>Vaihe yksi</p></li></ol>',
+      '<p><a href="https://example.com">nettisivu</a></p>'
+    ].join('')
+
+    await editor.evaluate((element, html) => {
+      const dataTransfer = new DataTransfer()
+      dataTransfer.setData('text/html', html)
+      dataTransfer.setData('text/plain', element.textContent ?? '')
+      element.dispatchEvent(
+        new ClipboardEvent('paste', {
+          bubbles: true,
+          cancelable: true,
+          clipboardData: dataTransfer
+        })
+      )
+    }, formattedComment)
+
+    await expect(editor.locator('h2')).toHaveText('Harjoitteluohje')
+    await expect(editor.locator('ul li').filter({ hasText: 'Ohje yksi' })).toBeAttached()
+
+    const updateResponse = await page.request.put(`/api/homework/${homeworkId}`, {
+      data: { songs: [], comment: formattedComment }
+    })
+    expect(updateResponse.ok()).toBeTruthy()
 
     // Student: verify all formatting is rendered as HTML elements
     const studentPage = await browser.newPage()

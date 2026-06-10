@@ -8,6 +8,7 @@ interface FeedbackDoc {
   category: AdminFeedbackItem['category']
   message: string
   createdAt: Date
+  isRead: boolean
 }
 
 interface UserInfo {
@@ -35,7 +36,8 @@ export const mapFeedbacksToAdminItems = (
       senderName: user?.name ?? 'Poistettu käyttäjä',
       senderEmail: user?.email ?? '',
       userType: f.userType,
-      createdAt: f.createdAt.toISOString()
+      createdAt: f.createdAt.toISOString(),
+      isRead: f.isRead
     }
   })
 }

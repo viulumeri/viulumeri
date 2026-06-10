@@ -1,6 +1,8 @@
 import { useAdminFeedbacks } from '../hooks/useAdmin'
+import { useUpdateAdminFeedbackReadStatus } from '../hooks/useAdmin'
 import type { AdminFeedbackItem } from '../services/admin'
 import { categoryLabel } from '../utils/feedbackLabels'
+import { MessageSquare } from 'lucide-react'
 
 
 const userTypeLabel: Record<AdminFeedbackItem['userType'], string> = {
@@ -10,16 +12,22 @@ const userTypeLabel: Record<AdminFeedbackItem['userType'], string> = {
 
 export const AdminFeedbackPage = () => {
   const { data, isLoading, error } = useAdminFeedbacks()
+  const updateReadStatus = useUpdateAdminFeedbackReadStatus()
   const feedbacks = data?.feedbacks ?? []
 
-  if (isLoading) return <div>Ladataan palautteita...</div>
-  if (error) return <div className="error">Palautteen lataus epäonnistui</div>
-
   return (
-    <div className="space-y-6 p-6 pb-24">
+    <div className="space-y-4 p-5 pb-24">
+      <h1 className="flex items-center gap-3">
+        <MessageSquare className="w-8 h-8" />
+        Palautteet
+      </h1>
+
       <div className="bg-neutral-900 rounded-lg p-6">
-        <h2 className="mb-4">Palautteet</h2>
-        {feedbacks.length === 0 ? (
+        {isLoading ? (
+          <p className="text-gray-400">Ladataan palautteita...</p>
+        ) : error ? (
+          <p className="text-rose-300">Palautteen lataus epäonnistui</p>
+        ) : feedbacks.length === 0 ? (
           <p className="text-gray-400">Ei palautteita.</p>
         ) : (
           <ul className="space-y-4">
@@ -31,6 +39,16 @@ export const AdminFeedbackPage = () => {
                   {new Date(item.createdAt).toLocaleString('fi-FI', { dateStyle: 'short', timeStyle: 'short' })}
                 </span>
               </div>
+              <label className="flex items-center gap-2 text-sm text-gray-300">
+                <input
+                  type="checkbox"
+                  checked={item.isRead === true}
+                  onChange={event => {
+                    updateReadStatus.mutate({ id: item.id, isRead: event.target.checked })
+                  }}
+                />
+                Luettu
+              </label>
               <div className="text-sm text-gray-300 flex flex-wrap gap-x-2 gap-y-0.5">
                 <span>{categoryLabel[item.category]}</span>
                 <span>·</span>

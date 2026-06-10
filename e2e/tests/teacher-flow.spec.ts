@@ -36,6 +36,7 @@ test('teacher flow', async ({ page }) => {
   const studentCtx = await request.newContext({ baseURL: BASE_URL })
   let studentId: string | undefined
   let homeworkId: string | undefined
+  let hw2Id: string | undefined
 
   try {
     // Sign in via API to set up state
@@ -102,7 +103,42 @@ test('teacher flow', async ({ page }) => {
     await page.waitForURL(`/teacher/students/${studentId}/homework`)
     await expect(page.getByRole('heading', { name: 'Tehtävä', exact: true })).toBeVisible({ timeout: 15_000 })
 
-    // 6. Teacher writes a rich-text comment using the TipTap editor
+    // 6. Teacher creates a second homework via API to enable carousel navigation
+    const createHw2Res = await teacherCtx.post('/api/homework', {
+      data: { studentId, songs: [], comment: '' }
+    })
+    expect(createHw2Res.ok()).toBeTruthy()
+    const hw2 = await createHw2Res.json()
+    hw2Id = hw2.id
+
+    // 7. Carousel navigation: arrows and dot indicator appear with 2 homeworks
+    await page.goto(`/teacher/students/${studentId}/homework`)
+    await expect(page.getByRole('heading', { name: 'Tehtävä', exact: true })).toBeVisible({ timeout: 15_000 })
+
+    const leftArrow = page.getByRole('button', { name: 'Edellinen kotitehtävä' })
+    const rightArrow = page.getByRole('button', { name: 'Seuraava kotitehtävä' })
+
+    await expect(leftArrow).toBeVisible()
+    await expect(rightArrow).toBeVisible()
+
+    // Newest homework is shown first — right arrow should be disabled
+    await expect(rightArrow).toBeDisabled()
+    await expect(leftArrow).not.toBeDisabled()
+
+    // Dot indicator is visible
+    await expect(page.getByRole('button', { name: 'Kotitehtävä 1' })).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Kotitehtävä 2' })).toBeVisible()
+
+    // Navigate to previous homework — left arrow becomes disabled
+    await leftArrow.click()
+    await expect(leftArrow).toBeDisabled()
+    await expect(rightArrow).not.toBeDisabled()
+
+    // Clean up second homework
+    const deleteHw2Res = await teacherCtx.delete(`/api/homework/${hw2.id}`)
+    expect(deleteHw2Res.ok()).toBeTruthy()
+
+    // 8. Teacher writes a rich-text comment using the TipTap editor
     await page.goto(`/teacher/students/${studentId}/homework/${homeworkId}/edit`)
 
     const editor = page.locator('.tiptap')
@@ -162,7 +198,7 @@ test('teacher flow', async ({ page }) => {
     await page.locator('button.rounded-full.bg-white').click()
     await page.waitForURL(`/teacher/students/${studentId}/homework`)
 
-    // 7. Teacher edits the homework comment
+    // 9. Teacher edits the homework comment
     await page.goto(`/teacher/students/${studentId}/homework/${homeworkId}/edit`)
 
     const editEditor = page.locator('.tiptap')
@@ -184,7 +220,7 @@ test('teacher flow', async ({ page }) => {
     expect(saveEditResponse.ok()).toBeTruthy()
     await page.waitForURL(`/teacher/students/${studentId}/homework`)
 
-    // 8. Teacher deletes the student
+    // 10. Teacher deletes the student
     await page.goto('/settings')
 
     const deleteStudentResponsePromise = page.waitForResponse(
@@ -200,7 +236,7 @@ test('teacher flow', async ({ page }) => {
 
     await expect(page.getByText('Oppilas poistettu onnistuneesti')).toBeVisible({ timeout: 15_000 })
 
-    // 9. Teacher logs out
+    // 11. Teacher logs out
     await page.goto('/settings')
     await page.getByRole('button', { name: /kirjaudu ulos/i }).click()
     await expect(page).toHaveURL(/\/login/, { timeout: 15_000 })
@@ -209,6 +245,10 @@ test('teacher flow', async ({ page }) => {
     if (homeworkId) {
       await teacherCtx.post('/api/auth/sign-in/email', { data: TEACHER })
       await teacherCtx.delete(`/api/homework/${homeworkId}`)
+    }
+    // Clean up second homework if test failed before inline cleanup
+    if (hw2Id) {
+      await teacherCtx.delete(`/api/homework/${hw2Id}`)
     }
     // Clean up student relationship if test failed before deletion
     if (studentId) {

@@ -51,7 +51,7 @@ Jos et pyytänyt salasanan palautusta, voit jättää tämän viestin huomioimat
               email: user?.email
             })
           },
-    onPasswordReset: async ({ user }: { user: { id: string; email: string } }) => {
+    onPasswordReset: async ({ user }) => {
       logger.info('Password reset completed', { userId: user.id, email: user.email })
     }
   },
@@ -150,7 +150,7 @@ Jos et rekisteröitynyt Viulumeri-palveluun, voit jättää tämän viestin huom
       logger.info('Verification email sent successfully', { userId: user.id, email: user.email })
     }
       : undefined,
-    async afterEmailVerification(user: { id: string; email: string; emailVerified: boolean }, request: { url?: string; headers?: unknown } | undefined) {
+    async afterEmailVerification(user, request) {
   logger.info('Email verification completed successfully', {
     userId: user.id,
     email: user.email,

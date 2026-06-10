@@ -89,6 +89,24 @@ async function loginAs(
   await markStartupAnnouncementsAsSeen(page, credentials.email)
 }
 
+async function setComment(comment: string) {
+  const teacherCtx = await request.newContext({ baseURL: BASE_URL })
+
+  try {
+    const signInResponse = await teacherCtx.post('/api/auth/sign-in/email', {
+      data: TEACHER
+    })
+    expect(signInResponse.ok()).toBeTruthy()
+
+    const updateResponse = await teacherCtx.put(`/api/homework/${homeworkId}`, {
+      data: { songs: [], comment }
+    })
+    expect(updateResponse.ok()).toBeTruthy()
+  } finally {
+    await teacherCtx.dispose()
+  }
+}
+
 test.describe('Homework comment formatting', () => {
   test('teacher saves formatted comment and student sees it as rendered HTML', async ({
     page,

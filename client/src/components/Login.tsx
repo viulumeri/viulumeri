@@ -4,6 +4,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useSession } from '../auth-client'
 import { useEffect } from 'react'
 import { useNotification } from '../hooks/useNotification'
+import { disableAdminRegularUserView } from '../utils/adminRegularUserView'
 
 export const Login = () => {
   const email = useField('email')
@@ -26,7 +27,11 @@ export const Login = () => {
 
   useEffect(() => {
     if (session) {
-      const nextPath = searchParams.get('next') || '/'
+      const role = (session.user as { role?: string } | undefined)?.role
+      if (role === 'admin') {
+        disableAdminRegularUserView()
+      }
+      const nextPath = role === 'admin' ? '/admin' : searchParams.get('next') || '/'
       navigate(nextPath, { replace: true })
     }
   }, [session, navigate, searchParams])

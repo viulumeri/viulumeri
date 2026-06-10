@@ -106,6 +106,7 @@ export interface AdminFeedbackItem {
   senderEmail: string
   userType: 'teacher' | 'student'
   createdAt: string
+  isRead: boolean
 }
 
 export interface GetAdminFeedbacksResponse {

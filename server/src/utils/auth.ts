@@ -9,6 +9,18 @@ import Student from '../models/student'
 import Homework from '../models/homework'
 import { admin } from "better-auth/plugins"
 
+type AuthUser = {
+  id: string
+  email: string
+  emailVerified?: boolean
+  name?: string
+}
+
+type AuthRequestLike = {
+  url?: string
+  headers?: unknown
+}
+
 logger.info('Initializing better-auth...')
 
 client
@@ -51,7 +63,7 @@ Jos et pyytänyt salasanan palautusta, voit jättää tämän viestin huomioimat
               email: user?.email
             })
           },
-    onPasswordReset: async ({ user }: { user: { id: string; email: string } }) => {
+    onPasswordReset: async ({ user }: { user: AuthUser }) => {
       logger.info('Password reset completed', { userId: user.id, email: user.email })
     }
   },
@@ -93,7 +105,7 @@ Jos et pyytänyt tilin poistamista, voit jättää tämän viestin huomioimatta.
               })
             }
           : undefined,
-      beforeDelete: async user => {
+      beforeDelete: async (user: AuthUser) => {
         try {
           const teacher = await Teacher.findOne({ userId: user.id })
           if (teacher) {
@@ -150,7 +162,7 @@ Jos et rekisteröitynyt Viulumeri-palveluun, voit jättää tämän viestin huom
       logger.info('Verification email sent successfully', { userId: user.id, email: user.email })
     }
       : undefined,
-    async afterEmailVerification(user: { id: string; email: string; emailVerified: boolean }, request: { url?: string; headers?: unknown } | undefined) {
+    async afterEmailVerification(user: AuthUser, request: AuthRequestLike) {
   logger.info('Email verification completed successfully', {
     userId: user.id,
     email: user.email,

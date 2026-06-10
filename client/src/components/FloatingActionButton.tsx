@@ -23,7 +23,7 @@ export const FloatingActionButton = ({
     <div
       className={[
         'fixed left-0 right-0 z-40 flex items-center justify-center',
-        'bottom-18',
+        'bottom-24',
         className
       ].join(' ')}
     >

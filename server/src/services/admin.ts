@@ -29,7 +29,8 @@ export const getAdminFeedbacks = async (): Promise<AdminFeedbackItem[]> => {
       title: f.title,
       category: f.category,
       message: f.message,
-      createdAt: f.createdAt as Date
+      createdAt: f.createdAt as Date,
+      isRead: f.isRead === true
     })),
     teachers,
     students

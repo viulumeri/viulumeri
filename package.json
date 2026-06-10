@@ -9,7 +9,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "healthcheck": "npm run healthcheck --workspace=client && npm run healthcheck --workspace=server"
+    "healthcheck": "npm run healthcheck --workspace=client && npm run healthcheck --workspace=server",
+    "check:all": "bash scripts/check-all.sh"
   },
   "repository": {
     "type": "git",

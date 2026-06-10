@@ -115,7 +115,7 @@ export const SettingsPage = () => {
 
 
   const visibleFaqs = faqs
-  
+
   .filter((faq) => faq.question.trim())
   .sort(
     (a, b) =>
@@ -191,7 +191,7 @@ export const SettingsPage = () => {
           <div>
             <label
               htmlFor="current-password"
-              className="block text-sm font-medium text-gray-300 mb-1"
+              className="block text-sm font-medium text-gray-300 mb-1 mt-4"
             >
               Nykyinen salasana:
             </label>
@@ -296,6 +296,15 @@ export const SettingsPage = () => {
                     {openFaqId === faq._id && (
                       <div className="mt-3 bg-neutral-700 border border-neutral-600 rounded-xl px-4 py-3 text-gray-200 leading-relaxed">
                         <p>{renderWithLinks(faq.answer)}</p>
+                        <p>{faq.imageUrl && (
+                          <img
+                            src={`${
+                              import.meta.env.VITE_SERVER_URL || 'http://localhost:3001'
+                            }${faq.imageUrl}`}
+                            alt={faq.question}
+                            className="mt-3 rounded-xl border border-neutral-600 max-w-full"
+                          />
+                        )}</p>
                         <p className="mt-3 text-sm text-gray-400">
                         {faq.updatedAt &&
                         faq.createdAt &&

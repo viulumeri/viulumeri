@@ -34,6 +34,7 @@ if (process.env.NODE_ENV === 'development') {
 app.all('/api/auth/{*splat}', toNodeHandler(auth))
 
 app.use(express.json())
+app.use('/uploads', express.static('uploads'))
 app.use('/api', authenticate)
 app.use('/api/popup-messages', popupMessagesRouter)
 app.use('/api/songs', songsRouter)

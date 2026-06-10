@@ -19,6 +19,9 @@ export const AdminPanel = () => {
 
   const [question, setQuestion] = useState('')
   const [answer, setAnswer] = useState('')
+  const [imageFile, setImageFile] = useState<File | null>(null)
+  const [editImageInputKey, setEditImageInputKey] = useState(0)
+  const [imageInputKey, setImageInputKey] = useState(0)
   const [faqs, setFaqs] = useState<FAQ[]>([])
   const [createFaqOpen, setCreateFaqOpen] = useState(false)
   const [browseFaqOpen, setBrowseFaqOpen] = useState(false)
@@ -27,6 +30,9 @@ export const AdminPanel = () => {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editQuestion, setEditQuestion] = useState('')
   const [editAnswer, setEditAnswer] = useState('')
+  const [editImageFile, setEditImageFile] = useState<File | null>(null)
+  const [removeEditImage, setRemoveEditImage] = useState(false)
+
 
   const { data: summaryData } = useAdminSummary()
   const { data: teachersData, error: teachersError } = useAdminTeachers()
@@ -39,6 +45,7 @@ export const AdminPanel = () => {
   const [impersonatingId, setImpersonatingId] = useState<string | null>(null)
 
   const { showSuccess, showError } = useNotification()
+
 
   const deleteTeacher = useDeleteAdminTeacher({
     onSuccess: () => {
@@ -88,21 +95,32 @@ export const AdminPanel = () => {
     ))
   }
 
- const handleCreateFaq = async () => {
-  await faqService.createFaq({
-    question,
-    answer,
-    order: 1
-  })
+const handleCreateFaq = async () => {
+  try {
+    const formData = new FormData()
 
-  setQuestion('')
-  setAnswer('')
+    formData.append('question', question)
+    formData.append('answer', answer)
+    formData.append('order', '1')
 
-  showSuccess('Kysymys lisätty onnistuneesti!')
+    if (imageFile) {
+      formData.append('image', imageFile)
+    }
 
-  await loadFaqs()
+    await faqService.createFaq(formData)
+
+    setQuestion('')
+    setAnswer('')
+    setImageFile(null)
+
+    showSuccess('Kysymys lisätty onnistuneesti!')
+
+    await loadFaqs()
+  } catch (error) {
+    console.error(error)
+    showError('FAQ:n lisääminen epäonnistui')
+  }
 }
-
   const handleResultSelect = (user: User) => {
     const fullUserData = teachers.find(t => t.id === user.id) || students.find(s => s.id === user.id)
     if (fullUserData) {
@@ -128,28 +146,43 @@ export const AdminPanel = () => {
   await loadFaqs()
 }
 
-  const startEditFaq = (faq: FAQ) => {
-    setEditingId(faq._id ?? null)
-    setEditQuestion(faq.question)
-    setEditAnswer(faq.answer)
-  }
+ const startEditFaq = (faq: FAQ) => {
+  setEditingId(faq._id ?? null)
+  setEditQuestion(faq.question)
+  setEditAnswer(faq.answer)
+  setEditImageFile(null)
+  setRemoveEditImage(false)
+
+}
 
   const handleUpdateFaq = async () => {
-    if (!editingId) return
+  if (!editingId) return
 
-    await faqService.updateFaq(editingId, {
-      question: editQuestion,
-      answer: editAnswer
-    })
+  const formData = new FormData()
 
-    setEditingId(null)
-    setEditQuestion('')
-    setEditAnswer('')
+  formData.append('question', editQuestion)
+  formData.append('answer', editAnswer)
 
-    showSuccess('Muutokset tallennettu!')
-
-    await loadFaqs()
+  if (editImageFile) {
+    formData.append('image', editImageFile)
   }
+
+  if (removeEditImage) {
+    formData.append('removeImage', 'true')
+  }
+
+  await faqService.updateFaq(editingId, formData)
+
+  setEditingId(null)
+  setEditQuestion('')
+  setEditAnswer('')
+  setEditImageFile(null)
+  setRemoveEditImage(false)
+
+  showSuccess('Muutokset tallennettu onnistuneesti!')
+
+  await loadFaqs()
+}
 
   useEffect(() => {
     loadFaqs()
@@ -162,6 +195,7 @@ const visibleFaqs = faqs
       new Date(a.createdAt ?? 0).getTime() -
       new Date(b.createdAt ?? 0).getTime()
   )
+
 
 return (
   <div className="space-y-4 p-5 pb-24">
@@ -340,20 +374,112 @@ return (
                       value={answer}
                       onChange={(e) => setAnswer(e.target.value)}
                     />
+                    <p className="font-semibold text-gray-200 -mt-1.5">
+                          Liitä kysymykseen kuva:
+                        </p>
 
-                <div className="flex justify-center mt-2">
-                <button
-                  onClick={handleCreateFaq}
-                  className="inline-flex justify-center items-center gap-2
-                  bg-neutral-100 text-black rounded-full px-6 py-2 text-xl"
-                >
-                  Lisää kysymys
-                </button>
-              </div>
+              <div className="flex flex-col gap-3">
+                <div className="flex flex-col sm:flex-row gap-2 w-full">
+                  <label
+                    className="
+                      shrink-0
+                      h-[52px]
+                      px-6
+                      flex items-center justify-center
+                      bg-neutral-100 text-black
+                      border border-neutral-600
+                      rounded-xl
+                      cursor-pointer
+                      hover:bg-neutral-300
+                      transition-colors
+                    "
+                  >
+                    Valitse
+
+                    <input
+                    key={imageInputKey}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0]
+                      setImageFile(file ?? null)
+                    }}
+                  />
+                  </label>
+
+                  <div className="flex flex-col gap-1 flex-1 min-w-0">
+                    <div
+                      className="
+                        h-[52px]
+                        flex items-center justify-center
+                        bg-neutral-700
+                        border border-neutral-600
+                        rounded-xl
+                        px-4
+                        text-gray-300
+                      "
+                    >
+                      <span className="block w-full overflow-hidden text-ellipsis
+                      whitespace-nowrap text-center">
+                        {imageFile ? imageFile.name : 'Ei valittua kuvatiedostoa'}
+                      </span>
+                    </div>
+
+                    {imageFile && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setImageFile(null)
+                          setImageInputKey((key) => key + 1)
+                        }}
+                        className="ml-2 text-left text-sm text-red-400 hover:text-red-300"
+                      >
+                        ✕ Poista valittu tiedosto
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex flex-col sm:flex-row justify-center gap-3 mt-1.5 w-full">
+                  <button
+                      onClick={handleCreateFaq}
+                     className="
+                      h-[52px]
+                      w-full
+                      sm:max-w-[220px]
+                      sm:w-auto
+                      inline-flex justify-center items-center
+                      bg-neutral-100 text-black
+                      rounded-full px-6 py-2 text-xl
+                      "
+                    >
+                      Lisää kysymys
+                    </button>
+                    <button
+                          onClick={() => {
+                          setQuestion('')
+                          setAnswer('')
+                          setImageFile(null)
+                          setImageInputKey((key) => key + 1)
+                        }}
+                          className="
+                          h-[52px]
+                          w-full
+                          sm:max-w-[220px]
+                          sm:w-auto
+                          inline-flex justify-center items-center
+                          bg-red-600 hover:bg-red-700 text-white
+                          rounded-full px-5 py-2 text-xl
+                          "
+                        >
+                          Peruuta
+                        </button>
+                    </div>
+                  </div>
 
                 </div>
-              )}
-
+            )}
               </div>
 
               <div className="bg-neutral-900 rounded-lg p-3">
@@ -430,6 +556,10 @@ return (
                     ">
                 {editingId === faq._id ? (
                   <>
+                   <p className="font-semibold text-gray-200">
+                      Muokkaa kysymystä:
+                    </p>
+
                     <input
                       className="
                       w-full
@@ -443,6 +573,10 @@ return (
                       value={editQuestion}
                       onChange={(e) => setEditQuestion(e.target.value)}
                     />
+
+                    <p className="font-semibold text-gray-200">
+                      Muokkaa vastausta:
+                    </p>
 
                     <textarea
                       className="
@@ -460,32 +594,149 @@ return (
                       onChange={(e) => setEditAnswer(e.target.value)}
                     />
 
-                     <div className="flex gap-3">
+                    <p className="font-semibold text-gray-200 -mt-1.5">
+                      Lisää, vaihda tai poista kuva:
+                    </p>
+                    {faq.imageUrl && !editImageFile && !removeEditImage && (
+                        <img
+                          src={`${
+                            import.meta.env.VITE_SERVER_URL || 'http://localhost:3001'
+                          }${faq.imageUrl}`}
+                          alt="Nykyinen kuva"
+                          className="mt-2 mb-3 rounded-xl border border-neutral-600 max-w-full max-h-[300px]"
+                        />
+                      )}
+
+                  <div className="flex flex-col sm:flex-row gap-2 -mt-1 w-full">
+                      <label
+                        className="
+                          shrink-0
+                          h-[52px]
+                          px-6
+                          flex items-center justify-center
+                          bg-neutral-100 text-black
+                          border border-neutral-600
+                          rounded-xl
+                          cursor-pointer
+                        "
+                      >
+                        Valitse
+
+                        <input
+                          key={editImageInputKey}
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0]
+                            setEditImageFile(file ?? null)
+                            setRemoveEditImage(false)
+                          }}
+                        />
+                      </label>
+
+                        <div className="flex flex-col gap-1 flex-1 min-w-0">
+                        <div
+                          className="
+                            w-full
+                            h-[52px]
+                            flex items-center justify-center
+                            bg-neutral-700
+                            border border-neutral-600
+                            rounded-xl
+                            px-4
+                            text-gray-300
+                          "
+                        >
+                          <span className="block w-full overflow-hidden
+                          text-ellipsis whitespace-nowrap text-center">
+                            {editImageFile
+                              ? editImageFile.name
+                              : 'Ei valittua kuvatiedostoa'}
+                          </span>
+                        </div>
+
+                        {editImageFile && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setEditImageFile(null)
+                                setEditImageInputKey((key) => key + 1)
+                              }}
+                              className="ml-2 text-left text-sm text-red-400 hover:text-red-300"
+                            >
+                              ✕ Poista valittu kuva
+                            </button>
+                          )}
+                      </div>
+                    </div>
+
+
+                   <div className="flex flex-col sm:flex-row justify-center gap-3 mt-5 w-full">
                     <button
+                      type="button"
                       onClick={handleUpdateFaq}
-                      className="bg-neutral-100 text-black rounded-full px-5 py-2"
+                      className="
+                        w-full sm:w-auto
+                        bg-neutral-100 text-black
+                        rounded-full px-5 py-3
+                      "
                     >
                       Tallenna
                     </button>
 
                     <button
+                      type="button"
+                      onClick={() => {
+                        setRemoveEditImage(true)
+                        setEditImageFile(null)
+                        setEditImageInputKey((key) => key + 1)
+                        showSuccess('Kuva merkitty poistettavaksi. Tallenna muutokset.')
+                      }}
+                      className="
+                        w-full sm:w-auto
+                        bg-neutral-700 border border-neutral-600
+                        text-gray-200 rounded-full px-5 py-3
+                      "
+                    >
+                      Poista edellinen kuva
+                    </button>
+
+                    <button
+                      type="button"
                       onClick={() => {
                         setEditingId(null)
                         setEditQuestion('')
                         setEditAnswer('')
+                        setEditImageFile(null)
+                        setRemoveEditImage(false)
+                        setEditImageInputKey((key) => key + 1)
                       }}
-                      className="bg-neutral-700 border border-neutral-600 text-gray-200 rounded-full px-5 py-2"
+                      className="
+                        w-full sm:w-auto
+                        bg-red-600 hover:bg-red-700 text-white
+                        rounded-full px-5 py-3
+                      "
                     >
                       Peruuta
                     </button>
                   </div>
 
-                  </>
-                ) : (
-                  <>
+                      </>
+                    ) : (
+                      <>
                     <div className="bg-neutral-700 border border-neutral-600 rounded-xl px-4 py-3 text-gray-200">
-                      {renderWithLinks(faq.answer)}
-                    </div>
+                    {renderWithLinks(faq.answer)}
+
+                   {faq.imageUrl && (
+                      <img
+                        src={`${
+                        import.meta.env.VITE_SERVER_URL || 'http://localhost:3001'
+                        }${faq.imageUrl}`}
+                        className="mt-3 rounded-xl border border-neutral-600 max-w-full"
+                      />
+                    )}
+                  </div>
                     <div className="space-y-2">
                       <div className="flex gap-3">
                         <button onClick={() => startEditFaq(faq)}>
@@ -523,9 +774,9 @@ return (
             ))
         )}
         </div>
-      )}
+            )}
     </div>
-    </div>
+  </div>
 </div>
 </div>
 )

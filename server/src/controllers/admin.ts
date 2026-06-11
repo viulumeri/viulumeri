@@ -17,11 +17,15 @@ type BetterAuthImpersonationResult = {
   }
   user?: unknown
 }
-type BetterAuthApiWithImpersonation = {
+type BetterAuthAdminApi = {
   impersonateUser: (args: {
     body: { userId: string }
     headers: ReturnType<typeof fromNodeHeaders>
   }) => Promise<BetterAuthImpersonationResult>
+  removeUser: (args: {
+    body: { userId: string }
+    headers: ReturnType<typeof fromNodeHeaders>
+  }) => Promise<unknown>
 }
 
 type PopulatedStudent = { id: string; name: string; email: string }
@@ -127,7 +131,7 @@ adminRouter.post('/impersonate', async (request, response) => {
     return response.status(404).json({ error: 'Profile not found' })
   }
 
-  const authApi = auth.api as unknown as BetterAuthApiWithImpersonation
+  const authApi = auth.api as unknown as BetterAuthAdminApi
   const impersonationResult = await authApi.impersonateUser({
     body: { userId: profile.userId },
     headers: fromNodeHeaders(request.headers)
@@ -162,7 +166,8 @@ adminRouter.delete('/teachers/:teacherId', async (request, response) => {
     return response.status(404).json({ error: 'Teacher not found' })
   }
 
-  await auth.api.removeUser({
+  const authApi = auth.api as unknown as BetterAuthAdminApi
+  await authApi.removeUser({
     body: { userId: teacher.userId },
     headers: fromNodeHeaders(request.headers)
   })
@@ -191,7 +196,8 @@ adminRouter.delete('/students/:studentId', async (request, response) => {
     }
   }
 
-  await auth.api.removeUser({
+  const authApi = auth.api as unknown as BetterAuthAdminApi
+  await authApi.removeUser({
     body: { userId: student.userId },
     headers: fromNodeHeaders(request.headers)
   })

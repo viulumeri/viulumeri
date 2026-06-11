@@ -6,6 +6,7 @@ import app from '../app'
 import Teacher from '../models/teacher'
 import Student from '../models/student'
 import Homework from '../models/homework'
+import { client } from '../db'
 
 const api = supertest(app)
 
@@ -56,6 +57,39 @@ describe('DELETE /api/admin/teachers/:teacherId', () => {
     assert.strictEqual(response.status, 204)
     const deletedTeacher = await Teacher.findById(teacher!.id)
     assert.strictEqual(deletedTeacher, null)
+  })
+
+  it('should not allow an admin to delete their own profile', async () => {
+    const { sessionCookie, user } =
+      await TestHelper.createAuthenticatedAdmin(api)
+    const teacher = await Teacher.findOne({ userId: user.id })
+
+    const response = await api
+      .delete(`/api/admin/teachers/${teacher!.id}`)
+      .set('Cookie', sessionCookie)
+
+    assert.strictEqual(response.status, 403)
+    assert.strictEqual(response.body.error, 'You cannot delete your own account')
+    assert.ok(await Teacher.findById(teacher!.id))
+  })
+
+  it('should not allow an admin to delete another admin', async () => {
+    const { sessionCookie } = await TestHelper.createAuthenticatedAdmin(api)
+    const { user: targetAdmin, email } =
+      await TestHelper.createAuthenticatedTeacher(api)
+    await client
+      .db()
+      .collection('user')
+      .updateOne({ email }, { $set: { role: 'admin' } })
+    const teacher = await Teacher.findOne({ userId: targetAdmin.id })
+
+    const response = await api
+      .delete(`/api/admin/teachers/${teacher!.id}`)
+      .set('Cookie', sessionCookie)
+
+    assert.strictEqual(response.status, 403)
+    assert.strictEqual(response.body.error, 'Admin users cannot be deleted')
+    assert.ok(await Teacher.findById(teacher!.id))
   })
 
   it('should unlink students from the deleted teacher', async () => {
@@ -152,6 +186,25 @@ describe('DELETE /api/admin/students/:studentId', () => {
     assert.strictEqual(deletedStudent, null)
   })
 
+  it('should not allow an admin to delete another admin', async () => {
+    const { sessionCookie } = await TestHelper.createAuthenticatedAdmin(api)
+    const { user: targetAdmin, email } =
+      await TestHelper.createAuthenticatedStudent(api)
+    await client
+      .db()
+      .collection('user')
+      .updateOne({ email }, { $set: { role: 'admin' } })
+    const student = await Student.findOne({ userId: targetAdmin.id })
+
+    const response = await api
+      .delete(`/api/admin/students/${student!.id}`)
+      .set('Cookie', sessionCookie)
+
+    assert.strictEqual(response.status, 403)
+    assert.strictEqual(response.body.error, 'Admin users cannot be deleted')
+    assert.ok(await Student.findById(student!.id))
+  })
+
   it('should remove the student from the teacher students array', async () => {
     const { sessionCookie } = await TestHelper.createAuthenticatedAdmin(api)
     const { user: teacherUser } = await TestHelper.createAuthenticatedTeacher(api)
@@ -206,5 +259,150 @@ describe('DELETE /api/admin/students/:studentId', () => {
       .send({ email, password })
 
     assert.notStrictEqual(signInResponse.status, 200)
+  })
+})
+
+describe('PATCH /api/admin/teachers/:teacherId', () => {
+  it('updates the teacher profile and Better Auth account', async () => {
+    const { sessionCookie } = await TestHelper.createAuthenticatedAdmin(api)
+    const { user } = await TestHelper.createAuthenticatedTeacher(api)
+    const teacher = await Teacher.findOne({ userId: user.id })
+
+    const response = await api
+      .patch(`/api/admin/teachers/${teacher!.id}`)
+      .set('Cookie', sessionCookie)
+      .send({ name: 'Updated Teacher', email: 'updated.teacher@example.com' })
+
+    assert.strictEqual(response.status, 200)
+    assert.strictEqual(response.body.user.name, 'Updated Teacher')
+    assert.strictEqual(response.body.user.email, 'updated.teacher@example.com')
+
+    const updatedTeacher = await Teacher.findById(teacher!.id)
+    const authUser = await client
+      .db()
+      .collection('user')
+      .findOne({ email: 'updated.teacher@example.com' })
+    assert.strictEqual(updatedTeacher!.name, 'Updated Teacher')
+    assert.strictEqual(updatedTeacher!.email, 'updated.teacher@example.com')
+    assert.strictEqual(authUser!.name, 'Updated Teacher')
+    assert.strictEqual(authUser!.email, 'updated.teacher@example.com')
+  })
+
+  it('rejects an email used by another profile', async () => {
+    const { sessionCookie } = await TestHelper.createAuthenticatedAdmin(api)
+    const { user: teacherUser } = await TestHelper.createAuthenticatedTeacher(api)
+    const { user: studentUser, email: studentEmail } =
+      await TestHelper.createAuthenticatedStudent(api)
+    const teacher = await Teacher.findOne({ userId: teacherUser.id })
+    const student = await Student.findOne({ userId: studentUser.id })
+
+    const response = await api
+      .patch(`/api/admin/teachers/${teacher!.id}`)
+      .set('Cookie', sessionCookie)
+      .send({ name: 'Teacher', email: studentEmail })
+
+    assert.strictEqual(response.status, 409)
+    assert.strictEqual(response.body.error, 'Email is already in use')
+    assert.notStrictEqual(teacher!.email, student!.email)
+  })
+})
+
+describe('PATCH /api/admin/students/:studentId', () => {
+  it('requires admin access', async () => {
+    const { sessionCookie } = await TestHelper.createAuthenticatedTeacher(api)
+
+    const response = await api
+      .patch('/api/admin/students/000000000000000000000000')
+      .set('Cookie', sessionCookie)
+      .send({ name: 'Student', email: 'student@example.com' })
+
+    assert.strictEqual(response.status, 403)
+    assert.strictEqual(response.body.error, 'Admin role required')
+  })
+
+  it('validates the submitted name and email', async () => {
+    const { sessionCookie } = await TestHelper.createAuthenticatedAdmin(api)
+    const { user } = await TestHelper.createAuthenticatedStudent(api)
+    const student = await Student.findOne({ userId: user.id })
+
+    const response = await api
+      .patch(`/api/admin/students/${student!.id}`)
+      .set('Cookie', sessionCookie)
+      .send({ name: ' ', email: 'not-an-email' })
+
+    assert.strictEqual(response.status, 400)
+    assert.strictEqual(response.body.error, 'Name is required')
+  })
+})
+
+describe('POST /api/auth/admin/impersonate-user', () => {
+  it('requires admin access', async () => {
+    const { sessionCookie } = await TestHelper.createAuthenticatedTeacher(api)
+    const { user: studentUser } =
+      await TestHelper.createAuthenticatedStudent(api)
+
+    const response = await api
+      .post('/api/auth/admin/impersonate-user')
+      .set('Cookie', sessionCookie)
+      .send({ userId: studentUser.id })
+
+    assert.strictEqual(response.status, 403)
+  })
+
+  it('rejects a missing target user', async () => {
+    const { sessionCookie } = await TestHelper.createAuthenticatedAdmin(api)
+
+    const response = await api
+      .post('/api/auth/admin/impersonate-user')
+      .set('Cookie', sessionCookie)
+      .send({ userId: 'missing-user-id' })
+
+    assert.strictEqual(response.status, 404)
+  })
+
+  it('does not allow impersonating another admin', async () => {
+    const { sessionCookie } = await TestHelper.createAuthenticatedAdmin(api)
+    const { user: targetAdmin } =
+      await TestHelper.createAuthenticatedTeacher(api)
+    await client
+      .db()
+      .collection('user')
+      .updateOne(
+        { email: targetAdmin.email },
+        { $set: { role: 'admin' } }
+      )
+    const targetProfile = await Teacher.findOne({ userId: targetAdmin.id })
+
+    const response = await api
+      .post('/api/auth/admin/impersonate-user')
+      .set('Cookie', sessionCookie)
+      .send({ userId: targetProfile!.userId })
+
+    assert.strictEqual(response.status, 403)
+  })
+
+  it('creates an impersonation session for a regular user', async () => {
+    const { sessionCookie } = await TestHelper.createAuthenticatedAdmin(api)
+    const { user: studentUser } =
+      await TestHelper.createAuthenticatedStudent(api)
+    const student = await Student.findOne({ userId: studentUser.id })
+
+    const response = await api
+      .post('/api/auth/admin/impersonate-user')
+      .set('Cookie', sessionCookie)
+      .send({ userId: student!.userId })
+
+    assert.strictEqual(response.status, 200)
+    assert.strictEqual(response.body.user.id, studentUser.id)
+    assert.ok(response.body.session.impersonatedBy)
+    const setCookie = response.headers['set-cookie']
+    assert.match(
+      Array.isArray(setCookie) ? setCookie.join(';') : (setCookie ?? ''),
+      /better-auth\.session_token=/
+    )
+    assert.match(
+      Array.isArray(setCookie) ? setCookie.join(';') : (setCookie ?? ''),
+      /better-auth\.admin_session=/
+    )
   })
 })

@@ -6,6 +6,8 @@ interface SearchResultUser {
   id: string
   name: string
   email: string
+  isAdmin: boolean
+  isCurrentUser: boolean
   role: 'teacher' | 'student'
 }
 
@@ -100,7 +102,14 @@ export const DropdownSearchbar = ({
                     onClick={() => handleResultClick(user)}
                     className={`grid w-full grid-cols-[2fr_2fr_1fr] gap-4 px-4 py-3 text-left transition-colors hover:bg-neutral-700 ${isSelected ? 'bg-neutral-700' : ''}`}
                   >
-                    <div className="font-semibold text-neutral-100">{user.name}</div>
+                    <div className="flex min-w-0 items-center gap-2 font-semibold text-neutral-100">
+                      <span className="truncate">{user.name}</span>
+                      {user.isAdmin && (
+                        <span className="shrink-0 rounded bg-red-600 px-1.5 py-0.5 text-[10px] font-bold leading-none tracking-wide text-white">
+                          ADMIN
+                        </span>
+                      )}
+                    </div>
                     <div className="text-sm text-neutral-300">{user.email}</div>
                     <div className="text-sm text-neutral-300">{user.role === 'teacher' ? 'Opettaja' : 'Oppilas'}</div>
                   </button>

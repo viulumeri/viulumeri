@@ -34,34 +34,6 @@
 * Ovatko logi ja käyttäjän poisto liian lähellä toisiaan?
 
 
-## Tekninen velka
-
-*Teknisen velan osalta e2e-testejä voidaan vähentää. 3 minuuttia ei ole vielä paha.
-* Lähtökohta on ollut hyvä.
-* Parempi dokumentointi.
-* Vielä parannuksia inpersonete-näkymään.
-  - Teknisen velan määrä kiinnostaa asiakasta.
-  - Decision-dokumentti on asiakkaan mielestä hyvä käytäntö. Merkitään ainakin admin-toimintoja koskevat päätökset.
-
-
-## Infrastruktuuri
-
-* Ei tunkata infraa enempää.
-
-* Docker Compose -käyttö. Edwin käyttää npm -käynnistystä. Kaiken tulisi olla Docker containerissa.
-  - Ajatuksena on, että olisi skripti, joka ottaisi ssh-yhteyden tuotantoserveriin. Tämä menee myös tietokannan kansioon.
-  pitäisikö tietokannasta ottaa dumppi vai voidaanko tietokanta kopioda lokaalisti.
-  - Asiakkaan mielestä kaikille tulee olla sama Dev-ympäristö.
-
-* Kuvien hostauksen tarjoaminen omalta palvelimelta. Tällä hetkellä kuvat tulevat kolmannen osapuolen kautta.
-  - Asiakas toivoo tätä. 
-  - Asiakas järjestää pääsy kansioon kuvia varten.
-
-* Onko mahdollista, että sen sijaan että klusterilla on kansio, jossa on biisit niin admin näkymässä olisi
-toiminto kuvien ja biisien hallintaan.
-  - Asiakas toivoo tätä.
-
-
 ## UI:n kehittäminen
 
 * Pitäisikö kotitehtävien pallojen olla ylempänä? Voivatko pallot olla kortin yläpuolella? 
@@ -81,6 +53,33 @@ toiminto kuvien ja biisien hallintaan.
 * Kuvan latauksessa ohjelman pitäisi tehdä automaattisesti kuva, joka näyttää koon puolelta hyvältä.
 
 * Nimen häviämis -bugi on korjattu.
+
+
+## Infrastruktuuri
+
+* Ei tunkata infraa enempää.
+
+* Docker Compose -käyttö. Edwin käyttää npm -käynnistystä. Kaiken tulisi olla Docker containerissa.
+  - Ajatuksena on, että olisi skripti, joka ottaisi ssh-yhteyden tuotantoserveriin. Tämä menee myös tietokannan kansioon.
+  pitäisikö tietokannasta ottaa dumppi vai voidaanko tietokanta kopioda lokaalisti.
+  - Asiakkaan mielestä kaikille tulee olla sama Dev-ympäristö.
+
+* Kuvien hostauksen tarjoaminen omalta palvelimelta. Tällä hetkellä kuvat tulevat kolmannen osapuolen kautta.
+  - Asiakas toivoo tätä. 
+  - Asiakas järjestää pääsy kansioon kuvia varten.
+
+* Onko mahdollista, että sen sijaan että klusterilla on kansio, jossa on biisit niin admin näkymässä olisi
+toiminto kuvien ja biisien hallintaan.
+  - Asiakas toivoo tätä.
+
+## Tekninen velka
+
+*Teknisen velan osalta e2e-testejä voidaan vähentää. 3 minuuttia ei ole vielä paha.
+* Lähtökohta on ollut hyvä.
+* Parempi dokumentointi.
+* Vielä parannuksia inpersonete-näkymään.
+  - Teknisen velan määrä kiinnostaa asiakasta.
+  - Decision-dokumentti on asiakkaan mielestä hyvä käytäntö. Merkitään ainakin admin-toimintoja koskevat päätökset.
 
 
 ## Tulevat tapahtumat

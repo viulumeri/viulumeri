@@ -74,7 +74,7 @@ toiminto kuvien ja biisien hallintaan.
 
 ## Tekninen velka:
 
-*Teknisen velan osalta e2e-testejä voidaan vähentää. 3 minuuttia ei ole vielä paha.
+* Teknisen velan osalta e2e-testejä voidaan vähentää. 3 minuuttia ei ole vielä paha.
 * Lähtökohta on ollut hyvä.
 * Parempi dokumentointi.
 * Vielä parannuksia inpersonete-näkymään.

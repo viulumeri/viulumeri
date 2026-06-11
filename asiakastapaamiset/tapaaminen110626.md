@@ -34,7 +34,7 @@
 * Ovatko logi ja käyttäjän poisto liian lähellä toisiaan?
 
 
-## UI:n kehittäminen
+## UI:n kehittäminen:
 
 * Pitäisikö kotitehtävien pallojen olla ylempänä? Voivatko pallot olla kortin yläpuolella? 
   - Asiakas on kuitenkin tyytyväinen tähän ratkaisuun.
@@ -55,7 +55,7 @@
 * Nimen häviämis -bugi on korjattu.
 
 
-## Infrastruktuuri
+## Infrastruktuuri:
 
 * Ei tunkata infraa enempää.
 
@@ -72,7 +72,7 @@
 toiminto kuvien ja biisien hallintaan.
   - Asiakas toivoo tätä.
 
-## Tekninen velka
+## Tekninen velka:
 
 *Teknisen velan osalta e2e-testejä voidaan vähentää. 3 minuuttia ei ole vielä paha.
 * Lähtökohta on ollut hyvä.
@@ -82,7 +82,7 @@ toiminto kuvien ja biisien hallintaan.
   - Decision-dokumentti on asiakkaan mielestä hyvä käytäntö. Merkitään ainakin admin-toimintoja koskevat päätökset.
 
 
-## Tulevat tapahtumat
+## Tulevat tapahtumat:
 
 * Seuraava asiakastapaaaminen ensi viikolla 22.6. klo 15:00.
 

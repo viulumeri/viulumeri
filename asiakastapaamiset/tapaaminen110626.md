@@ -1,4 +1,4 @@
-# Asiakastapaaminen 11.06.2026 / Sprintti 3.
+# Pöytäkirja 11.06.2026 / Sprintti 3.
 
 
 ## Admin-tilan kehittäminen:

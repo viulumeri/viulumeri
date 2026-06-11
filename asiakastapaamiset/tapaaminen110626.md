@@ -1,4 +1,4 @@
-# Pöytäkirja 11.06.2026 / Sprintti 3.
+# Pöytäkirja 11.06.2026 / Sprintti 4
 
 
 ## Admin-tilan kehittäminen:

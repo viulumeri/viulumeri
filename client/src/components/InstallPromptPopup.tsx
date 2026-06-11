@@ -34,20 +34,24 @@ const StepImage = ({ srcs, alts, children }: { srcs: string[]; alts: string[]; c
 
 type Props = {
   userId?: string
+  onClose?: () => void
 }
 
-export const InstallPromptPopup = ({ userId }: Props) => {
+export const InstallPromptPopup = ({ userId, onClose }: Props) => {
   const isStandalone = window.matchMedia('(display-mode: standalone)').matches
   const [dismissed, setDismissed] = useState(
     () => localStorage.getItem(STORAGE_KEY) === 'true'
   )
 
+  console.log({ isStandalone, dismissed, userId, onClose})
+
   const onOk = () => {
     localStorage.setItem(STORAGE_KEY, 'true')
     setDismissed(true)
+    onClose?.()
   }
 
-  if (isStandalone || dismissed || !userId) return null
+  if (isStandalone || (dismissed && !onClose) || (!userId && !onClose)) return null
 
   return (
     <div

@@ -10,6 +10,7 @@ import { useNotification } from '../hooks/useNotification'
 import { faqService, type FAQ } from '../services/faq'
 import { renderWithLinks } from "../utils/renderLinks"
 import { useNavigate } from 'react-router-dom'
+import { InstallPromptPopup } from './InstallPromptPopup'
 
 export const SettingsPage = () => {
   const { data: session, isPending } = useSession()
@@ -23,6 +24,7 @@ export const SettingsPage = () => {
   const [fqaOpen, setfqaOpen] = useState(false);
   const { showError, showSuccess } = useNotification()
   const navigate = useNavigate()
+  const [showInstall, setShowInstall] = useState(false)
 
   const deleteUser = useDeleteUser({
     onSuccess: () => {
@@ -273,6 +275,12 @@ export const SettingsPage = () => {
         </button>
           {fqaOpen && (
             <div className="space-y-3">
+              <button className="button-basic mx-auto mt-4" onClick={() => setShowInstall(true)}>
+                Asennusohjeet
+              </button>
+              {showInstall && (
+                <InstallPromptPopup onClose={() => setShowInstall(false)} />
+              )}
               {visibleFaqs.length === 0 ? (
                 <div className="bg-neutral-700 border border-neutral-600 rounded-xl px-4 py-3 text-gray-300 italic">
                   Ei näytettäviä kysymyksiä

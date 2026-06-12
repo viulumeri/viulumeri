@@ -63,23 +63,13 @@ test('teacher flow', async ({ page }) => {
 
     // Verify that teacher sees install prompt
     await expect(page.getByText('Sovelluksen asennus')).toBeVisible({ timeout: 15_000 })
-
-    // Verify that the prompt can be reopened and shows image
-    await page.getByRole('button', { name: '▼ kuva' }).first().click()
+    await expect(page.getByText('Voit asentaa sovelluksen laitteellesi ja käyttää sitä kuin tavallista sovellusta')).toBeVisible({ timeout: 15_000 })
+    await expect(page.getByText('Nämä ohjeet löytyvät myös asetuksista')).toBeVisible({ timeout: 15_000 })
+    
+    // Verify that image shows
     await expect(page.getByAltText('Asennusilmoitus')).toBeVisible()
-
-    // Close the image view
-    await page.getByRole('button', { name: '▲ piilota' }).first().click()
-    await expect(page.getByAltText('Asennusilmoitus')).toBeHidden()
-
-    // Open second image and verify it shows up, close it again
-    await page.getByRole('button', { name: '▼ kuva' }).nth(1).click()
     await expect(page.getByAltText('Aloitusnäyttöön lisäys')).toBeVisible()
     await expect(page.getByAltText('Valitse install')).toBeVisible()
-
-    await page.getByRole('button', { name: '▲ piilota' }).first().click()
-    await expect(page.getByAltText('Aloitusnäyttöön lisäys')).toBeHidden()
-    await expect(page.getByAltText('Valitse install')).toBeHidden()
 
     // Dismiss the prompt and verify it doesn't reappear
     await page.getByRole('button', { name: 'OK' }).click()

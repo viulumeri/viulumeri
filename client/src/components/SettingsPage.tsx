@@ -5,7 +5,7 @@ import { useField } from '../hooks/useField'
 import type { AppSessionUser } from '../../../shared/types'
 import { StudentSettings } from './StudentSettings'
 import { TeacherSettings } from './TeacherSettings'
-import { User, Key, Settings, LogOut, Trash2, FileQuestionMark, MessageCircle } from 'lucide-react'
+import { User, Key, Settings, LogOut, Trash2, FileQuestionMark, MessageCircle, Download } from 'lucide-react'
 import { useNotification } from '../hooks/useNotification'
 import { faqService, type FAQ } from '../services/faq'
 import { renderWithLinks } from "../utils/renderLinks"
@@ -326,7 +326,7 @@ export const SettingsPage = () => {
           rounded-md px-4 py-3 text-left transition-colors px-4 py-3 min-h-[58px]"
         >
           <span className="flex items-center gap-3">
-            <FileQuestionMark className="w-6 h-6" />
+            <Download className="w-6 h-6" />
             Asennusohjeet
           </span>
 

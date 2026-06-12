@@ -24,7 +24,8 @@ export const SettingsPage = () => {
   const [fqaOpen, setfqaOpen] = useState(false);
   const { showError, showSuccess } = useNotification()
   const navigate = useNavigate()
-  const [showInstall, setShowInstall] = useState(false)
+  const [instructionsOpen, setInstructionsOpen] = useState(false)
+  const [showInstall, setShowInstall] = useState<'android' | 'ios' | null>(null)
 
   const deleteUser = useDeleteUser({
     onSuccess: () => {
@@ -275,12 +276,6 @@ export const SettingsPage = () => {
         </button>
           {fqaOpen && (
             <div className="space-y-3">
-              <button className="button-basic mx-auto mt-4" onClick={() => setShowInstall(true)}>
-                Asennusohjeet
-              </button>
-              {showInstall && (
-                <InstallPromptPopup onClose={() => setShowInstall(false)} />
-              )}
               {visibleFaqs.length === 0 ? (
                 <div className="bg-neutral-700 border border-neutral-600 rounded-xl px-4 py-3 text-gray-300 italic">
                   Ei näytettäviä kysymyksiä
@@ -321,6 +316,44 @@ export const SettingsPage = () => {
             </div>
           )}
       </div>
+      
+      <div className="bg-neutral-900 rounded-lg p-3 mb-4">
+        <button
+          type="button"
+          onClick={() => setInstructionsOpen(!instructionsOpen)}
+          className="w-full flex items-center justify-between gap-3 mb-4
+          bg-neutral-800 hover:bg-neutral-700 border border-neutral-700
+          rounded-md px-4 py-3 text-left transition-colors px-4 py-3 min-h-[58px]"
+        >
+          <span className="flex items-center gap-3">
+            <FileQuestionMark className="w-6 h-6" />
+            Asennusohjeet
+          </span>
+
+          <span
+            className={`transition-transform duration-200 ${
+              instructionsOpen ? "rotate-180" : ""
+            }`}
+          >
+            ▼
+          </span>
+        </button>
+        
+        {instructionsOpen && (
+          <div className="flex gap-3 justify-center bg-neutral-700 border border-neutral-600 rounded-lg px-4 py-4">
+            <button className="back-button-basic hover:bg-neutral-500" onClick={() => setShowInstall('android')}>
+              Android
+            </button>
+            <button className="button-basic bg-neutral-200 hover:bg-neutral-500" onClick={() => setShowInstall('ios')}>
+              iOS
+            </button>
+          </div>
+        )}
+      </div>
+
+      {showInstall && (
+        <InstallPromptPopup onClose={() => setShowInstall(null)} platform={showInstall} />
+      )}
 
       <div className="bg-neutral-900 rounded-lg p-3">
         <h3 className="flex items-center gap-3 mb-4">

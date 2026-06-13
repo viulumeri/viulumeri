@@ -85,7 +85,7 @@ export const StudentStartPage = () => {
         </div>
       </div>
 
-      <div className="h-[30vh] bg-neutral-900 text-neutral-100 px-6 pt-12">
+      <div className="min-h-[30vh] bg-neutral-900 text-neutral-100 px-6 pt-12 pb-24">
         <div className="flex gap-2">
           <div className="flex-1 h-28 flex flex-col justify-between items-center text-center overflow-hidden">
             <p className="text-sm text-gray-400 px-1">Harjoituskerrat</p>

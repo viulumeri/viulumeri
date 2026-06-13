@@ -10,6 +10,7 @@ import { useNotification } from '../hooks/useNotification'
 import { faqService, type FAQ } from '../services/faq'
 import { renderWithLinks } from "../utils/renderLinks"
 import { useNavigate } from 'react-router-dom'
+import { PageContainer } from './PageContainer'
 
 export const SettingsPage = () => {
   const { data: session, isPending } = useSession()
@@ -124,48 +125,43 @@ export const SettingsPage = () => {
   )
 
   return (
-
-    <div className="space-y-4 p-5 pb-24">
+    <PageContainer>
       <h1 className="flex items-center gap-3">
         <Settings className="w-8 h-8" />
         Asetukset
       </h1>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
-      <div className="bg-neutral-900 rounded-lg p-2 -mb-4">
-        <h3 className="flex items-center gap-3 mb-5">
-          <User className="w-6 h-6" />
-          Käyttäjätiedot
-        </h3>
-        <div className="space-y-2 text-gray-300">
-          <p>
-            <strong className="text-gray-100">Sähköposti:</strong>{' '}
-            {session.user.email}
-          </p>
-          <p>
-            <strong className="text-gray-100">Tyyppi:</strong>{' '}
-            {userType === 'teacher' ? 'Opettaja' : 'Oppilas'}
-          </p>
-        </div>
-      </div>
-        <div className="bg-neutral-900 rounded-lg p-2 flex items-center justify-center">
-
-          <div className="flex justify-start">
-        <button
-          onClick={handleLogout}
-          disabled={logout.isPending}
+      <div className="bg-neutral-900 rounded-lg py-2">
+        <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+          <div>
+            <h3 className="flex items-center gap-3 mb-5">
+              <User className="w-6 h-6" />
+              Käyttäjätiedot
+            </h3>
+            <div className="space-y-2 text-gray-300">
+              <p>
+                <strong className="text-gray-100">Sähköposti:</strong>{' '}
+                {session.user.email}
+              </p>
+              <p>
+                <strong className="text-gray-100">Tyyppi:</strong>{' '}
+                {userType === 'teacher' ? 'Opettaja' : 'Oppilas'}
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={handleLogout}
+            disabled={logout.isPending}
             className="inline-flex justify-center items-center gap-2 bg-neutral-100 text-black rounded-full
             px-6 py-2 text-xl disabled:opacity-50 disabled:cursor-not-allowed self-center md:self-start"
-        >
-          <LogOut className="w-5 h-5" />
-          {logout.isPending ? 'Kirjaudutaan ulos...' : 'Kirjaudu ulos'}
-
-        </button>
+          >
+            <LogOut className="w-5 h-5" />
+            {logout.isPending ? 'Kirjaudutaan ulos...' : 'Kirjaudu ulos'}
+          </button>
         </div>
       </div>
-    </div>
 
-      <div className="bg-neutral-900 rounded-lg p-3">
+      <div className="bg-neutral-900 rounded-lg py-3">
         <button
           type="button"
           onClick={() => setPasswordOpen(!passwordOpen)}
@@ -250,7 +246,7 @@ export const SettingsPage = () => {
         )}
       </div>
 
-       <div className="bg-neutral-900 rounded-lg p-3 mb-4">
+       <div className="bg-neutral-900 rounded-lg py-3 mb-4">
         <button
           type="button"
           onClick={() => setfqaOpen(!fqaOpen)}
@@ -314,7 +310,7 @@ export const SettingsPage = () => {
           )}
       </div>
 
-      <div className="bg-neutral-900 rounded-lg p-3">
+      <div className="bg-neutral-900 rounded-lg py-3">
         <h3 className="flex items-center gap-3 mb-4">
           <MessageCircle className="w-6 h-6" />
           Palaute
@@ -331,7 +327,7 @@ export const SettingsPage = () => {
       {userType === 'teacher' && <TeacherSettings />}
       {userType === 'student' && <StudentSettings />}
 
-      <div className="bg-neutral-900 rounded-lg p-6">
+      <div className="bg-neutral-900 rounded-lg py-6">
         <div className="space-y-4">
           <div className="flex justify-center">
             <button
@@ -359,6 +355,6 @@ export const SettingsPage = () => {
             : new Date(__BUILD_TIME__).toLocaleString('fi-FI')}
         </p>
       )}
-    </div>
+    </PageContainer>
   )
 }

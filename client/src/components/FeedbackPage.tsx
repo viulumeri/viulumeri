@@ -3,6 +3,7 @@ import { useSubmitFeedback } from '../hooks/useFeedback'
 import type { FeedbackCategory } from '../../../shared/types'
 import { useNotification } from '../hooks/useNotification'
 import { categoryLabel } from '../utils/feedbackLabels'
+import { PageContainer } from './PageContainer'
 
 export const FeedbackPage = () => {
   const [title, setTitle] = useState('')
@@ -63,11 +64,9 @@ export const FeedbackPage = () => {
   }
 
   return (
-    <div className="space-y-6 p-6 pb-24">
-      <h2>Palaute</h2>
-
-      <div className="bg-neutral-900 rounded-lg p-6">
-        <h3 className="mb-4">Lähetä palaute</h3>
+    <PageContainer className="space-y-6">
+      <div className="bg-neutral-900 rounded-lg py-6">
+        <h2 className="mb-4">Palaute</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label
@@ -144,6 +143,6 @@ export const FeedbackPage = () => {
           </div>
         </form>
       </div>
-    </div>
+    </PageContainer>
   )
 }

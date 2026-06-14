@@ -128,7 +128,7 @@ const HomeworkCard = ({
         <h2 className="mb-1">
           {headingLabel ?? (isLatest ? 'Tehtävä' : 'Arkistoitu tehtävä')}
         </h2>
-        <p className="text-xs text-gray-300 mb-12">
+        <p className="text-xs text-gray-300 mb-6">
           {new Date(hw.createdAt).toLocaleDateString()}
         </p>
 

@@ -1,0 +1,71 @@
+services:
+  mongodb:
+    image: mongo:8
+    container_name: viulumeri-mongodb
+    restart: unless-stopped
+    ports:
+      - '27017:27017'
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password
+      MONGO_INITDB_DATABASE: viulumeri
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - viulumeri-network
+
+  server:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+      target: server-dev
+    container_name: viulumeri-server
+    restart: unless-stopped
+    ports:
+      - '3001:3001'
+    env_file:
+      - ./server/.env
+    environment:
+      # Override to point at the mongodb container instead of localhost
+      MONGODB_URI: mongodb://admin:password@mongodb:27017/viulumeri?authSource=admin
+      MUSIC_DIR: /usr/src/app/music
+    depends_on:
+      - mongodb
+    volumes:
+      # Mount source for hot reload (nodemon picks up changes)
+      - ./server/src:/usr/src/app/server/src
+      - ./shared:/usr/src/app/shared
+      - "F:/school stuff/Yliopisto/audio:/usr/src/app/music"
+    networks:
+      - viulumeri-network
+ 
+  client:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+      target: client-dev
+    container_name: viulumeri-client
+    restart: unless-stopped
+    ports:
+      - '5173:5173'
+    environment:
+      # Tells vite.config.ts where the server is reachable (Docker service name)
+      SERVER_URL: http://server:3001
+    depends_on:
+      - server
+    volumes:
+      # Mount source for Vite HMR
+      - ./client/src:/usr/src/app/client/src
+      - ./client/public:/usr/src/app/client/public
+      - ./shared:/usr/src/app/shared
+    networks:
+      - viulumeri-network
+      
+volumes:
+  mongodb_data:
+
+networks:
+  viulumeri-network:
+    driver: bridge
+
+

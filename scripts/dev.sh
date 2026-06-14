@@ -24,24 +24,27 @@ echo ""
 echo -e "${GREEN}${BOLD}---------- Starting Viulumeri - Dev Environment ----------${RESET}"
 echo ""
 
-docker compose up -d
+docker compose -f docker-compose.dev.yml up -d --build -d
 
 echo -e "  ${GREEN}✓${RESET} Database started"
+echo -e "  ${GREEN}✓${RESET} Server initialized"
+echo -e "  ${GREEN}✓${RESET} Client initialized"
 echo ""
-
-npx concurrently \
-  --names "server,client" \
-  --prefix-colors "cyan,magenta" \
-  "npm run dev --workspace=server 2>&1 | grep -iE 'error|warn|missing|failed'" \
-  "npm run dev --workspace=client 2>&1 | grep -iE 'error|warn|ready|localhost'" \
-  2>&1 | grep -v "exited with code" &
-CONCURRENTLY_PID=$!
-
-echo -ne "  ${DIM}Starting up...${RESET}\r"
-sleep 1
 echo -e "  ${BOLD}Local:${RESET} ${BOLD}${BLUE}http://localhost:5173${RESET}            "
-echo -e "  ${DIM}Ctrl+C to stop${RESET}"
+echo -e "  ${DIM}Ctrl+C to stop everything${RESET}"
 echo ""
 
-wait $CONCURRENTLY_PID
-exit 0
+echo -e "  ${DIM}Recent server notices:${RESET}"
+docker compose logs server --tail 50 2>&1 | grep -iE 'error|warn|missing|failed' | sed "s/^/  ${DIM}/" | sed "s/\$/${RESET}/"
+ 
+echo ""
+echo -e "  ${DIM}Containers running in background. Stop with: docker compose down${RESET}"
+echo -e "  ${DIM}Follow logs with: docker compose logs -f${RESET}"
+echo ""
+
+echo ""
+echo -e "  ${DIM}Following logs (Ctrl+C to stop everything)...${RESET}"
+echo ""
+
+# Keep script alive and stream logs so Ctrl+C has something to interrupt
+docker compose logs -f

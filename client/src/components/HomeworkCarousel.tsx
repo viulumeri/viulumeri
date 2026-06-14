@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import type React from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { useDeleteHomework, usePracticeOnce } from '../hooks/useHomework'
@@ -16,6 +17,7 @@ type Props = {
   homework: HomeworkItem[]
   isPending: boolean
   refetch: () => void | Promise<unknown>
+  header?: React.ReactNode
 }
 
 export const HomeworkCarousel = ({
@@ -23,7 +25,8 @@ export const HomeworkCarousel = ({
   studentId,
   homework,
   isPending,
-  refetch
+  refetch,
+  header
 }: Props) => {
   const { data: songsData } = useSongsList()
 
@@ -188,9 +191,14 @@ export const HomeworkCarousel = ({
 
   return (
     <div className="flex flex-col min-h-[100dvh]">
+      {header && (
+        <div className="px-[calc(5vw+2.5rem)] md:px-10 pt-4 pb-4 sticky top-0 z-10 bg-neutral-900">
+          {header}
+        </div>
+      )}
       <div className="flex-1 relative">
         {homework.length >= 2 && (
-          <div className="fixed inset-x-0 top-1/2 -translate-y-1/2 z-10 flex justify-between max-w-[calc(56rem+4rem)] mx-auto px-2 pointer-events-none">
+          <div className="fixed inset-x-0 top-1/2 -translate-y-1/2 z-10 flex justify-between max-w-[calc(56rem+4rem)] mx-auto pointer-events-none">
             <button
               onClick={() => navigateTo(currentIndex - 1)}
               disabled={currentIndex === 0}

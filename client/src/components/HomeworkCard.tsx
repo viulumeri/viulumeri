@@ -83,7 +83,7 @@ const HomeworkCard = ({
   }, [])
 
   return (
-    <div ref={cardRef} className="snap-center w-[90vw] max-w-4xl flex-shrink-0 rounded-lg pt-4 pb-4 px-8 relative ">
+    <div ref={cardRef} className="snap-center w-[90vw] max-w-4xl flex-shrink-0 rounded-lg pt-4 pb-4 px-10 relative ">
       <div className="overflow-y-auto overflow-x-hidden max-h={[`calc(100dvh-140px)`]} pt-0 pb-16 relative scrollbar-hide">
         {mode === 'teacher' && onToggleMenu && (
           <>
@@ -182,7 +182,7 @@ const HomeworkCard = ({
           hw.comment && (
             <>
               <h3 className="mt-5 mb-3">Opettajan kommentti</h3>
-              <div className="px-3 text-[14px] text-gray-400
+              <div className="text-[14px] text-gray-400
                 [&_p]:my-1
                 [&_p:empty]:h-[1em]
                 [&_strong]:font-semibold [&_strong]:text-gray-300

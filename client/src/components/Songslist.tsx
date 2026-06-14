@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import type { SongListItem } from '../../../shared/types'
 import { CheckCircle, ChevronRight } from 'lucide-react'
+import { getSongImageUrl } from '../utils/songImages'
 
 type Props = {
   songs: SongListItem[]
@@ -48,7 +49,7 @@ export const Songslist = ({
                   </span>
                 )}
                 <img
-                  src={song.metadata.imgurl}
+                  src={getSongImageUrl(song.metadata, 'list')}
                   alt={song.title}
                   className="w-14 h-14 rounded-full object-cover"
                   loading="lazy"
@@ -92,7 +93,7 @@ export const Songslist = ({
                 className="flex items-center gap-4 flex-1 min-w-0"
               >
                 <img
-                  src={song.metadata.imgurl}
+                  src={getSongImageUrl(song.metadata, 'list')}
                   alt={song.title}
                   className="w-14 h-14 rounded-full object-cover"
                   loading="lazy"

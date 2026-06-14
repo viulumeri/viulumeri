@@ -56,11 +56,17 @@ describe('Songs API GET /', () => {
     assert(song1)
     assert.strictEqual(song1.title, 'Tästä se alkaa')
     assert.strictEqual(song1.metadata.composer, 'Laura Lintula')
+    assert.strictEqual(song1.metadata.images.list, '/api/songs/valid-song-1/image/list')
+    assert.strictEqual(song1.metadata.images.card, '/api/songs/valid-song-1/image/card')
+    assert.strictEqual(song1.metadata.images.hero, '/api/songs/valid-song-1/image/hero')
     assert(!('audioBundle' in song1)) // Should not include audioBundle
 
     assert(song2)
     assert.strictEqual(song2.title, 'Hyppyhiiri')
     assert.strictEqual(song2.metadata.composer, 'Laura Lintula')
+    assert.strictEqual(song2.metadata.images.list, '/api/songs/valid-song-2/image/list')
+    assert.strictEqual(song2.metadata.images.card, '/api/songs/valid-song-2/image/card')
+    assert.strictEqual(song2.metadata.images.hero, '/api/songs/valid-song-2/image/hero')
     assert(!('audioBundle' in song2)) // Should not include audioBundle
   })
 
@@ -288,5 +294,58 @@ describe('Songs API GET /:id/bundle-slow', () => {
       .set('Cookie', sessionCookie)
 
     assert.strictEqual(response.status, 404)
+  })
+})
+
+describe('Songs API GET /:id/image/:variant', () => {
+  it('should return 401 Unauthorized without session', async () => {
+    const response = await api.get(`${url}/valid-song-1/image/list`)
+
+    assert.strictEqual(response.status, 401)
+    assert.strictEqual(response.body.error, 'Authentication required')
+  })
+
+  it('should return 404 for non-existent song ID', async () => {
+    const { sessionCookie } = await TestHelper.createAuthenticatedTeacher(
+      api,
+      'teacher.image.404@edu.hel.fi',
+      'Teacher Image 404'
+    )
+
+    const response = await api
+      .get(`${url}/non-existent-song/image/list`)
+      .set('Cookie', sessionCookie)
+
+    assert.strictEqual(response.status, 404)
+    assert.strictEqual(response.body.error, 'Song not found')
+  })
+
+  it('should return 400 for invalid variant', async () => {
+    const { sessionCookie } = await TestHelper.createAuthenticatedTeacher(
+      api,
+      'teacher.image.badvariant@edu.hel.fi',
+      'Teacher Image Bad Variant'
+    )
+
+    const response = await api
+      .get(`${url}/valid-song-1/image/thumbnail`)
+      .set('Cookie', sessionCookie)
+
+    assert.strictEqual(response.status, 400)
+    assert.strictEqual(response.body.error, 'Invalid image variant')
+  })
+
+  it('should return 200 for valid self-hosted variant image', async () => {
+    const { sessionCookie } = await TestHelper.createAuthenticatedStudent(
+      api,
+      'student.image.ok@edu.hel.fi',
+      'Student Image OK'
+    )
+
+    const response = await api
+      .get(`${url}/valid-song-1/image/list`)
+      .set('Cookie', sessionCookie)
+
+    assert.strictEqual(response.status, 200)
   })
 })

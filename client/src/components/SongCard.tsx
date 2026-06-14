@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { ChevronRight } from 'lucide-react'
 import type { SongListItem } from '../../../shared/types'
+import { getSongImageUrl } from '../utils/songImages'
 
 type Props = {
   song: SongListItem
@@ -13,7 +14,7 @@ const SongCard = ({ song }: Props) => {
       className="relative block w-full max-w-md mx-auto overflow-hidden rounded-md group"
     >
       <img
-        src={song.metadata.imgurl}
+        src={getSongImageUrl(song.metadata, 'card')}
         alt={song.title}
         className="w-full aspect-square object-cover"
       />

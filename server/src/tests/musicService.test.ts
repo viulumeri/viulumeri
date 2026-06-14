@@ -34,10 +34,16 @@ describe('MusicService', () => {
       assert(song1)
       assert.strictEqual(song1.title, 'Tästä se alkaa')
       assert.strictEqual(song1.metadata.composer, 'Laura Lintula')
+      assert.strictEqual(song1.metadata.images.list, '/api/songs/valid-song-1/image/list')
+      assert.strictEqual(song1.metadata.images.card, '/api/songs/valid-song-1/image/card')
+      assert.strictEqual(song1.metadata.images.hero, '/api/songs/valid-song-1/image/hero')
 
       assert(song2)
       assert.strictEqual(song2.title, 'Hyppyhiiri')
       assert.strictEqual(song2.metadata.composer, 'Laura Lintula')
+      assert.strictEqual(song2.metadata.images.list, '/api/songs/valid-song-2/image/list')
+      assert.strictEqual(song2.metadata.images.card, '/api/songs/valid-song-2/image/card')
+      assert.strictEqual(song2.metadata.images.hero, '/api/songs/valid-song-2/image/hero')
     })
 
     it('should throw error for non-existent directory', async () => {

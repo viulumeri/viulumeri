@@ -84,7 +84,7 @@ const HomeworkCard = ({
 
   return (
     <div ref={cardRef} className="snap-center w-[90vw] max-w-4xl flex-shrink-0 rounded-lg pt-4 pb-4 px-10 relative ">
-      <div className="overflow-y-auto overflow-x-hidden max-h={[`calc(100dvh-140px)`]} pt-0 pb-16 relative scrollbar-hide">
+      <div className="overflow-y-auto overflow-x-hidden max-h={[`calc(100dvh-140px)`]} pt-0 pb-32 relative scrollbar-hide">
         {mode === 'teacher' && onToggleMenu && (
           <>
             <button

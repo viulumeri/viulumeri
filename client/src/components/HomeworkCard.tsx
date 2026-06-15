@@ -86,7 +86,7 @@ const HomeworkCard = ({
     <div ref={cardRef} className="snap-center w-[90vw] max-w-4xl flex-shrink-0 rounded-lg pt-4 pb-4 px-10 relative ">
       <div
         data-card-content
-        className="overflow-y-auto overflow-x-hidden max-h-[calc(100dvh-140px)] pt-0 pb-6 relative scrollbar-hide"
+        className={`overflow-y-auto overflow-x-hidden max-h-[calc(100dvh-140px)] pt-0 relative scrollbar-hide ${mode === 'teacher' ? 'pb-28' : 'pb-6'}`}
       >
         {mode === 'teacher' && onToggleMenu && (
           <>

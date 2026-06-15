@@ -8,10 +8,11 @@
   "description": "Viulumeri app",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "healthcheck": "npm run healthcheck --workspace=client && npm run healthcheck --workspace=server",
     "check:all": "bash scripts/check-all.sh",
-    "dev": "bash scripts/dev.sh"
+    "dev": "bash scripts/dev.sh",
+    "dev:reset": "docker compose -f docker-compose.dev.yml down -v",
+    "help": "bash scripts/help.sh"
   },
   "repository": {
     "type": "git",

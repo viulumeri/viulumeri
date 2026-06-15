@@ -12,6 +12,8 @@ interface Teacher {
   userId: string
   name: string
   email: string
+  isAdmin: boolean
+  isCurrentUser: boolean
   studentCount: number
   students: { id: string; name: string; email: string }[]
 }
@@ -21,6 +23,8 @@ interface Student {
   userId: string
   name: string
   email: string
+  isAdmin: boolean
+  isCurrentUser: boolean
   playedSongs: number
   teacher: { id: string; name: string; email: string } | null
 }
@@ -49,9 +53,24 @@ export interface ImpersonateAdminResponse {
     updatedAt: string
     userId: string
     expiresAt: string
-    token: string
   }
   user: Record<string, unknown>
+}
+
+export interface UpdateAdminUserRequest {
+  id: string
+  role: 'teacher' | 'student'
+  name: string
+  email: string
+}
+
+export interface UpdateAdminUserResponse {
+  user: {
+    id: string
+    userId: string
+    name: string
+    email: string
+  }
 }
 
 export const adminService = {
@@ -156,14 +175,49 @@ export const adminService = {
     })
   },
 
+  updateUser: async ({
+    id,
+    role,
+    name,
+    email
+  }: UpdateAdminUserRequest): Promise<UpdateAdminUserResponse> => {
+    try {
+      const resource = role === 'teacher' ? 'teachers' : 'students'
+      const response = await axios.patch(
+        `/api/admin/${resource}/${id}`,
+        { name, email },
+        { withCredentials: true }
+      )
+      return response.data
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const message = error.response?.data?.error
+        if (typeof message === 'string') {
+          throw new Error(message)
+        }
+      }
+      throw error
+    }
+  },
+
   getAdminFeedbacks: async (): Promise<GetAdminFeedbacksResponse> => {
     const response = await axios.get('/api/admin/feedbacks', {
       withCredentials: true
     })
     return response.data
   },
-  // Call the better-auth admin plugin endpoint directly so the library
-  // sets the auth cookies on the response (browser will receive Set-Cookie).
+
+  updateAdminFeedbackReadStatus: async (
+    id: string,
+    isRead: boolean
+  ): Promise<{ feedback: { id: string; isRead: boolean } }> => {
+    const response = await axios.patch(
+      `/api/admin/feedbacks/${id}`,
+      { isRead },
+      { withCredentials: true }
+    )
+    return response.data
+  },
   impersonateUser: async (body: ImpersonateAdminRequest): Promise<ImpersonateAdminResponse> => {
     const response = await axios.post('/api/auth/admin/impersonate-user', body, {
       withCredentials: true

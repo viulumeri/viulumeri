@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from 'react'
+import { useMemo, useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import { useSongsList } from '../hooks/useSongs'
 import {
@@ -66,6 +66,8 @@ export const HomeworkEditPage = () => {
 
   const { showError, showSuccess } = useNotification()
 
+  const isSubmittingRef = useRef(false)
+
   const updateHomework = useUpdateHomework({
     onSuccess: () => {
       showSuccess('Läksy päivitetty onnistuneesti')
@@ -74,7 +76,10 @@ export const HomeworkEditPage = () => {
         replace: true
       })
     },
-    onError: err => showError(err.message || 'Läksyn päivitys epäonnistui')
+    onError: err => {
+      isSubmittingRef.current = false
+      showError(err.message || 'Läksyn päivitys epäonnistui')
+    }
   })
 
   const removeSong = (id: string) => {
@@ -83,9 +88,10 @@ export const HomeworkEditPage = () => {
       setSongIds(next)
       syncDraftState(comment, next)
   }
-
+  
   const handleSave = () => {
-    if (!homeworkId) return
+    if (!homeworkId || isSubmittingRef.current) return
+    isSubmittingRef.current = true
     updateHomework.mutate({
       homeworkId,
       body: { songs: currentSongIds, comment }
@@ -142,7 +148,11 @@ export const HomeworkEditPage = () => {
         />
       </div>
 
-      <FloatingActionButton onClick={handleSave} icon="check" />
+      <FloatingActionButton
+        onClick={handleSave}
+        icon="check"
+        disabled={updateHomework.isPending}
+      />
     </div>
   )
 }

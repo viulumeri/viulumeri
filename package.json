@@ -9,7 +9,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "healthcheck": "npm run healthcheck --workspace=client && npm run healthcheck --workspace=server"
+    "healthcheck": "npm run healthcheck --workspace=client && npm run healthcheck --workspace=server",
+    "check:all": "bash scripts/check-all.sh"
   },
   "repository": {
     "type": "git",
@@ -22,7 +23,7 @@
   },
   "homepage": "https://github.com/viulumeri/viulumeri#readme",
   "dependencies": {
-    "better-auth": "1.2.10",
+    "better-auth": "1.6.16",
     "better-call": "1.3.3",
     "react-linkify-it": "^2.0.0",
     "rou3": "0.6.3"

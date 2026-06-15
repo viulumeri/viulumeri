@@ -1,7 +1,16 @@
+export type SongImageVariant = 'list' | 'card' | 'hero'
+
+export interface SongImageSet {
+  list: string
+  card: string
+  hero: string
+}
+
 export interface SongMetadata {
   title: string
   composer?: string
   imgurl?: string
+  images?: SongImageSet
 }
 
 export interface Song {
@@ -106,6 +115,7 @@ export interface AdminFeedbackItem {
   senderEmail: string
   userType: 'teacher' | 'student'
   createdAt: string
+  isRead: boolean
 }
 
 export interface GetAdminFeedbacksResponse {

@@ -109,3 +109,18 @@ export const useImpersonateAdminUser = (
     ...options
   })
 }
+
+export const useDeleteAdminFeedback = (
+  options?: UseMutationOptions<void, Error, string>
+) => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (id: string) => adminService.deleteFeedback(id),
+    ...options,
+    onSuccess: (...args) => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'feedbacks'] })
+      options?.onSuccess?.(...args)
+    }
+  })
+}

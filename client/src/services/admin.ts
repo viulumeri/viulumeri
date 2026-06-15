@@ -207,6 +207,12 @@ export const adminService = {
     return response.data
   },
 
+  deleteFeedback: async (id: string): Promise<void> => {
+    await axios.delete(`/api/admin/feedbacks/${id}`, {
+      withCredentials: true
+    })
+  },
+
   updateAdminFeedbackReadStatus: async (
     id: string,
     isRead: boolean

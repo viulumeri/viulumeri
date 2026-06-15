@@ -88,6 +88,11 @@ export const HomeworkCarousel = ({
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' })
+    scrollRef.current
+      ?.querySelectorAll<HTMLElement>('[data-card-content]')
+      .forEach(card => {
+        card.scrollTop = 0
+      })
   }, [currentIndex])
 
   useEffect(() => {

@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import type { SongListItem } from '../../../shared/types'
 import { CheckCircle, ChevronRight } from 'lucide-react'
-import { getSongImageUrl } from '../utils/songImages'
+import { getSongImageUrl, handleSongImageError } from '../utils/songImages'
 
 type Props = {
   songs: SongListItem[]
@@ -54,6 +54,7 @@ export const Songslist = ({
                   className="w-14 h-14 rounded-full object-cover"
                   loading="lazy"
                   decoding="async"
+                  onError={handleSongImageError}
                 />
                 <div className="flex items-center flex-1 min-w-0">
                   <h3 className="flex-1 min-w-0 truncate">{song.title}</h3>
@@ -98,6 +99,7 @@ export const Songslist = ({
                   className="w-14 h-14 rounded-full object-cover"
                   loading="lazy"
                   decoding="async"
+                  onError={handleSongImageError}
                 />
                 <div className="flex items-center flex-1 min-w-0">
                   <h3 className="flex-1 min-w-0 truncate">{song.title}</h3>

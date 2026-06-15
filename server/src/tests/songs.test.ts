@@ -5,6 +5,7 @@ import supertest from 'supertest'
 import app from '../app'
 import { musicService } from '../services/music'
 import path from 'path'
+import fs from 'fs/promises'
 
 const api = supertest(app)
 const url = '/api/songs'
@@ -335,11 +336,14 @@ describe('Songs API GET /:id/image/:variant', () => {
     assert.strictEqual(response.body.error, 'Invalid image variant')
   })
 
-  it('should return 200 for valid self-hosted variant image', async () => {
+  it('should return 200 with cache headers and the generated image file for a self-hosted variant', async () => {
     const { sessionCookie } = await TestHelper.createAuthenticatedStudent(
       api,
       'student.image.ok@edu.hel.fi',
       'Student Image OK'
+    )
+    const expectedImage = await fs.readFile(
+      path.join(testMusicDir, 'valid-song-1', 'images', 'list.webp')
     )
 
     const response = await api
@@ -347,5 +351,52 @@ describe('Songs API GET /:id/image/:variant', () => {
       .set('Cookie', sessionCookie)
 
     assert.strictEqual(response.status, 200)
+    assert.strictEqual(response.headers['cache-control'], 'public, max-age=86400')
+    assert.match(response.headers['content-type'], /^image\/webp/)
+    assert(Buffer.isBuffer(response.body))
+    assert.deepStrictEqual(response.body, expectedImage)
+  })
+
+  it('should fall back to svg when no generated raster image exists for the variant', async () => {
+    const { sessionCookie } = await TestHelper.createAuthenticatedStudent(
+      api,
+      'student.image.svg@edu.hel.fi',
+      'Student Image SVG'
+    )
+
+    const response = await api
+      .get(`${url}/valid-song-2/image/hero`)
+      .set('Cookie', sessionCookie)
+
+    assert.strictEqual(response.status, 200)
+    assert.strictEqual(response.headers['cache-control'], 'public, max-age=86400')
+    assert.match(response.headers['content-type'], /^image\/svg\+xml/)
+    assert.match(response.text, /Valid Song 2 Hero/)
+  })
+
+  it('should keep the songs list usable when hosted image files are missing', async () => {
+    const { sessionCookie } = await TestHelper.createAuthenticatedTeacher(
+      api,
+      'teacher.image.missing@edu.hel.fi',
+      'Teacher Image Missing'
+    )
+    const previousMusicDir = process.env.MUSIC_DIR
+    process.env.MUSIC_DIR = path.join(testMusicDir, 'missing-metadata')
+
+    try {
+      const response = await api
+        .get(url)
+        .set('Cookie', sessionCookie)
+
+      assert.strictEqual(response.status, 200)
+      assert(Array.isArray(response.body))
+      assert.strictEqual(response.body.length, 2)
+      assert.strictEqual(
+        response.body[0].metadata.images.card,
+        `/api/songs/${response.body[0].id}/image/card`
+      )
+    } finally {
+      process.env.MUSIC_DIR = previousMusicDir
+    }
   })
 })

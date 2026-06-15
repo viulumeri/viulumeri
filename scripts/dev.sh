@@ -10,13 +10,12 @@ RESET='\033[0m'
 cleanup() {
   echo ""
   echo ""
-  echo -e "  ${YELLOW}${BOLD}---------- Stopping server and client ----------${RESET}"
+  echo -e "  ${YELLOW}${BOLD}---------- Stopping everything ----------${RESET}"
   trap - SIGINT SIGTERM EXIT
   echo ""
-  echo -e "  ${RED}MongoDB is still running!"
-  echo -e "  To stop it, run: ${BLUE}$ docker compose down${RESET}"
+  docker compose -f docker-compose.dev.yml down
   echo ""
-  kill 0
+  exit 0
 }
 trap cleanup SIGINT SIGTERM EXIT
 
@@ -24,7 +23,8 @@ echo ""
 echo -e "${GREEN}${BOLD}---------- Starting Viulumeri - Dev Environment ----------${RESET}"
 echo ""
 
-docker compose -f docker-compose.dev.yml up -d --build -d
+export MUSIC_DIR=$(grep '^MUSIC_DIR=' server/.env | cut -d '=' -f2-)
+docker compose -f docker-compose.dev.yml up --build -d
 
 echo -e "  ${GREEN}✓${RESET} Database started"
 echo -e "  ${GREEN}✓${RESET} Server initialized"
@@ -33,18 +33,7 @@ echo ""
 echo -e "  ${BOLD}Local:${RESET} ${BOLD}${BLUE}http://localhost:5173${RESET}            "
 echo -e "  ${DIM}Ctrl+C to stop everything${RESET}"
 echo ""
-
-echo -e "  ${DIM}Recent server notices:${RESET}"
-docker compose logs server --tail 50 2>&1 | grep -iE 'error|warn|missing|failed' | sed "s/^/  ${DIM}/" | sed "s/\$/${RESET}/"
- 
-echo ""
-echo -e "  ${DIM}Containers running in background. Stop with: docker compose down${RESET}"
-echo -e "  ${DIM}Follow logs with: docker compose logs -f${RESET}"
+echo -e "  ${DIM}Streaming errors and warnings...${RESET}"
 echo ""
 
-echo ""
-echo -e "  ${DIM}Following logs (Ctrl+C to stop everything)...${RESET}"
-echo ""
-
-# Keep script alive and stream logs so Ctrl+C has something to interrupt
-docker compose logs -f
+docker compose -f docker-compose.dev.yml logs -f server client 2>&1 | grep -iE 'error|warn|missing|failed'

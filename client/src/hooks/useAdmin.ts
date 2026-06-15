@@ -104,7 +104,6 @@ export const useDeleteAdminFeedback = (
     ...options,
     onSuccess: (...args) => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'feedbacks'] })
-      queryClient.invalidateQueries({ queryKey: ['admin', 'summary'] })
       options?.onSuccess?.(...args)
     }
   })

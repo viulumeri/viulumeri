@@ -560,13 +560,20 @@ adminRouter.patch('/feedbacks/:feedbackId', async (request, response) => {
 })
 
 adminRouter.delete('/feedbacks/:feedbackId', async (request, response) => {
-  const feedback = await Feedback.findByIdAndDelete(request.params.feedbackId)
+  try {
+    const feedback = await Feedback.findByIdAndDelete(request.params.feedbackId)
 
-  if (!feedback) {
-    return response.status(404).json({ error: 'Feedback not found' })
+    if (!feedback) {
+      return response.status(404).json({ error: 'Feedback not found' })
+    }
+
+    return response.status(204).send()
+  } catch (error: unknown) {
+    if (error instanceof Error && error.name === 'CastError') {
+      return response.status(400).json({ error: 'Invalid feedback id' })
+    }
+    throw error
   }
-
-  response.status(204).send()
 })
 
 export default adminRouter

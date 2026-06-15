@@ -35,7 +35,7 @@ services:
       # Mount source for hot reload (nodemon picks up changes)
       - ./server/src:/usr/src/app/server/src
       - ./shared:/usr/src/app/shared
-      - "F:/school stuff/Yliopisto/audio:/usr/src/app/music"
+      - "${MUSIC_DIR}:/usr/src/app/music"
     networks:
       - viulumeri-network
  

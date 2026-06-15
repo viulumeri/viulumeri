@@ -30,7 +30,6 @@
     "rou3": "0.6.3"
   },
   "devDependencies": {
-    "@playwright/test": "^1.60.0",
-    "concurrently": "^10.0.3"
+    "@playwright/test": "^1.60.0"
   }
 }

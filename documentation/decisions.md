@@ -1,11 +1,5 @@
 # Technology decisions
 
-## 10.6.2026
-
-### Concurrently
-
-Added for easier and clearer dev environment setup/launch.
-
 ## 18.8.2025
 
 ### MUI -> Tailwind css

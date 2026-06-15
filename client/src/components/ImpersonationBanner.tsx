@@ -30,7 +30,7 @@ export default function ImpersonationBanner({
   const isAdminRegularUserView =
     role === 'admin' && isAdminRegularUserViewEnabled()
 
-  const [isHovered, setIsHovered] = useState(false)
+  const [isExpanded, setIsExpanded] = useState(false)
   const { showSuccess, showError } = useNotification()
 
   const description = isImpersonating
@@ -56,8 +56,7 @@ export default function ImpersonationBanner({
     try {
       await adminService.stopImpersonating()
       showSuccess('Impersonointi lopetettu')
-      // reload to pick up restored session
-      window.location.reload()
+      window.location.href = '/admin'
     } catch (error) {
       const message =
         error instanceof Error
@@ -70,29 +69,35 @@ export default function ImpersonationBanner({
   }
   return (
     <div
-      className="fixed bottom-6 right-6 z-[9999]"
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
+      className="fixed inset-x-4 bottom-20 z-[9999] flex justify-end sm:inset-x-auto sm:bottom-6 sm:right-6"
     >
       <div
         className={`
-          flex items-center overflow-hidden rounded-full
+          flex items-center overflow-hidden
           bg-yellow-900 text-white shadow-xl
           transition-all duration-300 ease-out
-          ${isHovered ? 'w-[320px] px-4 py-3' : 'w-14 h-14'}
+          ${
+            isExpanded
+              ? 'w-full flex-wrap rounded-2xl px-3 py-2 sm:w-[320px] sm:flex-nowrap sm:rounded-full sm:px-4 sm:py-3'
+              : 'h-14 w-14 rounded-full'
+          }
         `}
       >
-        {/* Icon */}
-        <div className="flex h-14 w-14 shrink-0 items-center justify-center">
+        <button
+          type="button"
+          aria-label="Session hallinta"
+          aria-expanded={isExpanded}
+          onClick={() => setIsExpanded(current => !current)}
+          className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-yellow-400"
+        >
           <Bell size={22} />
-        </div>
+        </button>
 
-        {/* Expanded content */}
         <div
           className={`
-            ml-2 flex-1 transition-all duration-300
+            ml-2 min-w-0 flex-1 transition-all duration-300
             ${
-              isHovered
+              isExpanded
                 ? 'opacity-100 translate-x-0'
                 : 'opacity-0 translate-x-4 pointer-events-none'
             }
@@ -102,10 +107,14 @@ export default function ImpersonationBanner({
           <p className="text-xs text-slate-300">{description}</p>
         </div>
 
-        {isHovered && (
+        {isExpanded && (
           <button
-            onClick={handleStop}
-            className="ml-3 whitespace-nowrap rounded-lg bg-yellow-500 px-3 py-2 text-xs font-medium transition hover:bg-yellow-600"
+            type="button"
+            onClick={(event) => {
+              event.stopPropagation()
+              void handleStop()
+            }}
+            className="mt-2 w-full basis-full rounded-lg bg-yellow-500 px-3 py-2 text-xs font-medium transition hover:bg-yellow-600 sm:ml-3 sm:mt-0 sm:w-auto sm:basis-auto sm:shrink-0 sm:whitespace-nowrap"
           >
             {currentButtonText}
           </button>

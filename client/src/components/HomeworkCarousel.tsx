@@ -87,6 +87,10 @@ export const HomeworkCarousel = ({
   const [currentIndex, setCurrentIndex] = useState(homework.length - 1)
 
   useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }, [currentIndex])
+
+  useEffect(() => {
     setCurrentIndex(homework.length - 1)
   }, [homework.length])
 
@@ -190,7 +194,7 @@ export const HomeworkCarousel = ({
   ) : null
 
   return (
-    <div className="flex flex-col min-h-[100dvh]">
+    <div className="flex flex-col">
       {header && (
         <div className="px-[calc(5vw+2.5rem)] md:px-10 pt-4 pb-4">
           {header}
@@ -221,7 +225,7 @@ export const HomeworkCarousel = ({
           ref={scrollRef}
           className="overflow-x-auto snap-x snap-mandatory scroll-smooth scrollbar-hide"
         >
-        <div className="flex gap-4">
+        <div className="flex gap-4 items-start">
           <div className="w-[5vw] flex-shrink-0" />
           {reversedHomework
             .map((hw, index) => (

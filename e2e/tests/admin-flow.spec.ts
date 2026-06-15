@@ -221,6 +221,7 @@ test('admin flow covers dashboard, users, popups, feedback, FAQ, and user view',
     await createPopupForm.getByLabel('Opettajat').uncheck()
     await createPopupForm.locator('#popup-visible-from').fill(today)
     await createPopupForm.locator('#popup-visible-until').fill(today)
+    await createPopupForm.getByRole('switch').click()
 
     const createPopupResponsePromise = page.waitForResponse(response => {
       return (
@@ -235,7 +236,7 @@ test('admin flow covers dashboard, users, popups, feedback, FAQ, and user view',
     let popupCard = popupSection.getByTestId('popup-message-card').filter({ hasText: popupTitle }).first()
     await expect(popupCard).toBeVisible({ timeout: 15_000 })
     await expect(popupCard).toContainText('Oppilaat')
-    await expect(popupCard).toContainText('Julkinen')
+    await expect(popupCard).toContainText('Julkaistu')
     await expect(popupCard).toContainText('Voimassa')
 
     await page.goto('/admin')
@@ -256,7 +257,7 @@ test('admin flow covers dashboard, users, popups, feedback, FAQ, and user view',
         response.request().method() === 'PATCH'
       )
     })
-    await popupSection.getByRole('button', { name: 'Tallenna' }).click()
+    await popupSection.getByRole('button', { name: 'Tallenna', exact: true }).click()
     const updatePopupResponse = await updatePopupResponsePromise
     expect(updatePopupResponse.ok()).toBe(true)
 

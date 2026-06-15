@@ -1,7 +1,7 @@
 import fs from 'fs/promises'
 import path from 'path'
 import logger from '../utils/logger'
-import type { Song, SongListItem } from '../../../shared/types'
+import type { Song, SongListItem, SongMetadata } from '../../../shared/types'
 
 class MusicService {
   private songs: Song[] = []
@@ -89,7 +89,15 @@ class MusicService {
       path.join(songPath, 'metadata.json'),
       'utf8'
     )
-    const metadata = JSON.parse(metaContent)
+    const rawMetadata = JSON.parse(metaContent) as SongMetadata
+    const metadata: SongMetadata = {
+      ...rawMetadata,
+      images: {
+        list: `/api/songs/${folder}/image/list`,
+        card: `/api/songs/${folder}/image/card`,
+        hero: `/api/songs/${folder}/image/hero`
+      }
+    }
 
     return {
       id: folder,

@@ -92,7 +92,7 @@ const HomeworkCard = ({
           <>
             <button
               type="button"
-              className="absolute top-3 right-3 p-1 rounded-full z-10"
+              className="absolute top-3 right-0 p-1 rounded-full z-10"
               onClick={e => {
                 e.stopPropagation()
                 onToggleMenu(isMenuOpen ? null : hw.id)

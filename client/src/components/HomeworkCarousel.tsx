@@ -84,6 +84,17 @@ export const HomeworkCarousel = ({
     return firstCard ? firstCard.offsetWidth + 16 : window.innerWidth * 0.9 + 16
   }
 
+  const getCenteredScrollLeft = (index: number) => {
+    const el = scrollRef.current
+    if (!el) return 0
+    const cards = el.querySelectorAll<HTMLElement>('.snap-center')
+    const card = cards[index]
+    if (!card) return index * getCardWidth()
+    const target = card.offsetLeft - (el.clientWidth - card.offsetWidth) / 2
+    const max = el.scrollWidth - el.clientWidth
+    return Math.max(0, Math.min(target, max))
+  }
+
   const [currentIndex, setCurrentIndex] = useState(homework.length - 1)
 
   useEffect(() => {
@@ -100,11 +111,14 @@ export const HomeworkCarousel = ({
   }, [homework.length])
 
   useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.style.scrollBehavior = 'auto'
-      scrollRef.current.scrollLeft = scrollRef.current.scrollWidth
-      scrollRef.current.style.scrollBehavior = 'smooth'
-    }
+    const el = scrollRef.current
+    if (!el) return
+    const id = requestAnimationFrame(() => {
+      el.style.scrollBehavior = 'auto'
+      el.scrollLeft = getCenteredScrollLeft(homework.length - 1)
+      el.style.scrollBehavior = 'smooth'
+    })
+    return () => cancelAnimationFrame(id)
   }, [homework.length])
 
   useEffect(() => {
@@ -121,8 +135,10 @@ export const HomeworkCarousel = ({
 
   const navigateTo = (index: number) => {
     if (!scrollRef.current) return
-    const cardWidth = getCardWidth()
-    scrollRef.current.scrollTo({ left: index * cardWidth, behavior: 'smooth' })
+    scrollRef.current.scrollTo({
+      left: getCenteredScrollLeft(index),
+      behavior: 'smooth'
+    })
   }
 
   if (isPending) return <div className="p-4">Ladataan…</div>
@@ -230,7 +246,7 @@ export const HomeworkCarousel = ({
           ref={scrollRef}
           className="overflow-x-auto snap-x snap-mandatory scroll-smooth scrollbar-hide"
         >
-        <div className="flex gap-4 items-start">
+        <div className="flex w-max gap-4 items-start">
           <div className="w-[5vw] flex-shrink-0" />
           {reversedHomework
             .map((hw, index) => (

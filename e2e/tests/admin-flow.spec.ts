@@ -298,6 +298,24 @@ test('admin flow covers dashboard, users, popups, feedback, FAQ, and user view',
     const feedbackReadResponse = await feedbackReadResponsePromise
     expect(feedbackReadResponse.ok()).toBe(true)
 
+    const deleteFeedbackResponsePromise = page.waitForResponse(response => {
+      return (
+        response.url().includes('/api/admin/feedbacks/') &&
+        response.request().method() === 'DELETE'
+      )
+    })
+
+    page.once('dialog', dialog => dialog.accept())
+
+    await feedbackCard.getByRole('button', { name: 'Poista' }).click()
+
+    const deleteFeedbackResponse = await deleteFeedbackResponsePromise
+    expect(deleteFeedbackResponse.ok()).toBe(true)
+
+    await expect(feedbackSection.getByText(feedbackTitle)).not.toBeVisible({
+      timeout: 15_000
+    })
+
     await page.goto('/admin/faq')
     const faqSection = page.locator('[data-section-id="faq"]')
     await faqSection.getByRole('button').filter({ hasText: 'Lisää uusi kysymys' }).click()

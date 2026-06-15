@@ -1,8 +1,8 @@
-import { useAdminFeedbacks } from '../hooks/useAdmin'
+import { useAdminFeedbacks, useDeleteAdminFeedback } from '../hooks/useAdmin'
 import { useUpdateAdminFeedbackReadStatus } from '../hooks/useAdmin'
 import type { AdminFeedbackItem } from '../services/admin'
 import { categoryLabel } from '../utils/feedbackLabels'
-import { MessageSquare } from 'lucide-react'
+import { MessageSquare, Trash2 } from 'lucide-react'
 
 
 const userTypeLabel: Record<AdminFeedbackItem['userType'], string> = {
@@ -13,6 +13,7 @@ const userTypeLabel: Record<AdminFeedbackItem['userType'], string> = {
 export const AdminFeedbackPage = () => {
   const { data, isLoading, error } = useAdminFeedbacks()
   const updateReadStatus = useUpdateAdminFeedbackReadStatus()
+  const deleteFeedback = useDeleteAdminFeedback()
   const feedbacks = data?.feedbacks ?? []
 
   return (
@@ -32,12 +33,26 @@ export const AdminFeedbackPage = () => {
         ) : (
           <ul className="space-y-4">
             {feedbacks.map(item => (
-            <li key={item.id} className="bg-neutral-800 rounded-lg p-4 space-y-1">
-              <div className="flex items-center justify-between gap-2">
-                <span className="font-semibold">{item.title}</span>
-                <span className="text-xs text-gray-400">
+              <li key={item.id} className="bg-neutral-800 rounded-lg p-4 space-y-1">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="font-semibold">{item.title}</span>
+                  <span className="text-xs text-gray-400">
                   {new Date(item.createdAt).toLocaleString('fi-FI', { dateStyle: 'short', timeStyle: 'short' })}
-                </span>
+                  </span>
+
+                <button
+                  type="button"
+                  disabled={deleteFeedback.isPending}
+                  className="text-neutral-400 hover:text-red-400 disabled:opacity-50 transition-colors p-1"
+                  onClick={() => {
+                    if (window.confirm('Haluatko varmasti poistaa tämän palautteen?')) {
+                      deleteFeedback.mutate(item.id)
+                    }
+                  }}
+                  aria-label="Poista palaute"
+                >
+                  <Trash2 className="w-6 h-6" />
+                </button>
               </div>
               <label className="flex items-center gap-2 text-sm text-gray-300">
                 <input

@@ -6,9 +6,23 @@ import app from '../app'
 import { musicService } from '../services/music'
 import path from 'path'
 import fs from 'fs/promises'
+import type { Response } from 'superagent'
 
 const api = supertest(app)
 const url = '/api/songs'
+
+const parseResponseBodyAsBuffer = (
+  response: Response,
+  callback: (error: Error | null, body?: Buffer) => void
+): void => {
+  const chunks: Buffer[] = []
+
+  response.on('data', (chunk: Buffer | string) => {
+    chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk))
+  })
+  response.on('end', () => callback(null, Buffer.concat(chunks)))
+  response.on('error', callback)
+}
 
 const testMusicDir = path.join(__dirname, 'fixtures', 'music')
 let originalMusicDir: string | undefined
@@ -349,6 +363,8 @@ describe('Songs API GET /:id/image/:variant', () => {
     const response = await api
       .get(`${url}/valid-song-1/image/list`)
       .set('Cookie', sessionCookie)
+      .buffer(true)
+      .parse(parseResponseBodyAsBuffer)
 
     assert.strictEqual(response.status, 200)
     assert.strictEqual(response.headers['cache-control'], 'public, max-age=86400')
@@ -367,11 +383,14 @@ describe('Songs API GET /:id/image/:variant', () => {
     const response = await api
       .get(`${url}/valid-song-2/image/hero`)
       .set('Cookie', sessionCookie)
+      .buffer(true)
+      .parse(parseResponseBodyAsBuffer)
 
     assert.strictEqual(response.status, 200)
     assert.strictEqual(response.headers['cache-control'], 'public, max-age=86400')
     assert.match(response.headers['content-type'], /^image\/svg\+xml/)
-    assert.match(response.text, /Valid Song 2 Hero/)
+    assert(Buffer.isBuffer(response.body))
+    assert.match(response.body.toString('utf8'), /valid-song-2 hero/)
   })
 
   it('should keep the songs list usable when hosted image files are missing', async () => {

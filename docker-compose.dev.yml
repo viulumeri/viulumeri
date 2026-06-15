@@ -1,3 +1,7 @@
+# Dev environment: starts MongoDB, server, and client in Docker containers.
+# Use for local development only. Production uses Kubernetes manifests.
+# Run with: npm run dev
+
 services:
   mongodb:
     image: mongo:8

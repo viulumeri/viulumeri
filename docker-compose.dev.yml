@@ -39,7 +39,7 @@ services:
       # Mount source for hot reload (nodemon picks up changes)
       - ./server/src:/usr/src/app/server/src
       - ./shared:/usr/src/app/shared
-      - "${MUSIC_DIR}:/usr/src/app/music"
+      - "${MUSIC_DIR:-./music}:/usr/src/app/music"
     networks:
       - viulumeri-network
  

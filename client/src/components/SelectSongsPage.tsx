@@ -85,6 +85,7 @@ export const SelectSongsPage = () => {
   return (
     <div className="flex flex-col min-h-screen">
       <Header
+        paddingClass="pl-16 pr-4"
         left={
           <button onClick={() => navigate(-1)}>
             <ArrowLeft className="w-6 h-6 text-gray-300" />

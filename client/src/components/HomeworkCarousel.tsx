@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState, useLayoutEffect } from 'react'
-import React from 'react'
+import type { ReactNode } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { useDeleteHomework, usePracticeOnce } from '../hooks/useHomework'
@@ -17,7 +17,7 @@ type Props = {
   homework: HomeworkItem[]
   isPending: boolean
   refetch: () => void | Promise<unknown>
-  header?: React.ReactNode
+  header?: ReactNode
 }
 
 export const HomeworkCarousel = ({
@@ -131,9 +131,9 @@ export const HomeworkCarousel = ({
 
     appliedInitialScrollRef.current = scrollKey
     el.style.scrollBehavior = 'auto'
-    el.scrollLeft = targetIndex * getCardWidth()
+    el.scrollLeft = getCenteredScrollLeft(targetIndex)
     el.style.scrollBehavior = 'smooth'
-  }, [focusHomeworkId, getInitialIndex, homework.length])
+  }, [focusHomeworkId, getCenteredScrollLeft, getInitialIndex, homework.length])
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' })

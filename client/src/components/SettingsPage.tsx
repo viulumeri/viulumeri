@@ -253,7 +253,7 @@ export const SettingsPage = () => {
         <button
           type="button"
           onClick={() => setfqaOpen(!fqaOpen)}
-          className="w-full flex items-center justify-between gap-3 mb-4
+          className="w-full flex items-center justify-between gap-3 mb-1
           bg-neutral-800 hover:bg-neutral-700 border border-neutral-700
           rounded-md px-4 py-3 text-left transition-colors px-4 py-3 min-h-[58px]"
         >
@@ -313,11 +313,11 @@ export const SettingsPage = () => {
           )}
       </div>
       
-      <div className="bg-neutral-900 rounded-lg p-3 mb-4">
+      <div className="bg-neutral-900 rounded-lg py-3 mb-4">
         <button
           type="button"
           onClick={() => setInstructionsOpen(!instructionsOpen)}
-          className="w-full flex items-center justify-between gap-3 mb-4
+          className="w-full flex items-center justify-between gap-3 mb-1
           bg-neutral-800 hover:bg-neutral-700 border border-neutral-700
           rounded-md px-4 py-3 text-left transition-colors px-4 py-3 min-h-[58px]"
         >

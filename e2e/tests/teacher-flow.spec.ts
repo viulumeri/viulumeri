@@ -38,7 +38,8 @@ test('teacher flow', async ({ page }) => {
   const expectedDateText = today.toLocaleDateString('fi-FI', {
     day: 'numeric',
     month: 'numeric',
-    year: 'numeric'
+    year: 'numeric',
+    timeZone: 'Europe/Helsinki'
   })
   let studentId: string | undefined
   let homeworkId: string | undefined

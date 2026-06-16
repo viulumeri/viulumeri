@@ -290,7 +290,7 @@ const startPlayback = async () => {
     <div className="min-h-screen flex flex-col">
       <button
         onClick={() => navigate(-1)}
-        className="absolute left-4 top-4 z-10"
+        className="absolute left-6 top-4 z-10"
       >
         <ArrowLeft className="w-8 h-8 text-white" />
       </button>
@@ -308,7 +308,7 @@ const startPlayback = async () => {
           }}
         >
           <div className="absolute inset-x-0 bottom-0 h-30 bg-gradient-to-t from-neutral-900 via-neutral-900/70 to-transparent z-0" />
-          <div className="pb-6 pl-3 realtive z-10">
+          <div className="pb-6 relative z-10">
             <h1 className="text-4xl">{song.title}</h1>
           </div>
         </div>
@@ -316,7 +316,7 @@ const startPlayback = async () => {
 
       {isLoading && <p>Ladataan ääniraitoja...</p>}
       <div>
-        <div className="w-full px-4">
+        <div className="w-full px-6">
           {tracksLoaded && (
             <div className="w-full">
               <input
@@ -337,7 +337,7 @@ const startPlayback = async () => {
                 onTouchEnd={handleSliderRelease}
                 disabled={!tracksLoaded}
               />
-              <div className="flex justify-between w-full px-2 text-gray-400">
+              <div className="flex justify-between w-full text-gray-400">
                 <span>{formatTime(Math.floor(displayTime))}</span>
                 <span>{formatTime(Math.floor(duration))}</span>
               </div>
@@ -345,7 +345,7 @@ const startPlayback = async () => {
           )}
         </div>
 
-        <div className="w-full px-10 py-5">
+        <div className="w-full px-6 py-5">
           <div className="relative flex items-center justify-between">
             <div className="w-16 flex items-center">
               <button

@@ -83,7 +83,7 @@ const HomeworkCard = ({
   }, [])
 
   return (
-    <div ref={cardRef} className="snap-center w-[90vw] max-w-4xl flex-shrink-0 rounded-lg pt-4 pb-4 px-10 relative ">
+    <div ref={cardRef} className="snap-center w-[90vw] max-w-4xl flex-shrink-0 rounded-lg pt-4 pb-4 px-8 relative ">
       <div
         data-card-content
         className="overflow-y-auto overflow-x-hidden max-h-[calc(100dvh-140px)] pt-0 pb-28 relative scrollbar-hide"
@@ -151,7 +151,7 @@ const HomeworkCard = ({
                 <button
                   type="button"
                   onClick={() => onRemoveSong(songId)}
-                  className="absolute top-0 right-0 w-10 h-10 rounded-full bg-white/30 text-white flex items-center justify-center backdrop-blur  z-10"
+                  className="absolute top-[2.5%] right-0 w-10 h-10 rounded-full bg-white/30 text-white flex items-center justify-center backdrop-blur  z-10"
                 >
                   <X className="w-5 h-5" />
                 </button>

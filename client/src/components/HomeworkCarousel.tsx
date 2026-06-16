@@ -220,7 +220,7 @@ export const HomeworkCarousel = ({
   return (
     <div className="flex flex-col">
       {header && (
-        <div className="px-[calc(5vw+2.5rem)] md:px-10 pt-4 pb-4">
+        <div className="px-[calc(5vw+2rem)] md:px-8 pt-4 pb-4">
           {header}
         </div>
       )}

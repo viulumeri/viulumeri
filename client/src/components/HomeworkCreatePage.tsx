@@ -123,11 +123,11 @@ export const HomeworkCreatePage = () => {
       <button
         type="button"
         onClick={() => navigate(-1)}
-        className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/20 text-white flex items-center justify-center z-50"
+        className="absolute top-[25px] right-[calc(5vw+2rem)] md:right-8 w-10 h-10 rounded-full bg-white/20 text-white flex items-center justify-center z-50"
       >
         <X className="w-5 h-5" />
       </button>
-      <div className="px-[5vw]">
+      <div className="flex justify-center">
         <HomeworkCard
           mode="teacher"
           hw={draftHw}

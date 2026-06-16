@@ -32,7 +32,7 @@ export const TeacherStudentLayout = () => {
         paddingClass={
           onSongs
             ? 'px-7'
-            : 'px-[calc(5vw+2.5rem)] md:px-10'
+            : 'px-[calc(5vw+2rem)] md:px-8'
         }
         left={
           <button

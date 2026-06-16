@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState, useLayoutEffect } from 'react'
+import React from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { useDeleteHomework, usePracticeOnce } from '../hooks/useHomework'
@@ -117,6 +118,15 @@ export const HomeworkCarousel = ({
     el.scrollLeft = targetIndex * getCardWidth()
     el.style.scrollBehavior = 'smooth'
   }, [focusHomeworkId, getInitialIndex, homework.length])
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+    scrollRef.current
+      ?.querySelectorAll<HTMLElement>('[data-card-content]')
+      .forEach(card => {
+        card.scrollTop = 0
+      })
+  }, [currentIndex])
 
   useEffect(() => {
     const el = scrollRef.current

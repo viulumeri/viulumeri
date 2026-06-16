@@ -17,6 +17,7 @@ type Props = {
   homework: HomeworkItem[]
   isPending: boolean
   refetch: () => void | Promise<unknown>
+  header?: React.ReactNode
 }
 
 export const HomeworkCarousel = ({
@@ -24,7 +25,8 @@ export const HomeworkCarousel = ({
   studentId,
   homework,
   isPending,
-  refetch
+  refetch,
+  header
 }: Props) => {
   const { data: songsData } = useSongsList()
 
@@ -80,10 +82,24 @@ export const HomeworkCarousel = ({
   const scrollRef = useRef<HTMLDivElement | null>(null)
   const appliedInitialScrollRef = useRef<string | null>(null)
 
-  const getCardWidth = () => {
+  const getCardWidth = useCallback(() => {
     const firstCard = scrollRef.current?.querySelector<HTMLElement>('.snap-center')
     return firstCard ? firstCard.offsetWidth + 16 : window.innerWidth * 0.9 + 16
-  }
+  }, [])
+
+  const getCenteredScrollLeft = useCallback(
+    (index: number) => {
+      const el = scrollRef.current
+      if (!el) return 0
+      const cards = el.querySelectorAll<HTMLElement>('.snap-center')
+      const card = cards[index]
+      if (!card) return index * getCardWidth()
+      const target = card.offsetLeft - (el.clientWidth - card.offsetWidth) / 2
+      const max = el.scrollWidth - el.clientWidth
+      return Math.max(0, Math.min(target, max))
+    },
+    [getCardWidth]
+  )
 
   const getInitialIndex = useCallback(() => {
     if (focusHomeworkId) {
@@ -138,12 +154,14 @@ export const HomeworkCarousel = ({
     }
     el.addEventListener('scroll', handleScroll, { passive: true })
     return () => el.removeEventListener('scroll', handleScroll)
-  }, [homework.length])
+  }, [homework.length, getCardWidth])
 
   const navigateTo = (index: number) => {
     if (!scrollRef.current) return
-    const cardWidth = getCardWidth()
-    scrollRef.current.scrollTo({ left: index * cardWidth, behavior: 'smooth' })
+    scrollRef.current.scrollTo({
+      left: getCenteredScrollLeft(index),
+      behavior: 'smooth'
+    })
   }
 
   if (isPending) return <div className="p-4">Ladataan…</div>
@@ -220,10 +238,15 @@ export const HomeworkCarousel = ({
   ) : null
 
   return (
-    <div className="flex flex-col min-h-[100dvh]">
+    <div className="flex flex-col">
+      {header && (
+        <div className="px-[calc(5vw+2rem)] md:px-8 pt-4 pb-4">
+          {header}
+        </div>
+      )}
       <div className="flex-1 relative">
         {homework.length >= 2 && (
-          <div className="fixed inset-x-0 top-1/2 -translate-y-1/2 z-10 flex justify-between max-w-[calc(56rem+4rem)] mx-auto px-2 pointer-events-none">
+          <div className="fixed inset-x-0 top-1/2 -translate-y-1/2 z-10 flex justify-between max-w-[calc(56rem+4rem)] mx-auto pointer-events-none">
             <button
               onClick={() => navigateTo(currentIndex - 1)}
               disabled={currentIndex === 0}
@@ -246,7 +269,7 @@ export const HomeworkCarousel = ({
           ref={scrollRef}
           className="overflow-x-auto snap-x snap-mandatory scroll-smooth scrollbar-hide"
         >
-        <div className="flex gap-4">
+        <div className="flex w-max gap-4 items-start">
           <div className="w-[5vw] flex-shrink-0" />
           {reversedHomework
             .map((hw, index) => (

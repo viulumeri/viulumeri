@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, useLayoutEffect } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { useDeleteHomework, usePracticeOnce } from '../hooks/useHomework'
@@ -29,6 +29,8 @@ export const HomeworkCarousel = ({
 
   const navigate = useNavigate()
   const location = useLocation()
+  const locationState = location.state as { focusHomeworkId?: string } | null
+  const focusHomeworkId = locationState?.focusHomeworkId
 
   const songMap = useMemo(
     () =>
@@ -75,25 +77,46 @@ export const HomeworkCarousel = ({
   const handlePractice = (homeworkId: string) => practice.mutate(homeworkId)
 
   const scrollRef = useRef<HTMLDivElement | null>(null)
+  const appliedInitialScrollRef = useRef<string | null>(null)
 
   const getCardWidth = () => {
     const firstCard = scrollRef.current?.querySelector<HTMLElement>('.snap-center')
     return firstCard ? firstCard.offsetWidth + 16 : window.innerWidth * 0.9 + 16
   }
 
-  const [currentIndex, setCurrentIndex] = useState(homework.length - 1)
+  const getInitialIndex = useCallback(() => {
+    if (focusHomeworkId) {
+      const reversedIndex = homework
+        .slice()
+        .reverse()
+        .findIndex(hw => hw.id === focusHomeworkId)
 
-  useEffect(() => {
-    setCurrentIndex(homework.length - 1)
-  }, [homework.length])
-
-  useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.style.scrollBehavior = 'auto'
-      scrollRef.current.scrollLeft = scrollRef.current.scrollWidth
-      scrollRef.current.style.scrollBehavior = 'smooth'
+      if (reversedIndex !== -1) return reversedIndex
     }
-  }, [homework.length])
+
+    return Math.max(0, homework.length - 1)
+  }, [focusHomeworkId, homework])
+
+  const [currentIndex, setCurrentIndex] = useState(getInitialIndex)
+
+  useEffect(() => {
+    // When returning from the player, restore the homework card the song came from.
+    setCurrentIndex(getInitialIndex())
+  }, [getInitialIndex])
+
+  useLayoutEffect(() => {
+    const el = scrollRef.current
+    if (!el) return
+
+    const targetIndex = getInitialIndex()
+    const scrollKey = `${focusHomeworkId ?? 'latest'}:${homework.length}:${targetIndex}`
+    if (appliedInitialScrollRef.current === scrollKey) return
+
+    appliedInitialScrollRef.current = scrollKey
+    el.style.scrollBehavior = 'auto'
+    el.scrollLeft = targetIndex * getCardWidth()
+    el.style.scrollBehavior = 'smooth'
+  }, [focusHomeworkId, getInitialIndex, homework.length])
 
   useEffect(() => {
     const el = scrollRef.current

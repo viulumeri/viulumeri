@@ -1,4 +1,5 @@
 import { useEffect, useRef, useMemo } from 'react'
+import { useLocation } from 'react-router-dom'
 import DOMPurify from 'dompurify'
 import { processYouTubeEmbeds, pauseYouTubeIframes } from '../utils/youtubeEmbed'
 import { Ellipsis, X } from 'lucide-react'
@@ -48,6 +49,7 @@ const HomeworkCard = ({
   onChangeComment,
   onAddSong
 }: Props) => {
+  const location = useLocation()
   const menuRef = useRef<HTMLDivElement | null>(null)
   const cardRef = useRef<HTMLDivElement>(null)
 
@@ -137,7 +139,15 @@ const HomeworkCard = ({
                   editableSongs ? 'scale-95 mx-auto transition-transform' : ''
                 }
               >
-                <SongCard song={song} />
+                <SongCard
+                  song={song}
+                  playerState={{
+                    // Preserve the carousel card when returning from the player.
+                    returnTo: `${location.pathname}${location.search}${location.hash}`,
+                    returnState: location.state,
+                    homeworkId: hw.id
+                  }}
+                />
               </div>
               {editableSongs && onRemoveSong && (
                 <button

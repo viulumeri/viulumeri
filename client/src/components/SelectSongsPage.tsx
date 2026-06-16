@@ -95,10 +95,9 @@ export const SelectSongsPage = () => {
       />
 
       <main
-        className="overflow-y-auto"
+        className="overflow-y-auto scrollbar-hide"
         style={{ maxHeight: 'calc(100dvh - 150px)' }}
       >
-        {' '}
         <Songslist
           songs={list}
           playedSet={playedSet}

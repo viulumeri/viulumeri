@@ -70,7 +70,7 @@ export const FeedbackPage = () => {
       <div className="flex items-center gap-4">
         <button
           onClick={() => navigate(-1)}
-          className="p-1 hover:bg-neutral-800 rounded-full transition-colors"
+          className="p-1 -ml-1 hover:bg-neutral-800 rounded-full transition-colors"
           aria-label="Palaa takaisin"
         >
           <ArrowLeft className="w-8 h-8 text-white" />

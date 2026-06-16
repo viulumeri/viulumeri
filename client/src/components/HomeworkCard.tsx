@@ -125,12 +125,7 @@ const HomeworkCard = ({
           </>
         )}
 
-        <h2 className="mb-1">
-          {headingLabel ?? (isLatest ? 'Tehtävä' : 'Arkistoitu tehtävä')}
-        </h2>
-        <p className="text-xs text-gray-300 mb-12">
-          {new Date(hw.createdAt).toLocaleDateString()}
-        </p>
+        <h2 className="mb-1">{headingLabel ?? new Date(hw.createdAt).toLocaleDateString()}</h2>
 
         {hw.songs.map(songId => {
           const song = songMap.get(songId)

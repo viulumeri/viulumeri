@@ -76,6 +76,8 @@ export default defineConfig({
     baseURL: isCI ? serverUrl : uiUrl,
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
+    locale: 'fi-FI',
+    timezoneId: 'Europe/Helsinki',
   },
   projects: [
     {

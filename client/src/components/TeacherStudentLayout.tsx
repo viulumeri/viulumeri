@@ -62,7 +62,7 @@ export const TeacherStudentLayout = () => {
         }
       />
 
-      <main className="flex-1 overflow-y-auto pb-20">
+      <main className="flex-1 overflow-y-auto pb-24">
         <Outlet />
       </main>
     </div>

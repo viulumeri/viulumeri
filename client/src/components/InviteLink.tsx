@@ -42,7 +42,7 @@ export const InviteLink = () => {
       </div>
 
       {url && (
-        <div className="bg-neutral-900 rounded-lg p-6 space-y-4">
+        <div className="bg-neutral-900 rounded-lg py-6 space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">
               Kutsulinkki:

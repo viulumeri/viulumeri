@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type React from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
@@ -79,21 +79,24 @@ export const HomeworkCarousel = ({
 
   const scrollRef = useRef<HTMLDivElement | null>(null)
 
-  const getCardWidth = () => {
+  const getCardWidth = useCallback(() => {
     const firstCard = scrollRef.current?.querySelector<HTMLElement>('.snap-center')
     return firstCard ? firstCard.offsetWidth + 16 : window.innerWidth * 0.9 + 16
-  }
+  }, [])
 
-  const getCenteredScrollLeft = (index: number) => {
-    const el = scrollRef.current
-    if (!el) return 0
-    const cards = el.querySelectorAll<HTMLElement>('.snap-center')
-    const card = cards[index]
-    if (!card) return index * getCardWidth()
-    const target = card.offsetLeft - (el.clientWidth - card.offsetWidth) / 2
-    const max = el.scrollWidth - el.clientWidth
-    return Math.max(0, Math.min(target, max))
-  }
+  const getCenteredScrollLeft = useCallback(
+    (index: number) => {
+      const el = scrollRef.current
+      if (!el) return 0
+      const cards = el.querySelectorAll<HTMLElement>('.snap-center')
+      const card = cards[index]
+      if (!card) return index * getCardWidth()
+      const target = card.offsetLeft - (el.clientWidth - card.offsetWidth) / 2
+      const max = el.scrollWidth - el.clientWidth
+      return Math.max(0, Math.min(target, max))
+    },
+    [getCardWidth]
+  )
 
   const [currentIndex, setCurrentIndex] = useState(homework.length - 1)
 
@@ -119,7 +122,7 @@ export const HomeworkCarousel = ({
       el.style.scrollBehavior = 'smooth'
     })
     return () => cancelAnimationFrame(id)
-  }, [homework.length])
+  }, [homework.length, getCenteredScrollLeft])
 
   useEffect(() => {
     const el = scrollRef.current
@@ -131,7 +134,7 @@ export const HomeworkCarousel = ({
     }
     el.addEventListener('scroll', handleScroll, { passive: true })
     return () => el.removeEventListener('scroll', handleScroll)
-  }, [homework.length])
+  }, [homework.length, getCardWidth])
 
   const navigateTo = (index: number) => {
     if (!scrollRef.current) return

@@ -24,6 +24,7 @@ type Props = {
   commentDraft?: string
   onChangeComment?: (next: string) => void
   onAddSong?: () => void
+  onClose?: () => void
 
   onPractice?: (hwId: string) => void
   practicePending?: boolean
@@ -46,7 +47,8 @@ const HomeworkCard = ({
   editableComment = false,
   commentDraft,
   onChangeComment,
-  onAddSong
+  onAddSong,
+  onClose
 }: Props) => {
   const menuRef = useRef<HTMLDivElement | null>(null)
   const cardRef = useRef<HTMLDivElement>(null)
@@ -128,7 +130,19 @@ const HomeworkCard = ({
           </>
         )}
 
-        <h2 className="mb-1">{headingLabel ?? new Date(hw.createdAt).toLocaleDateString()}</h2>
+        <div className="flex items-start justify-between gap-2">
+          <h2 className="mb-1">{headingLabel ?? new Date(hw.createdAt).toLocaleDateString()}</h2>
+          {onClose && (
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label="Sulje"
+              className="mt-[9px] w-10 h-10 flex-shrink-0 rounded-full bg-white/20 text-white flex items-center justify-center"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          )}
+        </div>
 
         {hw.songs.map(songId => {
           const song = songMap.get(songId)

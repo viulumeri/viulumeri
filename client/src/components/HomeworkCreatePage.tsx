@@ -5,7 +5,6 @@ import { useCreateHomework } from '../hooks/useHomework'
 import type { SongListItem, HomeworkListResponse } from '../../../shared/types'
 import HomeworkCard from './HomeworkCard'
 import { FloatingActionButton } from '../components/FloatingActionButton'
-import { X } from 'lucide-react'
 import { useNotification } from '../hooks/useNotification'
 
 type HomeworkItem = HomeworkListResponse['homework'][number]
@@ -120,19 +119,13 @@ export const HomeworkCreatePage = () => {
 
   return (
     <div className="flex flex-col overflow-x-hidden relative">
-      <button
-        type="button"
-        onClick={() => navigate(-1)}
-        className="absolute top-[25px] right-[calc(5vw+2rem)] md:right-8 w-10 h-10 rounded-full bg-white/20 text-white flex items-center justify-center z-50"
-      >
-        <X className="w-5 h-5" />
-      </button>
       <div className="flex justify-center">
         <HomeworkCard
           mode="teacher"
           hw={draftHw}
           songMap={songMap}
           headingLabel="Tehtävä"
+          onClose={() => navigate(-1)}
           editableSongs
           onRemoveSong={id => {
             const next = songIds.filter(x => x !== id)

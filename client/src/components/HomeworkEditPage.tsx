@@ -130,7 +130,7 @@ export const HomeworkEditPage = () => {
 
   return (
     <div className="flex flex-col overflow-x-hidden">
-      <div className="px-[5vw]">
+      <div className="flex justify-center">
         <HomeworkCard
           mode="teacher"
           hw={editedHw}

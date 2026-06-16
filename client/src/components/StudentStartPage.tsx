@@ -63,7 +63,7 @@ export const StudentStartPage = () => {
       >
         <div className="absolute bottom-0 left-0 right-0 h-25 bg-gradient-to-b from-transparent to-neutral-900 z-10" />
 
-        <header className="absolute top-0 px-10 pt-6">
+        <header className="absolute top-0 px-6 pt-6">
           <h1 className="bg-transparent font-semibold">
             Hei {parseFirstLastName(session.user.name).firstName}
           </h1>
@@ -85,10 +85,10 @@ export const StudentStartPage = () => {
         </div>
       </div>
 
-      <div className="h-[30vh] bg-neutral-900 text-neutral-100 px-6 pt-12">
+      <div className="min-h-[30vh] bg-neutral-900 text-neutral-100 px-6 pt-12 pb-24">
         <div className="flex gap-2">
           <div className="flex-1 h-28 flex flex-col justify-between items-center text-center overflow-hidden">
-            <p className="text-sm text-gray-400 px-1">Harjoituskerrat</p>
+            <p className="text-sm text-gray-400 px-1">Harjoitus&shy;kerrat</p>
             <div
               className={`text-xl font-bold pb-8 transition-all duration-300 ${
                 showGlow

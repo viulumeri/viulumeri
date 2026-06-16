@@ -170,7 +170,8 @@ test('admin flow covers dashboard, users, popups, feedback, FAQ, and user view',
   const updatedFaqAnswer = 'This FAQ answer was updated in the admin flow.'
   const feedbackTitle = `${runPrefix} feedback`
   const feedbackMessage = 'This feedback record was seeded for admin flow coverage.'
-  const today = new Date().toISOString().slice(0, 10)
+  const now = new Date()
+  const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
 
   await cleanupE2eData(disposableStudent.email, runPrefix)
   await createDisposableStudent(disposableStudent)

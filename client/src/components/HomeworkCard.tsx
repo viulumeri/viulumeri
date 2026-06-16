@@ -24,6 +24,7 @@ type Props = {
   commentDraft?: string
   onChangeComment?: (next: string) => void
   onAddSong?: () => void
+  onClose?: () => void
 
   onPractice?: (hwId: string) => void
   practicePending?: boolean
@@ -46,7 +47,8 @@ const HomeworkCard = ({
   editableComment = false,
   commentDraft,
   onChangeComment,
-  onAddSong
+  onAddSong,
+  onClose
 }: Props) => {
   const menuRef = useRef<HTMLDivElement | null>(null)
   const cardRef = useRef<HTMLDivElement>(null)
@@ -84,12 +86,15 @@ const HomeworkCard = ({
 
   return (
     <div ref={cardRef} className="snap-center w-[90vw] max-w-4xl flex-shrink-0 rounded-lg pt-4 pb-4 px-8 relative ">
-      <div className="overflow-y-auto overflow-x-hidden max-h={[`calc(100dvh-140px)`]} pt-0 pb-16 relative scrollbar-hide">
+      <div
+        data-card-content
+        className="overflow-y-auto overflow-x-hidden max-h-[calc(100dvh-140px)] pt-0 pb-28 relative scrollbar-hide"
+      >
         {mode === 'teacher' && onToggleMenu && (
           <>
             <button
               type="button"
-              className="absolute top-3 right-3 p-1 rounded-full z-10"
+              className="absolute top-3 right-0 p-1 rounded-full z-10"
               onClick={e => {
                 e.stopPropagation()
                 onToggleMenu(isMenuOpen ? null : hw.id)
@@ -125,7 +130,19 @@ const HomeworkCard = ({
           </>
         )}
 
-        <h2 className="mb-1">{headingLabel ?? new Date(hw.createdAt).toLocaleDateString()}</h2>
+        <div className="flex items-start justify-between gap-2">
+          <h2 className="mb-1">{headingLabel ?? new Date(hw.createdAt).toLocaleDateString()}</h2>
+          {onClose && (
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label="Sulje"
+              className="mt-[9px] w-10 h-10 flex-shrink-0 rounded-full bg-white/20 text-white flex items-center justify-center"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          )}
+        </div>
 
         {hw.songs.map(songId => {
           const song = songMap.get(songId)
@@ -143,7 +160,7 @@ const HomeworkCard = ({
                 <button
                   type="button"
                   onClick={() => onRemoveSong(songId)}
-                  className="absolute top-0 right-0 w-10 h-10 rounded-full bg-white/30 text-white flex items-center justify-center backdrop-blur  z-10"
+                  className="absolute top-[2.5%] right-0 w-10 h-10 rounded-full bg-white/30 text-white flex items-center justify-center backdrop-blur  z-10"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -177,7 +194,7 @@ const HomeworkCard = ({
           hw.comment && (
             <>
               <h3 className="mt-5 mb-3">Opettajan kommentti</h3>
-              <div className="px-3 text-[14px] text-gray-400
+              <div className="text-[14px] text-gray-400
                 [&_p]:my-1
                 [&_p:empty]:h-[1em]
                 [&_strong]:font-semibold [&_strong]:text-gray-300

@@ -3,6 +3,7 @@ import { useSession } from '../auth-client'
 import { useGenerateInviteLink } from '../hooks/useInvite'
 import { QRCodeSVG } from 'qrcode.react'
 import { useNotification } from '../hooks/useNotification'
+import { PageContainer } from './PageContainer'
 
 // qr code component from: https://www.npmjs.com/package/qrcode.react
 
@@ -27,7 +28,7 @@ export const InviteLink = () => {
   if (!session) return <div>Kirjaudu</div>
 
   return (
-    <div className="space-y-6 p-6 pb-24">
+    <PageContainer className="space-y-6">
       <h2 className="text-xl font-semibold">Lisää uusi oppilas</h2>
 
       <div className="flex justify-center">
@@ -78,6 +79,6 @@ export const InviteLink = () => {
           </div>
         </div>
       )}
-    </div>
+    </PageContainer>
   )
 }

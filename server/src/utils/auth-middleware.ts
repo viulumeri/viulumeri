@@ -1,6 +1,6 @@
 import type { Request, Response, NextFunction } from 'express'
 import { fromNodeHeaders } from 'better-auth/node'
-import { auth } from './auth'
+import { auth, type AuthSession } from './auth'
 import Teacher from '../models/teacher'
 import Student from '../models/student'
 
@@ -12,7 +12,7 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
     res.status(401).json({ error: 'Authentication required' })
     return
   }
-  req.session = session
+  req.session = session as AuthSession
   next()
 }
 

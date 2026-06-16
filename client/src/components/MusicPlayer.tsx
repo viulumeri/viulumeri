@@ -18,6 +18,7 @@ import {
   Guitar,
   Snail
 } from 'lucide-react'
+import { getSongImageUrl } from '../utils/songImages'
 
 export const MusicPlayer = () => {
   const { songId } = useParams<{ songId: string }>()
@@ -299,8 +300,8 @@ const startPlayback = async () => {
         <div
           className="relative flex flex-col justify-end h-[80vh] px-6"
           style={{
-            backgroundImage: song?.metadata?.imgurl
-              ? `url("${song.metadata.imgurl}")`
+            backgroundImage: song?.metadata
+              ? `url("${getSongImageUrl(song.metadata, 'hero')}")`
               : undefined,
             backgroundSize: 'cover',
             backgroundPosition: 'center',

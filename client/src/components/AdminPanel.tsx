@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Search, CircleEllipsis } from 'lucide-react'
-import { useAdminTeachers, useAdminStudents, useDeleteAdminTeacher, useDeleteAdminStudent, useImpersonateAdminUser } from '../hooks/useAdmin'
+import { useAdminTeachers, useAdminStudents, useDeleteAdminTeacher, useDeleteAdminStudent, useImpersonateAdminUser, useUpdateAdminUser } from '../hooks/useAdmin'
 import { DropdownSearchbar } from './DropdownSearchbar'
 import { useNotification } from '../hooks/useNotification'
 import type { Teacher, Student } from '../services/admin'
@@ -10,6 +10,8 @@ interface SearchResultUser {
   id: string
   name: string
   email: string
+  isAdmin: boolean
+  isCurrentUser: boolean
   role: 'teacher' | 'student'
 }
 
@@ -22,6 +24,9 @@ export const AdminPanel = () => {
   const [actionsOpen, setActionsOpen] = useState(false)
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [impersonatingId, setImpersonatingId] = useState<string | null>(null)
+  const [editing, setEditing] = useState(false)
+  const [editName, setEditName] = useState('')
+  const [editEmail, setEditEmail] = useState('')
 
   const { showSuccess, showError } = useNotification()
 
@@ -60,6 +65,19 @@ export const AdminPanel = () => {
     }
   })
 
+  const updateUser = useUpdateAdminUser({
+    onSuccess: ({ user }) => {
+      setSelectedUser((current) =>
+        current?.id === user.id ? { ...current, ...user } : current
+      )
+      setEditing(false)
+      showSuccess('Käyttäjän tiedot päivitetty')
+    },
+    onError: (error) => {
+      showError(`Virhe käyttäjän muokkaamisessa: ${error.message}`)
+    }
+  })
+
   const teachers = useMemo(() => teachersData?.teachers ?? [], [teachersData])
   const students = useMemo(() => studentsData?.students ?? [], [studentsData])
   const error = teachersError || studentsError ? 'Failed to load admin data' : null
@@ -69,12 +87,16 @@ export const AdminPanel = () => {
       id: teacher.id,
       name: teacher.name,
       email: teacher.email,
+      isAdmin: teacher.isAdmin,
+      isCurrentUser: teacher.isCurrentUser,
       role: 'teacher' as const
     })),
     ...students.map((student) => ({
       id: student.id,
       name: student.name,
       email: student.email,
+      isAdmin: student.isAdmin,
+      isCurrentUser: student.isCurrentUser,
       role: 'student' as const
     }))
   ], [teachers, students])
@@ -96,6 +118,7 @@ export const AdminPanel = () => {
     setSearchUserInput(value)
     setSelectedUser(null)
     setActionsOpen(false)
+    setEditing(false)
   }
 
   const handleResultSelect = (user: SearchResultUser) => {
@@ -105,6 +128,7 @@ export const AdminPanel = () => {
     if (fullUserData) {
       setSelectedUser(fullUserData)
       setActionsOpen(false)
+      setEditing(false)
     }
   }
 
@@ -172,40 +196,111 @@ export const AdminPanel = () => {
                       <div className="absolute right-0 mt-2 w-48 bg-neutral-900 border border-neutral-700 rounded-lg shadow-xl z-20">
                         <button
                           type="button"
-                          disabled={Boolean(impersonatingId)}
                           onClick={() => {
-                            if (impersonatingId) return
                             setActionsOpen(false)
-                            setImpersonatingId(selectedUser.userId)
-                            impersonateUser.mutate({ userId: selectedUser.userId })
+                            setEditName(selectedUser.name)
+                            setEditEmail(selectedUser.email)
+                            setEditing(true)
                           }}
-                          className="w-full px-4 py-3 text-left text-sm hover:bg-neutral-800 active:bg-neutral-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-500 disabled:cursor-not-allowed disabled:opacity-50"
+                          className="w-full px-4 py-3 text-left text-sm hover:bg-neutral-800 active:bg-neutral-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-500"
                         >
-                          {impersonatingId === selectedUser.userId ? 'Impersonoidaan...' : 'Impersonoi'}
+                          Muokkaa
                         </button>
-                        <button
-                          type="button"
-                          disabled={Boolean(deletingId)}
-                          onClick={() => {
-                            if (deletingId) return
-                            setActionsOpen(false)
-                            if (confirm(`Haluatko varmasti poistaa käyttäjän ${selectedUser.name}? Toimintoa ei voi perua.`)) {
-                              setDeletingId(selectedUser.id)
-                              if ('studentCount' in selectedUser) {
-                                deleteTeacher.mutate(selectedUser.id)
-                              } else {
-                                deleteStudent.mutate(selectedUser.id)
+                        {!selectedUser.isAdmin && (
+                          <button
+                            type="button"
+                            disabled={Boolean(impersonatingId)}
+                            onClick={() => {
+                              if (impersonatingId) return
+                              setActionsOpen(false)
+                              setImpersonatingId(selectedUser.userId)
+                              impersonateUser.mutate({ userId: selectedUser.userId })
+                            }}
+                            className="w-full px-4 py-3 text-left text-sm hover:bg-neutral-800 active:bg-neutral-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-500 disabled:cursor-not-allowed disabled:opacity-50"
+                          >
+                            {impersonatingId === selectedUser.userId ? 'Impersonoidaan...' : 'Impersonoi'}
+                          </button>
+                        )}
+                        {!selectedUser.isAdmin && !selectedUser.isCurrentUser && (
+                          <button
+                            type="button"
+                            disabled={Boolean(deletingId)}
+                            onClick={() => {
+                              if (deletingId) return
+                              setActionsOpen(false)
+                              if (confirm(`Haluatko varmasti poistaa käyttäjän ${selectedUser.name}? Toimintoa ei voi perua.`)) {
+                                setDeletingId(selectedUser.id)
+                                if ('studentCount' in selectedUser) {
+                                  deleteTeacher.mutate(selectedUser.id)
+                                } else {
+                                  deleteStudent.mutate(selectedUser.id)
+                                }
                               }
-                            }
-                          }}
-                          className="w-full px-4 py-3 text-left text-sm text-rose-400 hover:bg-neutral-800 active:bg-neutral-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-500 disabled:cursor-not-allowed disabled:opacity-50"
-                        >
-                          {deletingId === selectedUser.id ? 'Poistetaan...' : 'Poista käyttäjä'}
-                        </button>
+                            }}
+                            className="w-full px-4 py-3 text-left text-sm text-rose-400 hover:bg-neutral-800 active:bg-neutral-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-500 disabled:cursor-not-allowed disabled:opacity-50"
+                          >
+                            {deletingId === selectedUser.id ? 'Poistetaan...' : 'Poista käyttäjä'}
+                          </button>
+                        )}
                       </div>
                     )}
                   </div>
                 </div>
+                {editing && (
+                  <form
+                    className="space-y-3 border-t border-neutral-700 pt-4"
+                    onSubmit={(event) => {
+                      event.preventDefault()
+                      if (updateUser.isPending) return
+                      updateUser.mutate({
+                        id: selectedUser.id,
+                        role: 'studentCount' in selectedUser ? 'teacher' : 'student',
+                        name: editName.trim(),
+                        email: editEmail.trim()
+                      })
+                    }}
+                  >
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <label className="space-y-1 text-left text-sm text-neutral-300">
+                        <span className="font-semibold">Nimi</span>
+                        <input
+                          type="text"
+                          required
+                          value={editName}
+                          onChange={(event) => setEditName(event.target.value)}
+                          className="w-full rounded-lg border border-neutral-600 bg-neutral-800 px-3 py-2 text-neutral-100 focus:border-neutral-400 focus:outline-none"
+                        />
+                      </label>
+                      <label className="space-y-1 text-left text-sm text-neutral-300">
+                        <span className="font-semibold">Sähköposti</span>
+                        <input
+                          type="email"
+                          required
+                          value={editEmail}
+                          onChange={(event) => setEditEmail(event.target.value)}
+                          className="w-full rounded-lg border border-neutral-600 bg-neutral-800 px-3 py-2 text-neutral-100 focus:border-neutral-400 focus:outline-none"
+                        />
+                      </label>
+                    </div>
+                    <div className="flex justify-end gap-2">
+                      <button
+                        type="button"
+                        disabled={updateUser.isPending}
+                        onClick={() => setEditing(false)}
+                        className="rounded-lg border border-neutral-600 px-4 py-2 text-sm hover:bg-neutral-800 disabled:opacity-50"
+                      >
+                        Peruuta
+                      </button>
+                      <button
+                        type="submit"
+                        disabled={updateUser.isPending}
+                        className="rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white hover:bg-brand-strong disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        {updateUser.isPending ? 'Tallennetaan...' : 'Tallenna'}
+                      </button>
+                    </div>
+                  </form>
+                )}
               </div>
             )}
             searchInput={searchUserInput}

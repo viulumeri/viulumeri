@@ -50,6 +50,29 @@ export const MusicPlayer = () => {
       ? (location.state as { returnState: Record<string, unknown> }).returnState
       : undefined
 
+  const playerState = location.state as
+    | {
+        returnTo?: string
+        returnState?: Record<string, unknown>
+        homeworkId?: string
+      }
+    | undefined
+
+  const handleBack = () => {
+    if (playerState?.returnTo && playerState.homeworkId) {
+      navigate(playerState.returnTo, {
+        replace: true,
+        state: {
+          ...playerState.returnState,
+          focusHomeworkId: playerState.homeworkId
+        }
+      })
+      return
+    }
+
+    navigate(-1)
+  }
+
 const cleanupTransport = useCallback(() => {
   Tone.Transport.cancel()
   Tone.Transport.stop()
@@ -319,8 +342,9 @@ const startPlayback = async () => {
   return (
     <div className="min-h-screen flex flex-col">
       <button
-        onClick={goBack}
-        className="absolute left-4 top-4 z-10"
+        onClick={handleBack}
+        className="absolute left-6 top-4 z-10 rounded-full bg-black/35 p-1 backdrop-blur-sm transition hover:bg-black/50"
+        aria-label="Palaa takaisin"
       >
         <ArrowLeft className="w-8 h-8 text-white" />
       </button>
@@ -338,7 +362,7 @@ const startPlayback = async () => {
           }}
         >
           <div className="absolute inset-x-0 bottom-0 h-30 bg-gradient-to-t from-neutral-900 via-neutral-900/70 to-transparent z-0" />
-          <div className="pb-6 pl-3 realtive z-10">
+          <div className="pb-6 relative z-10">
             <h1 className="text-4xl">{song.title}</h1>
           </div>
         </div>
@@ -346,7 +370,7 @@ const startPlayback = async () => {
 
       {isLoading && <p>Ladataan ääniraitoja...</p>}
       <div>
-        <div className="w-full px-4">
+        <div className="w-full px-6">
           {tracksLoaded && (
             <div className="w-full">
               <input
@@ -367,7 +391,7 @@ const startPlayback = async () => {
                 onTouchEnd={handleSliderRelease}
                 disabled={!tracksLoaded}
               />
-              <div className="flex justify-between w-full px-2 text-gray-400">
+              <div className="flex justify-between w-full text-gray-400">
                 <span>{formatTime(Math.floor(displayTime))}</span>
                 <span>{formatTime(Math.floor(duration))}</span>
               </div>
@@ -375,7 +399,7 @@ const startPlayback = async () => {
           )}
         </div>
 
-        <div className="w-full px-10 py-5">
+        <div className="w-full px-6 py-5">
           <div className="relative flex items-center justify-between">
             <div className="w-16 flex items-center">
               <button

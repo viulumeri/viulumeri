@@ -237,6 +237,8 @@ test('admin flow covers dashboard, users, popups, feedback, FAQ, and user view',
       'original.jpg'
     )
   )
+  const now = new Date()
+  const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
 
   await cleanupE2eData(disposableStudent.email, runPrefix)
   await cleanupE2eSongs(runPrefix)
@@ -465,6 +467,24 @@ test('admin flow covers dashboard, users, popups, feedback, FAQ, and user view',
     const feedbackReadResponse = await feedbackReadResponsePromise
     expect(feedbackReadResponse.ok()).toBe(true)
 
+    const deleteFeedbackResponsePromise = page.waitForResponse(response => {
+      return (
+        response.url().includes('/api/admin/feedbacks/') &&
+        response.request().method() === 'DELETE'
+      )
+    })
+
+    page.once('dialog', dialog => dialog.accept())
+
+    await feedbackCard.getByRole('button', { name: 'Poista' }).click()
+
+    const deleteFeedbackResponse = await deleteFeedbackResponsePromise
+    expect(deleteFeedbackResponse.ok()).toBe(true)
+
+    await expect(feedbackSection.getByText(feedbackTitle)).not.toBeVisible({
+      timeout: 15_000
+    })
+
     await page.goto('/admin/faq')
     const faqSection = page.locator('[data-section-id="faq"]')
     await faqSection.getByRole('button').filter({ hasText: 'Lisää uusi kysymys' }).click()
@@ -477,7 +497,7 @@ test('admin flow covers dashboard, users, popups, feedback, FAQ, and user view',
         response.request().method() === 'POST'
       )
     })
-    await faqSection.getByRole('button', { name: 'Lisaa kysymys' }).click()
+    await faqSection.getByRole('button', { name: 'Lisää kysymys' }).click()
     const createFaqResponse = await createFaqResponsePromise
     expect(createFaqResponse.ok()).toBe(true)
 
@@ -500,6 +520,20 @@ test('admin flow covers dashboard, users, popups, feedback, FAQ, and user view',
 
     await expect(faqSection.getByRole('button', { name: updatedFaqQuestion })).toBeVisible()
     await expect(faqSection).toContainText(updatedFaqAnswer)
+
+    await page.goto('/settings')
+    await page
+      .getByRole('button', { name: /Usein kysytyt kysymykset/ })
+      .click()
+    await expect(page.getByText(updatedFaqQuestion)).toBeVisible()
+    await page.getByRole('button', { name: updatedFaqQuestion }).click()
+    await expect(page.getByText(updatedFaqAnswer)).toBeVisible()
+    await expect(page.getByText(faqQuestion)).not.toBeAttached()
+    await expect(page.getByText(faqAnswer)).not.toBeAttached()
+
+    await page.goto('/admin/faq')
+    await faqSection.getByRole('button').filter({ hasText: 'Selaa ja muokkaa' }).click()
+    await faqSection.getByRole('button', { name: updatedFaqQuestion }).click()
 
     const deleteFaqResponsePromise = page.waitForResponse(response => {
       return (
@@ -525,4 +559,59 @@ test('admin flow covers dashboard, users, popups, feedback, FAQ, and user view',
     await cleanupE2eData(disposableStudent.email, runPrefix)
     await cleanupE2eSongs(runPrefix)
   }
+})
+
+test('admin can impersonate a user and stop from the mobile banner', async ({ page }) => {
+  test.setTimeout(60_000)
+  await page.setViewportSize({ width: 320, height: 720 })
+  await login(page, ADMIN.email, ADMIN.password)
+  await page.goto('/admin')
+
+  const usersSection = page.locator('[data-section-id="users"]')
+  await usersSection.locator('input[type="text"]').fill(STUDENT.email)
+  await usersSection
+    .getByRole('button')
+    .filter({ hasText: STUDENT.email })
+    .click()
+  await usersSection.getByLabel('Avaa käyttäjätoiminnot').click()
+
+  const impersonateResponsePromise = page.waitForResponse(response => {
+    return (
+      response.url().includes('/api/auth/admin/impersonate-user') &&
+      response.request().method() === 'POST'
+    )
+  })
+  await usersSection.getByRole('button', { name: 'Impersonoi' }).click()
+  const impersonateResponse = await impersonateResponsePromise
+  expect(impersonateResponse.ok()).toBe(true)
+
+  const authCookies = await page.context().cookies()
+  expect(authCookies.some(cookie => cookie.name === 'better-auth.session_token')).toBe(true)
+  expect(authCookies.some(cookie => cookie.name === 'better-auth.admin_session')).toBe(true)
+
+  await page.waitForURL(/\/student\/homework/, { timeout: 15_000 })
+  const bannerToggle = page.getByRole('button', {
+    name: 'Session hallinta'
+  })
+  await bannerToggle.click()
+
+  const stopButton = page.getByRole('button', { name: 'Lopeta sessio' })
+  await expect(stopButton).toBeVisible()
+
+  const stopButtonBounds = await stopButton.boundingBox()
+  expect(stopButtonBounds).not.toBeNull()
+  expect(stopButtonBounds!.x).toBeGreaterThanOrEqual(0)
+  expect(stopButtonBounds!.x + stopButtonBounds!.width).toBeLessThanOrEqual(320)
+
+  const stopResponsePromise = page.waitForResponse(response => {
+    return (
+      response.url().includes('/api/auth/admin/stop-impersonating') &&
+      response.request().method() === 'POST'
+    )
+  })
+  await stopButton.click()
+  const stopResponse = await stopResponsePromise
+  expect(stopResponse.ok()).toBe(true)
+
+  await page.waitForURL('/admin', { timeout: 15_000 })
 })

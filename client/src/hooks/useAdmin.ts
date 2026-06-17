@@ -149,11 +149,42 @@ export const useDeleteAdminStudent = (
   })
 }
 
+export const useUpdateAdminUser = (
+  options?: UseMutationOptions<UpdateAdminUserResponse, Error, UpdateAdminUserRequest>
+) => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: adminService.updateUser,
+    ...options,
+    onSuccess: (...args) => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'teachers'] })
+      queryClient.invalidateQueries({ queryKey: ['admin', 'students'] })
+      options?.onSuccess?.(...args)
+    }
+  })
+}
+
 export const useImpersonateAdminUser = (
   options?: UseMutationOptions<ImpersonateAdminResponse, Error, ImpersonateAdminRequest>
 ) => {
   return useMutation({
     mutationFn: adminService.impersonateUser,
     ...options
+  })
+}
+
+export const useDeleteAdminFeedback = (
+  options?: UseMutationOptions<void, Error, string>
+) => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (id: string) => adminService.deleteFeedback(id),
+    ...options,
+    onSuccess: (...args) => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'feedbacks'] })
+      options?.onSuccess?.(...args)
+    }
   })
 }

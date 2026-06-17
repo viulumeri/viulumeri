@@ -3,13 +3,16 @@ import { useSubmitFeedback } from '../hooks/useFeedback'
 import type { FeedbackCategory } from '../../../shared/types'
 import { useNotification } from '../hooks/useNotification'
 import { categoryLabel } from '../utils/feedbackLabels'
-
+import { PageContainer } from './PageContainer'
+import { ArrowLeft } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 export const FeedbackPage = () => {
   const [title, setTitle] = useState('')
   const [message, setMessage] = useState('')
   const [category, setCategory] = useState<FeedbackCategory>('bug')
   const [website, setWebsite] = useState('')
   const { showError, showSuccess } = useNotification()
+  const navigate = useNavigate()
 
   const submitFeedback = useSubmitFeedback({
     onSuccess: () => {
@@ -63,10 +66,19 @@ export const FeedbackPage = () => {
   }
 
   return (
-    <div className="space-y-6 p-6 pb-24">
-      <h2>Palaute</h2>
+    <PageContainer className="space-y-6">
+      <div className="flex items-center gap-4">
+        <button
+          onClick={() => navigate(-1)}
+          className="p-1 -ml-1 hover:bg-neutral-800 rounded-full transition-colors"
+          aria-label="Palaa takaisin"
+        >
+          <ArrowLeft className="w-8 h-8 text-white" />
+        </button>
+        <h2 className="m-0">Palaute</h2>
+      </div>
 
-      <div className="bg-neutral-900 rounded-lg p-6">
+      <div className="bg-neutral-900 rounded-lg py-6">
         <h3 className="mb-4">Lähetä palaute</h3>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -144,6 +156,6 @@ export const FeedbackPage = () => {
           </div>
         </form>
       </div>
-    </div>
+    </PageContainer>
   )
 }

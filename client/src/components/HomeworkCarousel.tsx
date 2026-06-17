@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, useLayoutEffect } from 'react'
+import type { ReactNode } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { useDeleteHomework, usePracticeOnce } from '../hooks/useHomework'
@@ -16,6 +17,7 @@ type Props = {
   homework: HomeworkItem[]
   isPending: boolean
   refetch: () => void | Promise<unknown>
+  header?: ReactNode
 }
 
 export const HomeworkCarousel = ({
@@ -23,12 +25,15 @@ export const HomeworkCarousel = ({
   studentId,
   homework,
   isPending,
-  refetch
+  refetch,
+  header
 }: Props) => {
   const { data: songsData } = useSongsList()
 
   const navigate = useNavigate()
   const location = useLocation()
+  const locationState = location.state as { focusHomeworkId?: string } | null
+  const focusHomeworkId = locationState?.focusHomeworkId
 
   const songMap = useMemo(
     () =>
@@ -75,25 +80,69 @@ export const HomeworkCarousel = ({
   const handlePractice = (homeworkId: string) => practice.mutate(homeworkId)
 
   const scrollRef = useRef<HTMLDivElement | null>(null)
+  const appliedInitialScrollRef = useRef<string | null>(null)
 
-  const getCardWidth = () => {
+  const getCardWidth = useCallback(() => {
     const firstCard = scrollRef.current?.querySelector<HTMLElement>('.snap-center')
     return firstCard ? firstCard.offsetWidth + 16 : window.innerWidth * 0.9 + 16
-  }
+  }, [])
 
-  const [currentIndex, setCurrentIndex] = useState(homework.length - 1)
+  const getCenteredScrollLeft = useCallback(
+    (index: number) => {
+      const el = scrollRef.current
+      if (!el) return 0
+      const cards = el.querySelectorAll<HTMLElement>('.snap-center')
+      const card = cards[index]
+      if (!card) return index * getCardWidth()
+      const target = card.offsetLeft - (el.clientWidth - card.offsetWidth) / 2
+      const max = el.scrollWidth - el.clientWidth
+      return Math.max(0, Math.min(target, max))
+    },
+    [getCardWidth]
+  )
 
-  useEffect(() => {
-    setCurrentIndex(homework.length - 1)
-  }, [homework.length])
+  const getInitialIndex = useCallback(() => {
+    if (focusHomeworkId) {
+      const reversedIndex = homework
+        .slice()
+        .reverse()
+        .findIndex(hw => hw.id === focusHomeworkId)
 
-  useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.style.scrollBehavior = 'auto'
-      scrollRef.current.scrollLeft = scrollRef.current.scrollWidth
-      scrollRef.current.style.scrollBehavior = 'smooth'
+      if (reversedIndex !== -1) return reversedIndex
     }
-  }, [homework.length])
+
+    return Math.max(0, homework.length - 1)
+  }, [focusHomeworkId, homework])
+
+  const [currentIndex, setCurrentIndex] = useState(getInitialIndex)
+
+  useEffect(() => {
+    // When returning from the player, restore the homework card the song came from.
+    setCurrentIndex(getInitialIndex())
+  }, [getInitialIndex])
+
+  useLayoutEffect(() => {
+    const el = scrollRef.current
+    if (!el) return
+
+    const targetIndex = getInitialIndex()
+    const scrollKey = `${focusHomeworkId ?? 'latest'}:${homework.length}:${targetIndex}`
+    if (appliedInitialScrollRef.current === scrollKey) return
+
+    appliedInitialScrollRef.current = scrollKey
+    el.style.scrollBehavior = 'auto'
+    el.scrollLeft = getCenteredScrollLeft(targetIndex)
+    el.style.scrollBehavior = 'smooth'
+  }, [focusHomeworkId, getCenteredScrollLeft, getInitialIndex, homework.length])
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+    scrollRef.current
+      ?.querySelectorAll<HTMLElement>('[data-card-content]')
+      .forEach(card => {
+        card.scrollTop = 0
+      })
+  }, [currentIndex])
 
   useEffect(() => {
     const el = scrollRef.current
@@ -105,12 +154,14 @@ export const HomeworkCarousel = ({
     }
     el.addEventListener('scroll', handleScroll, { passive: true })
     return () => el.removeEventListener('scroll', handleScroll)
-  }, [homework.length])
+  }, [homework.length, getCardWidth])
 
   const navigateTo = (index: number) => {
     if (!scrollRef.current) return
-    const cardWidth = getCardWidth()
-    scrollRef.current.scrollTo({ left: index * cardWidth, behavior: 'smooth' })
+    scrollRef.current.scrollTo({
+      left: getCenteredScrollLeft(index),
+      behavior: 'smooth'
+    })
   }
 
   if (isPending) return <div className="p-4">Ladataan…</div>
@@ -187,10 +238,15 @@ export const HomeworkCarousel = ({
   ) : null
 
   return (
-    <div className="flex flex-col min-h-[100dvh]">
+    <div className="flex flex-col">
+      {header && (
+        <div className="px-[calc(5vw+2rem)] md:px-8 pt-4 pb-4">
+          {header}
+        </div>
+      )}
       <div className="flex-1 relative">
         {homework.length >= 2 && (
-          <div className="fixed inset-x-0 top-1/2 -translate-y-1/2 z-10 flex justify-between max-w-[calc(56rem+4rem)] mx-auto px-2 pointer-events-none">
+          <div className="fixed inset-x-0 top-1/2 -translate-y-1/2 z-10 flex justify-between max-w-[calc(56rem+4rem)] mx-auto pointer-events-none">
             <button
               onClick={() => navigateTo(currentIndex - 1)}
               disabled={currentIndex === 0}
@@ -213,7 +269,7 @@ export const HomeworkCarousel = ({
           ref={scrollRef}
           className="overflow-x-auto snap-x snap-mandatory scroll-smooth scrollbar-hide"
         >
-        <div className="flex gap-4">
+        <div className="flex w-max gap-4 items-start">
           <div className="w-[5vw] flex-shrink-0" />
           {reversedHomework
             .map((hw, index) => (

@@ -127,7 +127,7 @@ export const AdminFaqPage = () => {
                   onClick={handleCreateFaq}
                   className="inline-flex justify-center items-center gap-2 bg-neutral-100 text-black rounded-full px-6 py-2 text-xl"
                 >
-                  Lisaa kysymys
+                  Lisää kysymys
                 </button>
               </div>
             </div>
@@ -243,7 +243,7 @@ export const AdminFaqPage = () => {
                                       faq.updatedAt
                                     ).toLocaleDateString('fi-FI')}`
                                   : faq.createdAt
-                                    ? `Lisatty: ${new Date(
+                                    ? `Lisätty: ${new Date(
                                         faq.createdAt
                                       ).toLocaleDateString('fi-FI')}`
                                     : 'ei tiedossa'}

@@ -121,7 +121,7 @@ export const Signup = () => {
           )}
         </div>
 
-        <fieldset className="mt-2 ml-2 flex items-center gap-4 text-sm">
+        <fieldset className="mt-2 flex items-center gap-4 text-sm">
           <div className="text-gray-300">Olen:</div>
           <label className="flex items-center gap-2">
             <input

@@ -34,6 +34,13 @@ test('teacher flow', async ({ page }) => {
 
   const teacherCtx = await request.newContext({ baseURL: BASE_URL })
   const studentCtx = await request.newContext({ baseURL: BASE_URL })
+  const today = new Date()
+  const expectedDateText = today.toLocaleDateString('fi-FI', {
+    day: 'numeric',
+    month: 'numeric',
+    year: 'numeric',
+    timeZone: 'Europe/Helsinki'
+  })
   let studentId: string | undefined
   let homeworkId: string | undefined
   let hw2Id: string | undefined
@@ -63,23 +70,13 @@ test('teacher flow', async ({ page }) => {
 
     // Verify that teacher sees install prompt
     await expect(page.getByText('Sovelluksen asennus')).toBeVisible({ timeout: 15_000 })
-
-    // Verify that the prompt can be reopened and shows image
-    await page.getByRole('button', { name: '▼ kuva' }).first().click()
+    await expect(page.getByText('Voit asentaa sovelluksen laitteellesi ja käyttää sitä kuin tavallista sovellusta')).toBeVisible({ timeout: 15_000 })
+    await expect(page.getByText('Nämä ohjeet löytyvät myös asetuksista')).toBeVisible({ timeout: 15_000 })
+    
+    // Verify that image shows
     await expect(page.getByAltText('Asennusilmoitus')).toBeVisible()
-
-    // Close the image view
-    await page.getByRole('button', { name: '▲ piilota' }).first().click()
-    await expect(page.getByAltText('Asennusilmoitus')).toBeHidden()
-
-    // Open second image and verify it shows up, close it again
-    await page.getByRole('button', { name: '▼ kuva' }).nth(1).click()
     await expect(page.getByAltText('Aloitusnäyttöön lisäys')).toBeVisible()
     await expect(page.getByAltText('Valitse install')).toBeVisible()
-
-    await page.getByRole('button', { name: '▲ piilota' }).first().click()
-    await expect(page.getByAltText('Aloitusnäyttöön lisäys')).toBeHidden()
-    await expect(page.getByAltText('Valitse install')).toBeHidden()
 
     // Dismiss the prompt and verify it doesn't reappear
     await page.getByRole('button', { name: 'OK' }).click()
@@ -127,7 +124,7 @@ test('teacher flow', async ({ page }) => {
     const hw = await createHwResponse.json()
     homeworkId = hw.id
     await page.waitForURL(`/teacher/students/${studentId}/homework`)
-    await expect(page.getByRole('heading', { name: 'Tehtävä', exact: true })).toBeVisible({ timeout: 15_000 })
+    await expect(page.getByText(expectedDateText).first()).toBeVisible({ timeout: 15_000 })
 
     // 6. Teacher creates a second homework via API to enable carousel navigation
     const createHw2Res = await teacherCtx.post('/api/homework', {
@@ -139,7 +136,7 @@ test('teacher flow', async ({ page }) => {
 
     // 7. Carousel navigation: arrows and dot indicator appear with 2 homeworks
     await page.goto(`/teacher/students/${studentId}/homework`)
-    await expect(page.getByRole('heading', { name: 'Tehtävä', exact: true })).toBeVisible({ timeout: 15_000 })
+    await expect(page.getByText(expectedDateText).first()).toBeVisible({ timeout: 15_000 })
 
     const leftArrow = page.getByRole('button', { name: 'Edellinen kotitehtävä' })
     const rightArrow = page.getByRole('button', { name: 'Seuraava kotitehtävä' })

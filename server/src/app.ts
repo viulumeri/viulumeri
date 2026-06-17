@@ -33,7 +33,7 @@ if (process.env.NODE_ENV === 'development') {
 
 app.all('/api/auth/{*splat}', toNodeHandler(auth))
 
-app.use(express.json({ limit: '100mb' }))
+app.use(express.json())
 app.use('/api', authenticate)
 app.use('/api/popup-messages', popupMessagesRouter)
 app.use('/api/songs', songsRouter)

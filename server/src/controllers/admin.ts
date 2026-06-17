@@ -1,4 +1,4 @@
-import { Router, type Request, type Response } from 'express'
+import { Router, json, type Request, type Response } from 'express'
 import { fromNodeHeaders } from 'better-auth/node'
 import { requireAdmin } from '../utils/auth-middleware'
 import { auth } from '../utils/auth'
@@ -263,7 +263,7 @@ adminRouter.get('/songs', async (_request, response) => {
   response.json({ songs })
 })
 
-adminRouter.post('/songs', async (request, response) => {
+adminRouter.post('/songs', json({ limit: '100mb' }), async (request, response) => {
   try {
     const song = await adminSongsService.createSong(request.body)
     response.status(201).json({ song })
@@ -273,7 +273,7 @@ adminRouter.post('/songs', async (request, response) => {
   }
 })
 
-adminRouter.patch('/songs/:songId', async (request, response) => {
+adminRouter.patch('/songs/:songId', json({ limit: '100mb' }), async (request, response) => {
   try {
     const song = await adminSongsService.updateSong(
       request.params.songId,

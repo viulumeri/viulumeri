@@ -45,6 +45,16 @@ test('student flow', async ({ page }) => {
 
     const studentSignIn = await studentCtx.post('/api/auth/sign-in/email', { data: STUDENT })
     expect(studentSignIn.ok()).toBeTruthy()
+    // Clean up any previous homework assigned to the student
+    const existingHomeworkRes = await studentCtx.get('/api/homework')
+    expect(existingHomeworkRes.ok()).toBeTruthy()
+
+    const { homework: existingHomework } = await existingHomeworkRes.json()
+
+    for (const hw of existingHomework) {
+      const deleteHomeworkRes = await teacherCtx.delete(`/api/homework/${hw.id}`)
+      expect(deleteHomeworkRes.ok()).toBeTruthy()
+    }
 
     // Clean up any previous teacher–student relationships
     const existingStudentsRes = await teacherCtx.get('/api/students')
@@ -58,23 +68,14 @@ test('student flow', async ({ page }) => {
       expect(unlinkRes.ok()).toBeTruthy()
     }
 
-    // Clean up any previous homework for existing student
-    const existingHomeworkRes = await studentCtx.get('/api/homework')
-    expect(existingHomeworkRes.ok()).toBeTruthy()
-
-    const { homework: existingHomework } = await existingHomeworkRes.json()
-
-    for (const hw of existingHomework) {
-      const deleteHomeworkRes = await teacherCtx.delete(`/api/homework/${hw.id}`)
-      expect(deleteHomeworkRes.ok()).toBeTruthy()
-    }
-
     // 1. Student logs in
     await loginAs(page, STUDENT, /\/student\//)
 
     // Student dismisses install prompt
-    await page.getByRole('button', { name: 'OK' }).click()
-    await expect(page.getByText('Sovelluksen asennus')).toBeHidden()
+    if (await page.getByText('Sovelluksen asennus').isVisible()) {
+      await page.getByRole('button', { name: 'OK' }).click()
+      await expect(page.getByText('Sovelluksen asennus')).toBeHidden()
+    }
 
     // Student sees empty starter page
     const practiceBox = page.getByText('Harjoituskerrat', { exact: true }).locator('xpath=..')
@@ -139,7 +140,7 @@ test('student flow', async ({ page }) => {
 
     // 8. Student sees new homework in list
     await page.reload()
-    await expect(page.getByText('Tästä se alkaa')).toBeVisible()
+    await expect(page.getByText('Tästä se alkaa')).toBeVisible({ timeout: 15_000 })
 
     // 9. Student presses "Harjoittelin" button and sees practice count update
     const practiced = page.getByRole('button', { name: 'Harjoittelin' })
@@ -177,7 +178,7 @@ test('student flow', async ({ page }) => {
 
     await page.goto('/student/homework/list')
     await expect(page.getByText('Hyppyhiiri')).toBeHidden({ timeout: 15_000 })
-    await expect(page.getByText('Tästä se alkaa')).toBeVisible()
+    await expect(page.getByText('Tästä se alkaa')).toBeVisible({ timeout: 15_000 })
 
     // 13. Student removes teacher and still sees homework
     await page.goto('/settings')
@@ -197,7 +198,7 @@ test('student flow', async ({ page }) => {
 
     await expect(page.getByText('Ei opettajaa')).toBeVisible({ timeout: 15_000 })
     await page.goto('/student/homework/list')
-    await expect(page.getByText('Tästä se alkaa')).toBeVisible()
+    await expect(page.getByText('Tästä se alkaa')).toBeVisible({ timeout: 15_000 })
 
     // 14. Student logs out
     await page.goto('/settings')

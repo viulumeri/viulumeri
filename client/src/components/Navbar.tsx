@@ -41,7 +41,14 @@ export const Navbar = () => {
         )}
 
         {(userType === 'student' || isAdminRegularUserView) && (
-          <Link to={lastRoute} className={isActive(lastRoute)}>
+          <Link
+            to={lastRoute}
+            className={
+              location.pathname.startsWith('/student/homework')
+                ? 'text-white'
+                : 'text-gray-500'
+            }
+          >
             <BookOpenText className="w-6 h-6" />
           </Link>
         )}

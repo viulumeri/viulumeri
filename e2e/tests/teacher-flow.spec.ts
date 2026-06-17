@@ -34,6 +34,13 @@ test('teacher flow', async ({ page }) => {
 
   const teacherCtx = await request.newContext({ baseURL: BASE_URL })
   const studentCtx = await request.newContext({ baseURL: BASE_URL })
+  const today = new Date()
+  const expectedDateText = today.toLocaleDateString('fi-FI', {
+    day: 'numeric',
+    month: 'numeric',
+    year: 'numeric',
+    timeZone: 'Europe/Helsinki'
+  })
   let studentId: string | undefined
   let homeworkId: string | undefined
   let hw2Id: string | undefined
@@ -117,7 +124,7 @@ test('teacher flow', async ({ page }) => {
     const hw = await createHwResponse.json()
     homeworkId = hw.id
     await page.waitForURL(`/teacher/students/${studentId}/homework`)
-    await expect(page.getByRole('heading', { name: 'Tehtävä', exact: true })).toBeVisible({ timeout: 15_000 })
+    await expect(page.getByText(expectedDateText).first()).toBeVisible({ timeout: 15_000 })
 
     // 6. Teacher creates a second homework via API to enable carousel navigation
     const createHw2Res = await teacherCtx.post('/api/homework', {
@@ -129,7 +136,7 @@ test('teacher flow', async ({ page }) => {
 
     // 7. Carousel navigation: arrows and dot indicator appear with 2 homeworks
     await page.goto(`/teacher/students/${studentId}/homework`)
-    await expect(page.getByRole('heading', { name: 'Tehtävä', exact: true })).toBeVisible({ timeout: 15_000 })
+    await expect(page.getByText(expectedDateText).first()).toBeVisible({ timeout: 15_000 })
 
     const leftArrow = page.getByRole('button', { name: 'Edellinen kotitehtävä' })
     const rightArrow = page.getByRole('button', { name: 'Seuraava kotitehtävä' })

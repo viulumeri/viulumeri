@@ -104,7 +104,7 @@ const TextEditor = ({ value, onChange, placeholder }: Props) => {
 
   return (
     <div className="rounded-lg bg-white/20 overflow-hidden">
-      <div className="flex items-center gap-1 px-2 py-1.5 border-b border-white/10">
+      <div className="flex flex-wrap items-center gap-1 px-2 py-1.5 border-b border-white/10">
         <select
           value={state.heading}
           onChange={e => {

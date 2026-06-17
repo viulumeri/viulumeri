@@ -14,7 +14,7 @@ FROM base AS server-dev
 COPY server/ ./server/
 WORKDIR /usr/src/app/server
 EXPOSE 3001
-CMD ["npm", "run", "dev"]
+CMD ["npx", "nodemon", "--legacy-watch", "src/index.ts"]
 
 FROM base AS client-dev
 COPY client/ ./client/

@@ -170,7 +170,8 @@ test('admin flow covers dashboard, users, popups, feedback, FAQ, and user view',
   const updatedFaqAnswer = 'This FAQ answer was updated in the admin flow.'
   const feedbackTitle = `${runPrefix} feedback`
   const feedbackMessage = 'This feedback record was seeded for admin flow coverage.'
-  const today = new Date().toISOString().slice(0, 10)
+  const now = new Date()
+  const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
 
   await cleanupE2eData(disposableStudent.email, runPrefix)
   await createDisposableStudent(disposableStudent)
@@ -298,6 +299,24 @@ test('admin flow covers dashboard, users, popups, feedback, FAQ, and user view',
     await feedbackCard.getByRole('checkbox', { name: 'Luettu' }).click()
     const feedbackReadResponse = await feedbackReadResponsePromise
     expect(feedbackReadResponse.ok()).toBe(true)
+
+    const deleteFeedbackResponsePromise = page.waitForResponse(response => {
+      return (
+        response.url().includes('/api/admin/feedbacks/') &&
+        response.request().method() === 'DELETE'
+      )
+    })
+
+    page.once('dialog', dialog => dialog.accept())
+
+    await feedbackCard.getByRole('button', { name: 'Poista' }).click()
+
+    const deleteFeedbackResponse = await deleteFeedbackResponsePromise
+    expect(deleteFeedbackResponse.ok()).toBe(true)
+
+    await expect(feedbackSection.getByText(feedbackTitle)).not.toBeVisible({
+      timeout: 15_000
+    })
 
     await page.goto('/admin/faq')
     const faqSection = page.locator('[data-section-id="faq"]')

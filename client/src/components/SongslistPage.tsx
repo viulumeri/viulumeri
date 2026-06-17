@@ -38,20 +38,14 @@ export const SongslistPage = () => {
 
   return (
     <div className="flex flex-col min-h-screen">
-      <div className="space-y-4 p-5 pb-5">
-      <h1 className="flex items-center gap-3">
-        <Music className="w-8 h-8" />
-        Kappaleet
-      </h1>
+      <div className="px-7 py-5">
+        <h1 className="flex items-center gap-3">
+          <Music className="w-8 h-8" />
+          Kappaleet
+        </h1>
       </div>
       <main className="flex-1 overflow-y-auto pb-24">
-        <div className="mx-auto max-w-sm">
-          <Songslist
-            songs={songs.data ?? []}
-            playedSet={playedSet}
-            showChevron
-          />
-        </div>
+        <Songslist songs={songs.data ?? []} playedSet={playedSet} showChevron />
       </main>
     </div>
   )

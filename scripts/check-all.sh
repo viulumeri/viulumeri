@@ -2,7 +2,8 @@ echo "---------- 🔍 HEALTHCHECK ----------"
 npm run healthcheck || exit 1
 
 echo "---------- 🧹 LINTING ----------"
-npm --prefix client/ run lint && npm --prefix server/ run lint || exit 1
+npm run lint --workspace=client || exit 1
+npm run lint --workspace=server || exit 1
 
 echo "---------- 🧪 UNIT & INTEGRATION TESTS ----------"
 npm --prefix server/ run test || exit 1

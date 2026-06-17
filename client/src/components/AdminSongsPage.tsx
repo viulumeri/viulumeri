@@ -267,6 +267,10 @@ export const AdminSongsPage = () => {
     onError: error => showError(`Kappaleen tallennus epäonnistui: ${error.message}`)
   })
 
+  const updateSongVisibility = useUpdateAdminSong({
+    onError: error => showError(`Kappaleen tallennus epäonnistui: ${error.message}`)
+  })
+
   const deleteSong = useDeleteAdminSong({
     onSuccess: () => {
       showSuccess('Kappale poistettu')
@@ -398,7 +402,7 @@ export const AdminSongsPage = () => {
   }
 
   const onToggleVisibility = (song: AdminSongItem) => {
-    updateSong.mutate({
+    updateSongVisibility.mutate({
       id: song.id,
       body: {
         name: song.title,
@@ -803,7 +807,7 @@ export const AdminSongsPage = () => {
                           <VisibilitySwitch
                             isHidden={song.isHidden}
                             onToggle={() => onToggleVisibility(song)}
-                            disabled={updateSong.isPending}
+                            disabled={updateSongVisibility.isPending}
                           />
                         </div>
                       </div>

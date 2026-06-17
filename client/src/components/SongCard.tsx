@@ -5,12 +5,14 @@ import { getSongImageUrl, handleSongImageError } from '../utils/songImages'
 
 type Props = {
   song: SongListItem
+  playerState?: unknown
 }
 
-const SongCard = ({ song }: Props) => {
+const SongCard = ({ song, playerState }: Props) => {
   return (
     <Link
       to={`/player/${song.id}`}
+      state={playerState}
       className="relative block w-full max-w-md mx-auto overflow-hidden rounded-md group"
     >
       <img

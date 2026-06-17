@@ -1,5 +1,5 @@
 import { useCallback, useState, useRef, useEffect } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import * as Tone from 'tone'
 import { useSongById } from '../hooks/useSongs'
 import {
@@ -23,6 +23,7 @@ import { getSongImageUrl } from '../utils/songImages'
 export const MusicPlayer = () => {
   const { songId } = useParams<{ songId: string }>()
   const navigate = useNavigate()
+  const location = useLocation()
   const { data: song, isPending, isError, error } = useSongById(songId)
   const [isLoading, setIsLoading] = useState(false)
   const [isPlaying, setIsPlaying] = useState(false)
@@ -38,6 +39,29 @@ export const MusicPlayer = () => {
   const playersRef = useRef<Tone.Players | null>(null)
   const audioTracksRef = useRef<AudioTracks | null>(null)
   const [hasSlowTrack, setHasSlowTrack] = useState(false)
+
+  const playerState = location.state as
+    | {
+        returnTo?: string
+        returnState?: Record<string, unknown>
+        homeworkId?: string
+      }
+    | undefined
+
+  const handleBack = () => {
+    if (playerState?.returnTo && playerState.homeworkId) {
+      navigate(playerState.returnTo, {
+        replace: true,
+        state: {
+          ...playerState.returnState,
+          focusHomeworkId: playerState.homeworkId
+        }
+      })
+      return
+    }
+
+    navigate(-1)
+  }
 
 const cleanupTransport = useCallback(() => {
   Tone.Transport.cancel()
@@ -290,8 +314,9 @@ const startPlayback = async () => {
   return (
     <div className="min-h-screen flex flex-col">
       <button
-        onClick={() => navigate(-1)}
-        className="absolute left-6 top-4 z-10"
+        onClick={handleBack}
+        className="absolute left-6 top-4 z-10 rounded-full bg-black/35 p-1 backdrop-blur-sm transition hover:bg-black/50"
+        aria-label="Palaa takaisin"
       >
         <ArrowLeft className="w-8 h-8 text-white" />
       </button>

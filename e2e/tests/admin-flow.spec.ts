@@ -1,4 +1,6 @@
-import { test, expect, request, type Page } from '@playwright/test'
+import { test, expect, request, type Page, type APIRequestContext } from '@playwright/test'
+import fs from 'fs/promises'
+import path from 'path'
 import { MongoClient } from 'mongodb'
 import { markInstallPromptAsSeen, markStartupAnnouncementsAsSeen } from './announcement-state'
 
@@ -119,6 +121,52 @@ async function createDisposableStudent(user: {
   }
 }
 
+async function createAdminApiContext(): Promise<APIRequestContext> {
+  const context = await request.newContext({ baseURL: API_URL })
+  const response = await context.post('/api/auth/sign-in/email', {
+    data: {
+      email: ADMIN.email,
+      password: ADMIN.password
+    }
+  })
+
+  expect(
+    response.ok(),
+    `Admin API sign-in failed: HTTP ${response.status()} ${await response.text()}`
+  ).toBe(true)
+
+  return context
+}
+
+async function cleanupE2eSongs(runPrefix: string) {
+  const context = await createAdminApiContext()
+
+  try {
+    const response = await context.get('/api/admin/songs')
+    if (!response.ok()) return
+
+    const body = await response.json() as {
+      songs?: { id: string; title: string }[]
+    }
+    const songs = body.songs ?? []
+
+    await Promise.all(
+      songs
+        .filter(song => song.title.startsWith(runPrefix))
+        .map(song => context.delete(`/api/admin/songs/${encodeURIComponent(song.id)}`))
+    )
+  } finally {
+    await context.dispose()
+  }
+}
+
+const songFileInput = (page: Page, label: RegExp | string) =>
+  page
+    .locator('[data-section-id="songs"] label')
+    .filter({ hasText: label })
+    .locator('input[type="file"]')
+    .first()
+
 async function seedFeedback(title: string, message: string) {
   const mongoClient = new MongoClient(MONGODB_URI)
   await mongoClient.connect()
@@ -170,10 +218,29 @@ test('admin flow covers dashboard, users, popups, feedback, FAQ, and user view',
   const updatedFaqAnswer = 'This FAQ answer was updated in the admin flow.'
   const feedbackTitle = `${runPrefix} feedback`
   const feedbackMessage = 'This feedback record was seeded for admin flow coverage.'
+  const songTitle = `${runPrefix} song`
+  const updatedSongTitle = `${runPrefix} song updated`
+  const songComposer = `${runPrefix} composer`
+  const fixtureImage = await fs.readFile(
+    path.join(
+      __dirname,
+      '..',
+      '..',
+      'server',
+      'src',
+      'tests',
+      'fixtures',
+      'music',
+      'valid-song-1',
+      'images',
+      'original.jpg'
+    )
+  )
   const now = new Date()
   const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
 
   await cleanupE2eData(disposableStudent.email, runPrefix)
+  await cleanupE2eSongs(runPrefix)
   await createDisposableStudent(disposableStudent)
   await seedFeedback(feedbackTitle, feedbackMessage)
 
@@ -213,6 +280,117 @@ test('admin flow covers dashboard, users, popups, feedback, FAQ, and user view',
     await expect(usersSection.getByText(disposableStudent.email)).not.toBeVisible({
       timeout: 15_000
     })
+
+    await page.goto('/admin/songs')
+    const songsSection = page.locator('[data-section-id="songs"]')
+    await expect(songsSection).toContainText('Kappaleet')
+    await songsSection.getByRole('button', { name: /Lis.* kappale/ }).click()
+
+    await songsSection.locator('#admin-song-name').fill(songTitle)
+    await songsSection.locator('#admin-song-composer').fill(songComposer)
+    await songFileInput(page, /^Instrumentaali/).setInputFiles({
+      name: 'e2e-backing.mp3',
+      mimeType: 'audio/mpeg',
+      buffer: Buffer.from('e2e regular backing')
+    })
+    await songFileInput(page, /^Melodia/).setInputFiles({
+      name: 'e2e-melody.mp3',
+      mimeType: 'audio/mpeg',
+      buffer: Buffer.from('e2e regular melody')
+    })
+    await songFileInput(page, /^Kappaleen kuva/).setInputFiles({
+      name: 'e2e-cover.jpg',
+      mimeType: 'image/jpeg',
+      buffer: fixtureImage
+    })
+
+    const createSongResponsePromise = page.waitForResponse(response => {
+      return (
+        response.url().includes('/api/admin/songs') &&
+        response.request().method() === 'POST'
+      )
+    })
+    await songsSection.getByRole('button', { name: 'Tallenna' }).click()
+    const createSongResponse = await createSongResponsePromise
+    expect(
+      createSongResponse.ok(),
+      `Create song failed: HTTP ${createSongResponse.status()} ${await createSongResponse.text()}`
+    ).toBe(true)
+
+    await songsSection.locator('input[placeholder="Etsi kappaleita..."]').fill(songTitle)
+    let songTitleButton = songsSection.getByRole('button', {
+      name: songTitle,
+      exact: true
+    })
+    await expect(songTitleButton).toBeVisible({ timeout: 15_000 })
+    let songRow = songTitleButton.locator('xpath=ancestor::div[contains(@class, "grid")][1]')
+    await expect(songRow).toContainText('Piilotettu')
+    await expect(songRow).toContainText('Instrumentaali')
+    await expect(songRow).toContainText('Melodia')
+
+    const publishSongResponsePromise = page.waitForResponse(response => {
+      return (
+        response.url().includes('/api/admin/songs/') &&
+        response.request().method() === 'PATCH'
+      )
+    })
+    await songRow.getByRole('switch', { name: /julkiseksi/ }).click()
+    const publishSongResponse = await publishSongResponsePromise
+    expect(
+      publishSongResponse.ok(),
+      `Publish song failed: HTTP ${publishSongResponse.status()} ${await publishSongResponse.text()}`
+    ).toBe(true)
+    await expect(songRow).toContainText('Julkinen', { timeout: 15_000 })
+
+    await songRow.getByLabel('Muokkaa kappaletta').click()
+    await songsSection.locator('#admin-song-name').fill(updatedSongTitle)
+    await songFileInput(page, /^Hidas instrumentaali/).setInputFiles({
+      name: 'e2e-slow-backing.mp3',
+      mimeType: 'audio/mpeg',
+      buffer: Buffer.from('e2e slow backing')
+    })
+
+    const updateSongResponsePromise = page.waitForResponse(response => {
+      return (
+        response.url().includes('/api/admin/songs/') &&
+        response.request().method() === 'PATCH'
+      )
+    })
+    await songsSection.getByRole('button', { name: 'Tallenna' }).click()
+    const updateSongResponse = await updateSongResponsePromise
+    expect(
+      updateSongResponse.ok(),
+      `Update song failed: HTTP ${updateSongResponse.status()} ${await updateSongResponse.text()}`
+    ).toBe(true)
+
+    await songsSection.locator('input[placeholder="Etsi kappaleita..."]').fill(updatedSongTitle)
+    songTitleButton = songsSection.getByRole('button', {
+      name: updatedSongTitle,
+      exact: true
+    })
+    await expect(songTitleButton).toBeVisible({ timeout: 15_000 })
+    songRow = songTitleButton.locator('xpath=ancestor::div[contains(@class, "grid")][1]')
+    await expect(songRow).toContainText('Hidas instr.')
+
+    const deleteSongResponsePromise = page.waitForResponse(response => {
+      return (
+        response.url().includes('/api/admin/songs/') &&
+        response.request().method() === 'DELETE'
+      )
+    })
+    page.once('dialog', dialog => dialog.accept())
+    await songRow.getByLabel('Poista kappale').click()
+    const deleteSongResponse = await deleteSongResponsePromise
+    expect(
+      deleteSongResponse.ok(),
+      `Delete song failed: HTTP ${deleteSongResponse.status()} ${await deleteSongResponse.text()}`
+    ).toBe(true)
+    await expect(
+      songsSection.getByRole('button', {
+        name: updatedSongTitle,
+        exact: true
+      })
+    ).not.toBeVisible({ timeout: 15_000 })
 
     await page.goto('/admin/popup')
     const popupSection = page.locator('[data-section-id="popup"]')
@@ -390,6 +568,7 @@ test('admin flow covers dashboard, users, popups, feedback, FAQ, and user view',
     await page.waitForURL(/\/student\/homework/, { timeout: 15_000 })
   } finally {
     await cleanupE2eData(disposableStudent.email, runPrefix)
+    await cleanupE2eSongs(runPrefix)
   }
 })
 

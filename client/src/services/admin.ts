@@ -1,5 +1,5 @@
 import axios from 'axios'
-import type { AdminFeedbackItem, GetAdminFeedbacksResponse } from '../../../shared/types'
+import type { AdminFeedbackItem, GetAdminFeedbacksResponse, SongMetadata } from '../../../shared/types'
 
 interface SummaryResponse {
   teacherCount: number
@@ -40,6 +40,53 @@ interface AdminPopupMessage {
   visibleFrom?: string
   visibleUntil?: string
   visibilityStatus?: 'always' | 'upcoming' | 'active' | 'expired'
+}
+
+const getApiErrorMessage = (error: unknown, fallback: string): string => {
+  if (axios.isAxiosError(error)) {
+    const errorMessage = (error.response?.data as { error?: unknown } | undefined)?.error
+    if (typeof errorMessage === 'string' && errorMessage.trim()) {
+      return errorMessage
+    }
+  }
+
+  return error instanceof Error ? error.message : fallback
+}
+
+export interface AdminSongFilePayload {
+  data: string
+  name: string
+  type: string
+}
+
+export interface AdminSongItem {
+  id: string
+  title: string
+  updatedAt: string
+  isImpro: boolean
+  isHidden: boolean
+  hasInstrumentalTrack: boolean
+  hasMelodyTrack: boolean
+  hasSlowInstrumentalTrack: boolean
+  hasSlowMelodyTrack: boolean
+  hasImage: boolean
+  metadata: SongMetadata
+}
+
+export interface AdminSongSavePayload {
+  name: string
+  composer?: string | null
+  isImpro: boolean
+  isHidden?: boolean
+  instrumentalTrack?: AdminSongFilePayload | null
+  melodyTrack?: AdminSongFilePayload | null
+  slowInstrumentalTrack?: AdminSongFilePayload | null
+  slowMelodyTrack?: AdminSongFilePayload | null
+  image?: AdminSongFilePayload | null
+  deleteMelodyTrack?: boolean
+  deleteSlowInstrumentalTrack?: boolean
+  deleteSlowMelodyTrack?: boolean
+  deleteImage?: boolean
 }
 
 export interface ImpersonateAdminRequest {
@@ -100,6 +147,52 @@ export const adminService = {
       withCredentials: true
     })
     return response.data
+  },
+
+  getAdminSongs: async (): Promise<{ songs: AdminSongItem[] }> => {
+    const response = await axios.get('/api/admin/songs', {
+      withCredentials: true
+    })
+    return response.data
+  },
+
+  createAdminSong: async (
+    body: AdminSongSavePayload
+  ): Promise<{ song: AdminSongItem }> => {
+    try {
+      const response = await axios.post('/api/admin/songs', body, {
+        withCredentials: true
+      })
+      return response.data
+    } catch (error) {
+      throw new Error(getApiErrorMessage(error, 'Kappaleen lisääminen epäonnistui'))
+    }
+  },
+
+  updateAdminSong: async (
+    id: string,
+    body: AdminSongSavePayload
+  ): Promise<{ song: AdminSongItem }> => {
+    try {
+      const response = await axios.patch(
+        `/api/admin/songs/${encodeURIComponent(id)}`,
+        body,
+        { withCredentials: true }
+      )
+      return response.data
+    } catch (error) {
+      throw new Error(getApiErrorMessage(error, 'Kappaleen tallennus epäonnistui'))
+    }
+  },
+
+  deleteAdminSong: async (id: string): Promise<void> => {
+    try {
+      await axios.delete(`/api/admin/songs/${encodeURIComponent(id)}`, {
+        withCredentials: true
+      })
+    } catch (error) {
+      throw new Error(getApiErrorMessage(error, 'Kappaleen poistaminen epäonnistui'))
+    }
   },
 
   createPopupMessage: async (body: {

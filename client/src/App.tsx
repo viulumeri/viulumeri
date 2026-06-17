@@ -224,6 +224,14 @@ const App = () => {
                 }
               />
               <Route
+                path="/admin/songs"
+                element={
+                  <AppLayout showNavbar={false}>
+                    <AdminScrollShell initialSectionId="songs" />
+                  </AppLayout>
+                }
+              />
+              <Route
                 path="/admin/faq"
                 element={
                   <AppLayout showNavbar={false}>

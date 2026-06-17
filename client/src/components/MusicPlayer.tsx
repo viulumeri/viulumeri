@@ -38,7 +38,17 @@ export const MusicPlayer = () => {
   const [dragPosition, setDragPosition] = useState(0)
   const playersRef = useRef<Tone.Players | null>(null)
   const audioTracksRef = useRef<AudioTracks | null>(null)
+  const loadedTrackKeyRef = useRef<string | null>(null)
   const [hasSlowTrack, setHasSlowTrack] = useState(false)
+  const returnTo =
+    typeof (location.state as { returnTo?: unknown } | null)?.returnTo === 'string'
+      ? (location.state as { returnTo: string }).returnTo
+      : null
+  const returnState =
+    typeof (location.state as { returnState?: unknown } | null)?.returnState === 'object' &&
+    (location.state as { returnState?: unknown } | null)?.returnState !== null
+      ? (location.state as { returnState: Record<string, unknown> }).returnState
+      : undefined
 
   const playerState = location.state as
     | {
@@ -49,13 +59,15 @@ export const MusicPlayer = () => {
     | undefined
 
   const handleBack = () => {
-    if (playerState?.returnTo && playerState.homeworkId) {
-      navigate(playerState.returnTo, {
+    if (returnTo) {
+      navigate(returnTo, {
         replace: true,
-        state: {
-          ...playerState.returnState,
-          focusHomeworkId: playerState.homeworkId
-        }
+        state: playerState?.homeworkId
+          ? {
+              ...returnState,
+              focusHomeworkId: playerState.homeworkId
+            }
+          : returnState
       })
       return
     }
@@ -70,15 +82,18 @@ const cleanupTransport = useCallback(() => {
 }, [])
 
 const loadSongTracks = useCallback(async () => {
-  if (!songId || tracksLoaded) return
+  if (!songId || !song) return
+
+  const trackKey = `${songId}:${song.updatedAt}:${isPracticeTempo ? 'slow' : 'normal'}`
+  if (tracksLoaded && loadedTrackKeyRef.current === trackKey) return
 
   try {
     setIsLoading(true)
     setAudioError(null)
 
     const tracks = isPracticeTempo
-      ? await fetchSlowSongTracks(songId)
-      : await fetchSongTracks(songId)
+      ? await fetchSlowSongTracks(songId, song.updatedAt)
+      : await fetchSongTracks(songId, song.updatedAt)
 
     if (!tracks && isPracticeTempo) {
       console.warn('Slow tempo bundle not found, falling back to normal tempo.')
@@ -91,12 +106,12 @@ const loadSongTracks = useCallback(async () => {
       throw new Error('Ääniraitoja ei löytynyt')
     }
 
-    audioTracksRef.current = tracks
-
     if (playersRef.current) {
       cleanupTransport()
       playersRef.current.dispose()
     }
+    cleanupAudioUrls()
+    audioTracksRef.current = tracks
 
     const playerUrls: { [key: string]: string } = {}
     if (tracks.melody) playerUrls.melody = tracks.melody
@@ -138,6 +153,7 @@ const loadSongTracks = useCallback(async () => {
     }
 
     setTracksLoaded(true)
+    loadedTrackKeyRef.current = trackKey
   } catch (err) {
     console.error('Error loading tracks:', err)
     setAudioError(
@@ -146,7 +162,7 @@ const loadSongTracks = useCallback(async () => {
   } finally {
     setIsLoading(false)
   }
-}, [songId, tracksLoaded, isPracticeTempo, cleanupTransport])
+}, [songId, song, tracksLoaded, isPracticeTempo, cleanupTransport])
 
 const startPlayback = async () => {
     if (!playersRef.current || !tracksLoaded) return
@@ -217,6 +233,7 @@ const startPlayback = async () => {
   const togglePracticeTempo = () => {
     setIsPracticeTempo(!isPracticeTempo)
     setTracksLoaded(false)
+    loadedTrackKeyRef.current = null
   }
 
   const handleSliderChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -248,12 +265,12 @@ const startPlayback = async () => {
     if (!songId) return
 
     const verifyTracks = async () => {
-      const isAvailable = await checkSlowTrackAvailability(songId)
+      const isAvailable = await checkSlowTrackAvailability(songId, song?.updatedAt)
       setHasSlowTrack(isAvailable)
     }
 
     verifyTracks()
-  }, [songId])
+  }, [songId, song?.updatedAt])
 
   useEffect(() => {
     loadSongTracks()
@@ -287,17 +304,21 @@ const startPlayback = async () => {
       }
       cleanupTransport()
       cleanupAudioUrls()
+      loadedTrackKeyRef.current = null
     }
   }, [cleanupTransport])
 
   useEffect(() => {
     if (!song?.title) return
 
-    const shouldLoop = song.title.toLowerCase().includes('impro')
+    const shouldLoop =
+      song.metadata?.isImpro === true ||
+      song.id.toLowerCase().includes('impro') ||
+      song.title.toLowerCase().includes('impro')
     
     setIsLooping(shouldLoop)
     Tone.Transport.loop = shouldLoop
-  }, [song?.title])
+  }, [song?.id, song?.metadata?.isImpro, song?.title])
 
   if (!songId) {
     return <div>Ei kappaletta</div>

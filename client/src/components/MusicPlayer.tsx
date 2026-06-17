@@ -59,13 +59,15 @@ export const MusicPlayer = () => {
     | undefined
 
   const handleBack = () => {
-    if (playerState?.returnTo && playerState.homeworkId) {
-      navigate(playerState.returnTo, {
+    if (returnTo) {
+      navigate(returnTo, {
         replace: true,
-        state: {
-          ...playerState.returnState,
-          focusHomeworkId: playerState.homeworkId
-        }
+        state: playerState?.homeworkId
+          ? {
+              ...returnState,
+              focusHomeworkId: playerState.homeworkId
+            }
+          : returnState
       })
       return
     }
@@ -328,15 +330,6 @@ const startPlayback = async () => {
 
   if (isError) {
     return <div>Virhe: {error?.message}</div>
-  }
-
-  const goBack = () => {
-    if (returnTo) {
-      navigate(returnTo, { state: returnState })
-      return
-    }
-
-    navigate(-1)
   }
 
   return (

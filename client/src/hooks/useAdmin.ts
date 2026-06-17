@@ -1,5 +1,17 @@
 import { useQuery, useMutation, useQueryClient, type UseQueryOptions, type UseMutationOptions } from '@tanstack/react-query'
-import { adminService, type SummaryResponse, type Teacher, type Student, type GetAdminFeedbacksResponse, type ImpersonateAdminRequest, type ImpersonateAdminResponse, type AdminSongItem, type AdminSongSavePayload  } from '../services/admin'
+import {
+  adminService,
+  type AdminSongItem,
+  type AdminSongSavePayload,
+  type GetAdminFeedbacksResponse,
+  type ImpersonateAdminRequest,
+  type ImpersonateAdminResponse,
+  type Student,
+  type SummaryResponse,
+  type Teacher,
+  type UpdateAdminUserRequest,
+  type UpdateAdminUserResponse
+} from '../services/admin'
 import { clearCachedSongAudio } from '../services/audio'
 
 export const useAdminSummary = (

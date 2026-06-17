@@ -15,10 +15,16 @@ export const clearCachedSongAudio = async (songId: string): Promise<void> => {
   if (!('caches' in window)) return
 
   const cache = await caches.open(AUDIO_CACHE_NAME)
-  await Promise.all([
-    cache.delete(`song-bundle-${songId}`),
-    cache.delete(`song-bundle-slow-${songId}`)
-  ])
+  const requests = await cache.keys()
+
+  await Promise.all(
+    requests
+      .filter(request =>
+        request.url.includes(`song-bundle-${songId}`) ||
+        request.url.includes(`song-bundle-slow-${songId}`)
+      )
+      .map(request => cache.delete(request))
+  )
 }
 
 const isMacOsMetadataEntry = (name: string) => {

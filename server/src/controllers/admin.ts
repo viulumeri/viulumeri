@@ -12,13 +12,6 @@ import { getAdminFeedbacks } from '../services/admin'
 import { adminSongsService, AdminSongError } from '../services/adminSongs'
 
 type BetterAuthAdminApi = {
-  adminUpdateUser: (args: {
-    body: {
-      userId: string
-      data: { name: string; email: string }
-    }
-    headers: ReturnType<typeof fromNodeHeaders>
-  }) => Promise<unknown>
   removeUser: (args: {
     body: { userId: string }
     headers: ReturnType<typeof fromNodeHeaders>
@@ -100,20 +93,32 @@ const updateProfile = async (
 
   const duplicateProfile = await Promise.all([
     Teacher.findOne({ email: update.email, userId: { $ne: profile.userId } }),
-    Student.findOne({ email: update.email, userId: { $ne: profile.userId } })
+    Student.findOne({ email: update.email, userId: { $ne: profile.userId } }),
+    client
+      .db()
+      .collection('user')
+      .findOne({ email: update.email, id: { $ne: profile.userId } })
   ])
   if (duplicateProfile.some(Boolean)) {
     return response.status(409).json({ error: 'Email is already in use' })
   }
 
-  const authApi = auth.api as unknown as BetterAuthAdminApi
-  await authApi.adminUpdateUser({
-    body: {
-      userId: profile.userId,
-      data: update
-    },
-    headers: fromNodeHeaders(request.headers)
-  })
+  const authUserUpdate = await client
+    .db()
+    .collection('user')
+    .updateOne(
+      { email: profile.email },
+      {
+        $set: {
+          name: update.name,
+          email: update.email,
+          updatedAt: new Date()
+        }
+      }
+    )
+  if (authUserUpdate.matchedCount === 0) {
+    return response.status(404).json({ error: 'Auth user not found' })
+  }
 
   profile.name = update.name
   profile.email = update.email

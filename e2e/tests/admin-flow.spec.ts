@@ -312,7 +312,10 @@ test('admin flow covers dashboard, users, popups, feedback, FAQ, and user view',
     })
     await songsSection.getByRole('button', { name: 'Tallenna' }).click()
     const createSongResponse = await createSongResponsePromise
-    expect(createSongResponse.ok()).toBe(true)
+    expect(
+      createSongResponse.ok(),
+      `Create song failed: HTTP ${createSongResponse.status()} ${await createSongResponse.text()}`
+    ).toBe(true)
 
     await songsSection.locator('input[placeholder="Etsi kappaleita..."]').fill(songTitle)
     let songTitleButton = songsSection.getByRole('button', {
@@ -333,7 +336,10 @@ test('admin flow covers dashboard, users, popups, feedback, FAQ, and user view',
     })
     await songRow.getByRole('switch', { name: /julkiseksi/ }).click()
     const publishSongResponse = await publishSongResponsePromise
-    expect(publishSongResponse.ok()).toBe(true)
+    expect(
+      publishSongResponse.ok(),
+      `Publish song failed: HTTP ${publishSongResponse.status()} ${await publishSongResponse.text()}`
+    ).toBe(true)
     await expect(songRow).toContainText('Julkinen', { timeout: 15_000 })
 
     await songRow.getByLabel('Muokkaa kappaletta').click()
@@ -352,7 +358,10 @@ test('admin flow covers dashboard, users, popups, feedback, FAQ, and user view',
     })
     await songsSection.getByRole('button', { name: 'Tallenna' }).click()
     const updateSongResponse = await updateSongResponsePromise
-    expect(updateSongResponse.ok()).toBe(true)
+    expect(
+      updateSongResponse.ok(),
+      `Update song failed: HTTP ${updateSongResponse.status()} ${await updateSongResponse.text()}`
+    ).toBe(true)
 
     await songsSection.locator('input[placeholder="Etsi kappaleita..."]').fill(updatedSongTitle)
     songTitleButton = songsSection.getByRole('button', {
@@ -372,7 +381,10 @@ test('admin flow covers dashboard, users, popups, feedback, FAQ, and user view',
     page.once('dialog', dialog => dialog.accept())
     await songRow.getByLabel('Poista kappale').click()
     const deleteSongResponse = await deleteSongResponsePromise
-    expect(deleteSongResponse.ok()).toBe(true)
+    expect(
+      deleteSongResponse.ok(),
+      `Delete song failed: HTTP ${deleteSongResponse.status()} ${await deleteSongResponse.text()}`
+    ).toBe(true)
     await expect(
       songsSection.getByRole('button', {
         name: updatedSongTitle,

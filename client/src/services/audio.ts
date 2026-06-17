@@ -196,35 +196,10 @@ export const checkSlowTrackAvailability = async (
   songId: string,
   cacheVersion?: string
 ): Promise<boolean> => {
-  const cacheKey = `song-bundle-slow-${getCacheSuffix(songId, cacheVersion)}`
-  const cache = await caches.open(AUDIO_CACHE_NAME)
-
-  const cachedResponse = await cache.match(cacheKey)
-  if (cachedResponse) {
-    const cachedBlob = await cachedResponse.blob()
-    const zip = new JSZip()
-    const zipContent = await zip.loadAsync(cachedBlob)
-    return Boolean(findBackingFile(zipContent))
-  }
-
   try {
-    const response = await axios.get(`/api/songs/${songId}/bundle-slow`, {
-      responseType: 'blob',
-      validateStatus: status => (status >= 200 && status < 300) || status === 404
-    })
-
-    if (response.status === 404) {
-      return false
-    }
-
-    const cacheResponse = new Response(response.data)
-    await cache.put(cacheKey, cacheResponse.clone())
-
-    const zip = new JSZip()
-    const zipContent = await zip.loadAsync(response.data)
-    return Boolean(findBackingFile(zipContent))
-  } catch (err) {
-    console.error('Error checking slow track availability:', err)
+    const tracks = await fetchSlowSongTracks(songId, cacheVersion)
+    return tracks !== null && Boolean(tracks.backing)
+  } catch {
     return false
   }
 }

@@ -3,13 +3,72 @@ import JSZip from 'jszip'
 
 const AUDIO_CACHE_NAME = 'viulumeri-audio'
 
+const getCacheSuffix = (songId: string, cacheVersion?: string) =>
+  cacheVersion ? `${songId}-${encodeURIComponent(cacheVersion)}` : songId
+
 export interface AudioTracks {
   melody?: string
   backing?: string
 }
 
-export const fetchSongBundle = async (songId: string): Promise<string> => {
-  const cacheKey = `song-bundle-${songId}`
+export const clearCachedSongAudio = async (songId: string): Promise<void> => {
+  if (!('caches' in window)) return
+
+  const cache = await caches.open(AUDIO_CACHE_NAME)
+  await Promise.all([
+    cache.delete(`song-bundle-${songId}`),
+    cache.delete(`song-bundle-slow-${songId}`)
+  ])
+}
+
+const isMacOsMetadataEntry = (name: string) => {
+  const parts = name.split('/')
+  const baseName = parts[parts.length - 1] ?? name
+
+  return parts.includes('__MACOSX') || baseName.startsWith('._')
+}
+
+const getAudioFiles = (zipContent: JSZip) =>
+  Object.values(zipContent.files).filter(file => {
+    if (file.dir) return false
+    if (isMacOsMetadataEntry(file.name)) return false
+    return file.name.toLowerCase().endsWith('.mp3')
+  })
+
+const findAudioFile = (zipContent: JSZip, candidates: string[]) => {
+  const candidateSet = new Set(candidates.map(candidate => candidate.toLowerCase()))
+
+  return getAudioFiles(zipContent).find(file => {
+    const baseName = file.name.split('/').pop()?.toLowerCase()
+    return baseName ? candidateSet.has(baseName) : false
+  }) ?? null
+}
+
+const findAudioFileByNamePart = (zipContent: JSZip, nameParts: string[]) =>
+  getAudioFiles(zipContent).find(file => {
+    const normalizedName = file.name.toLowerCase()
+    return nameParts.some(part => normalizedName.includes(part))
+  }) ?? null
+
+const findMelodyFile = (zipContent: JSZip) =>
+  findAudioFile(zipContent, ['melody.mp3']) ??
+  findAudioFileByNamePart(zipContent, ['melody', 'melodia'])
+
+const findBackingFile = (zipContent: JSZip) =>
+  findAudioFile(zipContent, ['backing.mp3', 'instrumental.mp3']) ??
+  findAudioFileByNamePart(zipContent, [
+    'backing',
+    'instrumental',
+    'tausta',
+    'saestys',
+    'säestys'
+  ])
+
+export const fetchSongBundle = async (
+  songId: string,
+  cacheVersion?: string
+): Promise<string> => {
+  const cacheKey = `song-bundle-${getCacheSuffix(songId, cacheVersion)}`
   const cache = await caches.open(AUDIO_CACHE_NAME)
 
   const cachedResponse = await cache.match(cacheKey)
@@ -18,8 +77,7 @@ export const fetchSongBundle = async (songId: string): Promise<string> => {
     const zip = new JSZip()
     const zipContent = await zip.loadAsync(cachedBlob)
 
-    const audioFile =
-      zipContent.file('backing.mp3') || zipContent.file('melody.mp3')
+    const audioFile = findAudioFile(zipContent, ['backing.mp3', 'melody.mp3'])
 
     if (!audioFile) {
       throw new Error('MP3-tiedostoja ei löytynyt välimuistista')
@@ -39,8 +97,7 @@ export const fetchSongBundle = async (songId: string): Promise<string> => {
   const zip = new JSZip()
   const zipContent = await zip.loadAsync(response.data)
 
-  const audioFile =
-    zipContent.file('backing.mp3') || zipContent.file('melody.mp3')
+  const audioFile = findAudioFile(zipContent, ['backing.mp3', 'melody.mp3'])
 
   if (!audioFile) {
     throw new Error('MP3-tiedostoja ei löytynyt paketista')
@@ -52,10 +109,11 @@ export const fetchSongBundle = async (songId: string): Promise<string> => {
 
 const fetchSongTracksInternal = async (
   songId: string,
-  bundleType: 'normal' | 'slow'
+  bundleType: 'normal' | 'slow',
+  cacheVersion?: string
 ): Promise<AudioTracks | null> => {
   const suffix = bundleType === 'slow' ? '-slow' : ''
-  const cacheKey = `song-bundle${suffix}-${songId}`
+  const cacheKey = `song-bundle${suffix}-${getCacheSuffix(songId, cacheVersion)}`
   const apiEndpoint =
     bundleType === 'slow'
       ? `/api/songs/${songId}/bundle-slow`
@@ -88,13 +146,16 @@ const fetchSongTracksInternal = async (
 
   const tracks: AudioTracks = {}
 
-  const melodyFile = zipContent.file('melody.mp3')
+  const melodyFile = findMelodyFile(zipContent)
   if (melodyFile) {
     const melodyBlob = await melodyFile.async('blob')
     tracks.melody = URL.createObjectURL(melodyBlob)
   }
 
-  const backingFile = zipContent.file('backing.mp3')
+  const backingFile =
+    findBackingFile(zipContent) ??
+    getAudioFiles(zipContent).find(file => file.name !== melodyFile?.name) ??
+    null
   if (backingFile) {
     const backingBlob = await backingFile.async('blob')
     tracks.backing = URL.createObjectURL(backingBlob)
@@ -111,31 +172,51 @@ const fetchSongTracksInternal = async (
   return tracks
 }
 
-export const fetchSongTracks = async (songId: string): Promise<AudioTracks | null> => {
-  return fetchSongTracksInternal(songId, 'normal')
+export const fetchSongTracks = async (
+  songId: string,
+  cacheVersion?: string
+): Promise<AudioTracks | null> => {
+  return fetchSongTracksInternal(songId, 'normal', cacheVersion)
 }
 
 export const fetchSlowSongTracks = async (
-  songId: string
+  songId: string,
+  cacheVersion?: string
 ): Promise<AudioTracks | null> => {
-  return fetchSongTracksInternal(songId, 'slow')
+  return fetchSongTracksInternal(songId, 'slow', cacheVersion)
 }
 
-export const checkSlowTrackAvailability = async (songId: string): Promise<boolean> => {
-  const cacheKey = `song-bundle-slow-${songId}`
+export const checkSlowTrackAvailability = async (
+  songId: string,
+  cacheVersion?: string
+): Promise<boolean> => {
+  const cacheKey = `song-bundle-slow-${getCacheSuffix(songId, cacheVersion)}`
   const cache = await caches.open(AUDIO_CACHE_NAME)
 
   const cachedResponse = await cache.match(cacheKey)
   if (cachedResponse) {
-    return true
+    const cachedBlob = await cachedResponse.blob()
+    const zip = new JSZip()
+    const zipContent = await zip.loadAsync(cachedBlob)
+    return Boolean(findBackingFile(zipContent))
   }
 
   try {
-    const response = await axios.head(`/api/songs/${songId}/bundle-slow`, {
+    const response = await axios.get(`/api/songs/${songId}/bundle-slow`, {
+      responseType: 'blob',
       validateStatus: status => (status >= 200 && status < 300) || status === 404
     })
 
-    return response.status !== 404
+    if (response.status === 404) {
+      return false
+    }
+
+    const cacheResponse = new Response(response.data)
+    await cache.put(cacheKey, cacheResponse.clone())
+
+    const zip = new JSZip()
+    const zipContent = await zip.loadAsync(response.data)
+    return Boolean(findBackingFile(zipContent))
   } catch (err) {
     console.error('Error checking slow track availability:', err)
     return false

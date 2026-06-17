@@ -8,6 +8,7 @@ import Homework from '../models/homework'
 import PopupMessage from '../models/popupMessage'
 import Feedback from '../models/feedback'
 import { getAdminFeedbacks } from '../services/admin'
+import { adminSongsService, AdminSongError } from '../services/adminSongs'
 
 type BetterAuthImpersonationResult = {
   session?: {
@@ -199,6 +200,48 @@ adminRouter.delete('/students/:studentId', async (request, response) => {
   await student.deleteOne()
 
   response.status(204).send()
+})
+
+adminRouter.get('/songs', async (_request, response) => {
+  const songs = await adminSongsService.listSongs()
+  response.json({ songs })
+})
+
+adminRouter.post('/songs', async (request, response) => {
+  try {
+    const song = await adminSongsService.createSong(request.body)
+    response.status(201).json({ song })
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Failed to create song'
+    response.status(400).json({ error: message })
+  }
+})
+
+adminRouter.patch('/songs/:songId', async (request, response) => {
+  try {
+    const song = await adminSongsService.updateSong(
+      request.params.songId,
+      request.body
+    )
+    response.json({ song })
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Failed to update song'
+    response
+      .status(error instanceof AdminSongError ? error.statusCode : 400)
+      .json({ error: message })
+  }
+})
+
+adminRouter.delete('/songs/:songId', async (request, response) => {
+  try {
+    await adminSongsService.deleteSong(request.params.songId)
+    response.status(204).send()
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Failed to delete song'
+    response
+      .status(error instanceof AdminSongError ? error.statusCode : 400)
+      .json({ error: message })
+  }
 })
 
 adminRouter.get('/popup-messages', async (_request, response) => {

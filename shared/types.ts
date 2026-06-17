@@ -10,12 +10,15 @@ export interface SongMetadata {
   title: string
   composer?: string
   imgurl?: string
+  isImpro?: boolean
+  isHidden?: boolean
   images?: SongImageSet
 }
 
 export interface Song {
   id: string
   title: string
+  updatedAt: string
   audioBundle: string
   metadata: SongMetadata
 }

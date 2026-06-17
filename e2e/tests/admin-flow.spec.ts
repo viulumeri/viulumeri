@@ -221,7 +221,6 @@ test('admin flow covers dashboard, users, popups, feedback, FAQ, and user view',
   const songTitle = `${runPrefix} song`
   const updatedSongTitle = `${runPrefix} song updated`
   const songComposer = `${runPrefix} composer`
-  const today = new Date().toISOString().slice(0, 10)
   const fixtureImage = await fs.readFile(
     path.join(
       __dirname,

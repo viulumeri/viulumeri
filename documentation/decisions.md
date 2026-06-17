@@ -1,5 +1,19 @@
 # Technology decisions
 
+## 17.6.2026
+
+### Tiptap, Dompurify
+
+A better text editor, for teacher homework creation. Dompurify for user input sanitation.
+
+### Eslint
+
+Added to server side (already existed in client workspace).
+
+### Sharp
+
+Used for image resizing on song images.
+
 ## 18.8.2025
 
 ### MUI -> Tailwind css

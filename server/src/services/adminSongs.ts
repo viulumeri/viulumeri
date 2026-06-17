@@ -729,7 +729,7 @@ export const adminSongsService = {
       ...metadata,
       title: name,
       composer,
-      isImpro: payload.isImpro === true,
+      isImpro: payload.isImpro === undefined ? metadata.isImpro === true : payload.isImpro === true,
       isHidden
     })
 

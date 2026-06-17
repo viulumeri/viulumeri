@@ -1,12 +1,17 @@
 
 import axios from 'axios'
 
+export interface FAQBlock {
+  type: 'text' | 'image'
+  content?: string
+  imageUrl?: string
+  order: number
+}
+
 export interface FAQ {
   _id?: string
   question: string
-  answer: string
-  order: number
-  imageUrl?: string
+  blocks: FAQBlock[]
   createdAt?: string
   updatedAt?: string
 }

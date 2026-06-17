@@ -294,27 +294,40 @@ export const SettingsPage = () => {
                     </button>
 
                     {openFaqId === faq._id && (
-                      <div className="mt-3 bg-neutral-700 border border-neutral-600 rounded-xl px-4 py-3 text-gray-200 leading-relaxed">
-                        <p>{renderWithLinks(faq.answer)}</p>
-                        <p>{faq.imageUrl && (
-                          <img
-                            src={`${
-                              import.meta.env.VITE_SERVER_URL || 'http://localhost:3001'
-                            }${faq.imageUrl}`}
-                            alt={faq.question}
-                            className="mt-3 rounded-xl border border-neutral-600 max-w-full"
-                          />
-                        )}</p>
-                        <p className="mt-3 text-sm text-gray-400">
-                        {faq.updatedAt &&
-                        faq.createdAt &&
-                        faq.updatedAt !== faq.createdAt
-                          ? `Päivitetty: ${new Date(faq.updatedAt).toLocaleDateString('fi-FI')}`
-                          : faq.createdAt
-                            ? `Lisätty: ${new Date(faq.createdAt).toLocaleDateString('fi-FI')}`
-                            : 'ei tiedossa'}
-                      </p>
-                      </div>
+                      <div className="mt-3 bg-neutral-700 border border-neutral-600 rounded-xl px-4 py-3 text-gray-200 space-y-3">
+
+                    {(faq.blocks ?? []).map((block, index) => {
+                      if (block.type === 'text') {
+                        return (
+                          <div key={index}>
+                            {renderWithLinks(block.content ?? '')}
+                          </div>
+                        )
+                      }
+
+                      return (
+                        <img
+                          key={index}
+                          src={`${
+                            import.meta.env.VITE_SERVER_URL || 'http://localhost:3001'
+                          }${block.imageUrl}`}
+                          alt=""
+                          className="rounded-xl border border-neutral-600 max-w-full"
+                        />
+                      )
+                    })}
+
+                    <p className="mt-3 text-sm text-gray-400">
+                      {faq.updatedAt &&
+                      faq.createdAt &&
+                      faq.updatedAt !== faq.createdAt
+                        ? `Päivitetty: ${new Date(faq.updatedAt).toLocaleDateString('fi-FI')}`
+                        : faq.createdAt
+                          ? `Lisätty: ${new Date(faq.createdAt).toLocaleDateString('fi-FI')}`
+                          : 'ei tiedossa'}
+                    </p>
+
+                  </div>
                     )}
                   </div>
                 ))

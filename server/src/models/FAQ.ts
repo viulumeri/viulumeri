@@ -1,30 +1,51 @@
 import mongoose from 'mongoose'
 
-const faqSchema = new mongoose.Schema(
+const faqBlockSchema = new mongoose.Schema(
   {
-    question: {
+    type: {
       type: String,
-      required: true,
-      trim: true
+      enum: ['text', 'image'],
+      required: true
     },
 
-    answer: {
-      type: String,
-      required: true,
-      trim: true
+    content: {
+      type: String
+    },
+
+    imageUrl: {
+      type: String
     },
 
     order: {
       type: Number,
-      default: 0
-    },
-
-    imageUrl: {
-      type: String,
-      default: ''
+      required: true
     }
   },
-  { timestamps: true }
+  {
+    _id: false
+  }
+)
+
+const faqSchema = new mongoose.Schema(
+  {
+    question: {
+      type: String,
+      required: true
+    },
+
+    blocks: {
+      type: [faqBlockSchema],
+      default: []
+    },
+
+    order: {
+      type: Number,
+      default: 1
+    }
+  },
+  {
+    timestamps: true
+  }
 )
 
 export const Faq = mongoose.model('Faq', faqSchema)

@@ -16,6 +16,25 @@ export interface FAQ {
   updatedAt?: string
 }
 
+export interface User {
+  id: string
+  name: string
+  email: string
+}
+
+export type DraftFaqBlock =
+  | {
+      id: string
+      type: 'text'
+      content: string
+    }
+  | {
+      id: string
+      type: 'image'
+      file: File | null
+      imageUrl?: string
+    }
+
 export const faqService = {
   getFaqs: async (): Promise<FAQ[]> => {
     const response = await axios.get('/api/faq', {
@@ -39,15 +58,15 @@ export const faqService = {
 
  updateFaq: async (
   id: string,
-  body: Partial<FAQ> | FormData
+  formData: FormData
 ): Promise<FAQ> => {
   const response = await axios.put(
-    `/api/admin/faq/${id}`,
-    body,
-    {
-      withCredentials: true
-    }
-  )
+  `/api/admin/faq/${id}`,
+  formData,
+  {
+    withCredentials: true
+  }
+)
 
   return response.data
 },

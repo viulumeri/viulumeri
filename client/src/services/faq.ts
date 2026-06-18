@@ -1,6 +1,25 @@
 
 import axios from 'axios'
 
+export interface User {
+  id: string
+  name: string
+  email: string
+}
+
+export type DraftFaqBlock =
+  | {
+      id: string
+      type: 'text'
+      content: string
+    }
+  | {
+      id: string
+      type: 'image'
+      file: File | null
+      imageUrl?: string
+    }
+
 export interface FAQBlock {
   type: 'text' | 'image'
   content?: string

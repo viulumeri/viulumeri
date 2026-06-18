@@ -1,4 +1,4 @@
-import { Router, type Request, type Response } from 'express'
+import { Router, json, type Request, type Response } from 'express'
 import { fromNodeHeaders } from 'better-auth/node'
 import { requireAdmin } from '../utils/auth-middleware'
 import { auth } from '../utils/auth'
@@ -9,15 +9,9 @@ import Homework from '../models/homework'
 import PopupMessage from '../models/popupMessage'
 import Feedback from '../models/feedback'
 import { getAdminFeedbacks } from '../services/admin'
+import { adminSongsService, AdminSongError } from '../services/adminSongs'
 
 type BetterAuthAdminApi = {
-  adminUpdateUser: (args: {
-    body: {
-      userId: string
-      data: { name: string; email: string }
-    }
-    headers: ReturnType<typeof fromNodeHeaders>
-  }) => Promise<unknown>
   removeUser: (args: {
     body: { userId: string }
     headers: ReturnType<typeof fromNodeHeaders>
@@ -99,20 +93,32 @@ const updateProfile = async (
 
   const duplicateProfile = await Promise.all([
     Teacher.findOne({ email: update.email, userId: { $ne: profile.userId } }),
-    Student.findOne({ email: update.email, userId: { $ne: profile.userId } })
+    Student.findOne({ email: update.email, userId: { $ne: profile.userId } }),
+    client
+      .db()
+      .collection('user')
+      .findOne({ email: update.email, id: { $ne: profile.userId } })
   ])
   if (duplicateProfile.some(Boolean)) {
     return response.status(409).json({ error: 'Email is already in use' })
   }
 
-  const authApi = auth.api as unknown as BetterAuthAdminApi
-  await authApi.adminUpdateUser({
-    body: {
-      userId: profile.userId,
-      data: update
-    },
-    headers: fromNodeHeaders(request.headers)
-  })
+  const authUserUpdate = await client
+    .db()
+    .collection('user')
+    .updateOne(
+      { email: profile.email },
+      {
+        $set: {
+          name: update.name,
+          email: update.email,
+          updatedAt: new Date()
+        }
+      }
+    )
+  if (authUserUpdate.matchedCount === 0) {
+    return response.status(404).json({ error: 'Auth user not found' })
+  }
 
   profile.name = update.name
   profile.email = update.email
@@ -255,6 +261,48 @@ adminRouter.delete('/students/:studentId', async (request, response) => {
   await student.deleteOne()
 
   response.status(204).send()
+})
+
+adminRouter.get('/songs', async (_request, response) => {
+  const songs = await adminSongsService.listSongs()
+  response.json({ songs })
+})
+
+adminRouter.post('/songs', json({ limit: '100mb' }), async (request, response) => {
+  try {
+    const song = await adminSongsService.createSong(request.body)
+    response.status(201).json({ song })
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Failed to create song'
+    response.status(400).json({ error: message })
+  }
+})
+
+adminRouter.patch('/songs/:songId', json({ limit: '100mb' }), async (request, response) => {
+  try {
+    const song = await adminSongsService.updateSong(
+      request.params.songId,
+      request.body
+    )
+    response.json({ song })
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Failed to update song'
+    response
+      .status(error instanceof AdminSongError ? error.statusCode : 400)
+      .json({ error: message })
+  }
+})
+
+adminRouter.delete('/songs/:songId', async (request, response) => {
+  try {
+    await adminSongsService.deleteSong(request.params.songId)
+    response.status(204).send()
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Failed to delete song'
+    response
+      .status(error instanceof AdminSongError ? error.statusCode : 400)
+      .json({ error: message })
+  }
 })
 
 adminRouter.get('/popup-messages', async (_request, response) => {

@@ -11,7 +11,7 @@ import { admin } from "better-auth/plugins"
 
 type AuthUser = {
   id: string
-  email: string
+  email?: string
   emailVerified?: boolean
   name?: string
 }
@@ -162,7 +162,7 @@ Jos et rekisteröitynyt Viulumeri-palveluun, voit jättää tämän viestin huom
       logger.info('Verification email sent successfully', { userId: user.id, email: user.email })
     }
       : undefined,
-    async afterEmailVerification(user: AuthUser, request: AuthRequestLike) {
+    async afterEmailVerification(user: AuthUser, request?: AuthRequestLike) {
   logger.info('Email verification completed successfully', {
     userId: user.id,
     email: user.email,
@@ -214,3 +214,12 @@ Jos et rekisteröitynyt Viulumeri-palveluun, voit jättää tämän viestin huom
 })
 
 logger.info('Better-auth initialized successfully')
+
+export type AuthSession = NonNullable<
+  Awaited<ReturnType<typeof auth.api.getSession>>
+> & {
+  user: {
+    userType: 'teacher' | 'student' | 'admin'
+    role?: string | null
+  }
+}

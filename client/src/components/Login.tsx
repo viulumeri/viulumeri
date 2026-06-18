@@ -12,12 +12,9 @@ export const Login = () => {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const { data: session } = useSession()
-  const { showError, showSuccess } = useNotification()
+  const { showError } = useNotification()
 
   const loginMutation = useLogin({
-    onSuccess: () => {
-      showSuccess('Kirjautuminen onnistui')
-    },
     onError: error => {
       const message = error instanceof Error ? error.message : 'Kirjautuminen epäonnistui'
       showError(message)

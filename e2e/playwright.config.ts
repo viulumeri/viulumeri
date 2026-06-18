@@ -28,7 +28,6 @@ const webServer = isCI
           'npm --prefix .. --workspace=client run build && npm --prefix .. --workspace=server run dev',
         url: `${serverUrl}/ping`,
         reuseExistingServer: true,
-        timeout: 120_000,
         timeout: 180_000,
         env: {
           PORT: serverPort,
@@ -77,6 +76,8 @@ export default defineConfig({
     baseURL: isCI ? serverUrl : uiUrl,
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
+    locale: 'fi-FI',
+    timezoneId: 'Europe/Helsinki',
   },
   projects: [
     {

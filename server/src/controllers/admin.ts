@@ -1,27 +1,21 @@
-import { Router } from 'express'
+import { Router, json, type Request, type Response } from 'express'
 import { fromNodeHeaders } from 'better-auth/node'
 import { requireAdmin } from '../utils/auth-middleware'
 import { auth } from '../utils/auth'
+import { client } from '../db'
 import Teacher from '../models/teacher'
 import Student from '../models/student'
 import Homework from '../models/homework'
 import PopupMessage from '../models/popupMessage'
 import Feedback from '../models/feedback'
 import { getAdminFeedbacks } from '../services/admin'
+import { adminSongsService, AdminSongError } from '../services/adminSongs'
 
-type BetterAuthImpersonationResult = {
-  session?: {
-    token: string
-    expiresAt: string
-    [key: string]: unknown
-  }
-  user?: unknown
-}
-type BetterAuthApiWithImpersonation = {
-  impersonateUser: (args: {
+type BetterAuthAdminApi = {
+  removeUser: (args: {
     body: { userId: string }
     headers: ReturnType<typeof fromNodeHeaders>
-  }) => Promise<BetterAuthImpersonationResult>
+  }) => Promise<unknown>
 }
 
 type PopulatedStudent = { id: string; name: string; email: string }
@@ -43,6 +37,103 @@ type PopupMessageRequestBody = Record<string, unknown>
 const adminRouter = Router()
 adminRouter.use(requireAdmin)
 
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
+const getAdminEmailSet = async (emails: string[]) => {
+  const adminUsers = await client
+    .db()
+    .collection<{ email: string; role?: string }>('user')
+    .find({ email: { $in: emails }, role: 'admin' })
+    .project<{ email: string }>({ email: 1 })
+    .toArray()
+
+  return new Set(adminUsers.map(user => user.email.toLowerCase()))
+}
+
+const isAdminEmail = async (email: string) => {
+  const adminEmails = await getAdminEmailSet([email])
+  return adminEmails.has(email.toLowerCase())
+}
+
+const readUserUpdate = (body: Record<string, unknown> | null | undefined) => {
+  const name = typeof body?.name === 'string' ? body.name.trim() : ''
+  const email =
+    typeof body?.email === 'string' ? body.email.trim().toLowerCase() : ''
+
+  if (!name) return { error: 'Name is required' } as const
+  if (!EMAIL_PATTERN.test(email)) return { error: 'Invalid email' } as const
+
+  return { name, email }
+}
+
+const updateProfile = async (
+  request: Request,
+  response: Response,
+  profileType: 'teacher' | 'student'
+) => {
+  const update = readUserUpdate(request.body)
+  if ('error' in update) {
+    return response.status(400).json({ error: update.error })
+  }
+
+  const profileId =
+    profileType === 'teacher'
+      ? request.params.teacherId
+      : request.params.studentId
+  const profile =
+    profileType === 'teacher'
+      ? await Teacher.findById(profileId)
+      : await Student.findById(profileId)
+
+  if (!profile) {
+    return response.status(404).json({
+      error: profileType === 'teacher' ? 'Teacher not found' : 'Student not found'
+    })
+  }
+
+  const duplicateProfile = await Promise.all([
+    Teacher.findOne({ email: update.email, userId: { $ne: profile.userId } }),
+    Student.findOne({ email: update.email, userId: { $ne: profile.userId } }),
+    client
+      .db()
+      .collection('user')
+      .findOne({ email: update.email, id: { $ne: profile.userId } })
+  ])
+  if (duplicateProfile.some(Boolean)) {
+    return response.status(409).json({ error: 'Email is already in use' })
+  }
+
+  const authUserUpdate = await client
+    .db()
+    .collection('user')
+    .updateOne(
+      { email: profile.email },
+      {
+        $set: {
+          name: update.name,
+          email: update.email,
+          updatedAt: new Date()
+        }
+      }
+    )
+  if (authUserUpdate.matchedCount === 0) {
+    return response.status(404).json({ error: 'Auth user not found' })
+  }
+
+  profile.name = update.name
+  profile.email = update.email
+  await profile.save()
+
+  response.json({
+    user: {
+      id: profile.id,
+      userId: profile.userId,
+      name: profile.name,
+      email: profile.email
+    }
+  })
+}
+
 adminRouter.get('/summary', async (_request, response) => {
   const teacherCount = await Teacher.countDocuments()
   const studentCount = await Student.countDocuments()
@@ -51,14 +142,19 @@ adminRouter.get('/summary', async (_request, response) => {
   response.json({ teacherCount, studentCount, homeworkCount })
 })
 
-adminRouter.get('/teachers', async (_request, response) => {
+adminRouter.get('/teachers', async (request, response) => {
   const teachers = await Teacher.find().populate('students', 'name email')
+  const adminEmails = await getAdminEmailSet(
+    teachers.map(teacher => teacher.email)
+  )
 
   const result = teachers.map(teacher => ({
     id: teacher.id,
     userId: teacher.userId,
     name: teacher.name,
     email: teacher.email,
+    isAdmin: adminEmails.has(teacher.email.toLowerCase()),
+    isCurrentUser: teacher.userId === request.session!.user.id,
     studentCount: (teacher.students as unknown as PopulatedStudent[]).length,
     students: (teacher.students as unknown as PopulatedStudent[]).map(student => ({
       id: student.id,
@@ -70,14 +166,19 @@ adminRouter.get('/teachers', async (_request, response) => {
   response.json({ teachers: result })
 })
 
-adminRouter.get('/students', async (_request, response) => {
+adminRouter.get('/students', async (request, response) => {
   const students = await Student.find().populate('teacher', 'name email')
+  const adminEmails = await getAdminEmailSet(
+    students.map(student => student.email)
+  )
 
   const result = students.map(student => ({
     id: student.id,
     userId: student.userId,
     name: student.name,
     email: student.email,
+    isAdmin: adminEmails.has(student.email.toLowerCase()),
+    isCurrentUser: student.userId === request.session!.user.id,
     playedSongs: student.playedSongs,
     teacher: student.teacher
       ? {
@@ -91,69 +192,12 @@ adminRouter.get('/students', async (_request, response) => {
   response.json({ students: result })
 })
 
-adminRouter.post('/impersonate', async (request, response) => {
-  const { profileId, profileType } = request.body ?? {}
+adminRouter.patch('/teachers/:teacherId', async (request, response) => {
+  await updateProfile(request, response, 'teacher')
+})
 
-  if (typeof profileId !== 'string' || !profileId.trim()) {
-
-    return response.status(400).json({ error: 'Invalid profile id' })
-
-  }
-
-
-
-  if (profileType !== 'teacher' && profileType !== 'student') {
-    return response.status(400).json({ error: 'Invalid profile type' })
-  }
-
-  let profile
-
-  try {
-
-    profile = profileType === 'teacher'
-
-      ? await Teacher.findById(profileId)
-
-      : await Student.findById(profileId)
-
-  } catch {
-
-    return response.status(400).json({ error: 'Invalid profile id' })
-
-  }
-
-
-  if (!profile) {
-    return response.status(404).json({ error: 'Profile not found' })
-  }
-
-  const authApi = auth.api as unknown as BetterAuthApiWithImpersonation
-  const impersonationResult = await authApi.impersonateUser({
-    body: { userId: profile.userId },
-    headers: fromNodeHeaders(request.headers)
-  })
-
-  if (!impersonationResult?.session?.token) {
-    return response.status(500).json({ error: 'Failed to create impersonation session' })
-  }
-
-  // Cookie is the source of truth; don't expose the session token in JSON.
-  const { token: _token, ...safeSession } = impersonationResult.session
-
-  const expiresAt = new Date(impersonationResult.session.expiresAt)
-
-  response.cookie('better-auth.session_token', impersonationResult.session.token, {
-    httpOnly: true,
-    sameSite: 'lax',
-    secure: process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'staging',
-    path: '/',
-    expires: expiresAt
-  })
-
-  response.json({
-    session: safeSession,
-    user: impersonationResult.user
-  })
+adminRouter.patch('/students/:studentId', async (request, response) => {
+  await updateProfile(request, response, 'student')
 })
 
 adminRouter.delete('/teachers/:teacherId', async (request, response) => {
@@ -162,7 +206,16 @@ adminRouter.delete('/teachers/:teacherId', async (request, response) => {
     return response.status(404).json({ error: 'Teacher not found' })
   }
 
-  await auth.api.removeUser({
+  if (teacher.userId === request.session!.user.id) {
+    return response.status(403).json({ error: 'You cannot delete your own account' })
+  }
+
+  if (await isAdminEmail(teacher.email)) {
+    return response.status(403).json({ error: 'Admin users cannot be deleted' })
+  }
+
+  const authApi = auth.api as unknown as BetterAuthAdminApi
+  await authApi.removeUser({
     body: { userId: teacher.userId },
     headers: fromNodeHeaders(request.headers)
   })
@@ -181,6 +234,14 @@ adminRouter.delete('/students/:studentId', async (request, response) => {
     return response.status(404).json({ error: 'Student not found' })
   }
 
+  if (student.userId === request.session!.user.id) {
+    return response.status(403).json({ error: 'You cannot delete your own account' })
+  }
+
+  if (await isAdminEmail(student.email)) {
+    return response.status(403).json({ error: 'Admin users cannot be deleted' })
+  }
+
   if (student.teacher) {
     const teacher = await Teacher.findById(student.teacher)
     if (teacher) {
@@ -191,7 +252,8 @@ adminRouter.delete('/students/:studentId', async (request, response) => {
     }
   }
 
-  await auth.api.removeUser({
+  const authApi = auth.api as unknown as BetterAuthAdminApi
+  await authApi.removeUser({
     body: { userId: student.userId },
     headers: fromNodeHeaders(request.headers)
   })
@@ -199,6 +261,48 @@ adminRouter.delete('/students/:studentId', async (request, response) => {
   await student.deleteOne()
 
   response.status(204).send()
+})
+
+adminRouter.get('/songs', async (_request, response) => {
+  const songs = await adminSongsService.listSongs()
+  response.json({ songs })
+})
+
+adminRouter.post('/songs', json({ limit: '100mb' }), async (request, response) => {
+  try {
+    const song = await adminSongsService.createSong(request.body)
+    response.status(201).json({ song })
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Failed to create song'
+    response.status(400).json({ error: message })
+  }
+})
+
+adminRouter.patch('/songs/:songId', json({ limit: '100mb' }), async (request, response) => {
+  try {
+    const song = await adminSongsService.updateSong(
+      request.params.songId,
+      request.body
+    )
+    response.json({ song })
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Failed to update song'
+    response
+      .status(error instanceof AdminSongError ? error.statusCode : 400)
+      .json({ error: message })
+  }
+})
+
+adminRouter.delete('/songs/:songId', async (request, response) => {
+  try {
+    await adminSongsService.deleteSong(request.params.songId)
+    response.status(204).send()
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Failed to delete song'
+    response
+      .status(error instanceof AdminSongError ? error.statusCode : 400)
+      .json({ error: message })
+  }
 })
 
 adminRouter.get('/popup-messages', async (_request, response) => {
@@ -551,6 +655,23 @@ adminRouter.patch('/feedbacks/:feedbackId', async (request, response) => {
       isRead: feedback.isRead === true
     }
   })
+})
+
+adminRouter.delete('/feedbacks/:feedbackId', async (request, response) => {
+  try {
+    const feedback = await Feedback.findByIdAndDelete(request.params.feedbackId)
+
+    if (!feedback) {
+      return response.status(404).json({ error: 'Feedback not found' })
+    }
+
+    return response.status(204).send()
+  } catch (error: unknown) {
+    if (error instanceof Error && error.name === 'CastError') {
+      return response.status(400).json({ error: 'Invalid feedback id' })
+    }
+    throw error
+  }
 })
 
 export default adminRouter

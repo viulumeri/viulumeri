@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Banana, Bell, MessageSquare, UserRound, FileQuestionMark, Search } from 'lucide-react'
+import { Banana, Bell, MessageSquare, UserRound, FileQuestionMark, Search, Music } from 'lucide-react'
 import { AdminPanel } from './AdminPanel'
 import { PopupAdminPage } from './PopupAdminPage'
 import { AdminFeedbackPage } from './AdminFeedbackPage'
 import { AdminUserViewPage } from './AdminUserViewPage'
 import { AdminFaqPage } from './AdminFaqPage'
 import { AdminDashboardPage } from './AdminDashboardPage'
+import { AdminSongsPage } from './AdminSongsPage'
 import { useAdminFeedbacks } from '../hooks/useAdmin'
 
 type AdminSection = {
@@ -43,6 +44,12 @@ export const AdminScrollShell = ({ initialSectionId }: Props) => {
         label: 'Pop-up',
         icon: Bell,
         render: () => <PopupAdminPage />
+      },
+      {
+        id: 'songs',
+        label: 'Kappaleet',
+        icon: Music,
+        render: () => <AdminSongsPage />
       },
       {
         id: 'feedback',

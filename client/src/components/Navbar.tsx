@@ -20,7 +20,7 @@ export const Navbar = () => {
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 h-16 z-50 bg-neutral-900">
-      <div className="mx-auto w-full max-w-sm h-full flex items-center justify-around pb-4">
+      <div className="mx-auto w-full max-w-4xl h-full flex items-center justify-around pb-4">
         {role === 'admin' && !isAdminRegularUserView && (
           <>
             <Link to="/admin" className={isActive('/admin')}>
@@ -41,7 +41,14 @@ export const Navbar = () => {
         )}
 
         {(userType === 'student' || isAdminRegularUserView) && (
-          <Link to={lastRoute} className={isActive(lastRoute)}>
+          <Link
+            to={lastRoute}
+            className={
+              location.pathname.startsWith('/student/homework')
+                ? 'text-white'
+                : 'text-gray-500'
+            }
+          >
             <BookOpenText className="w-6 h-6" />
           </Link>
         )}

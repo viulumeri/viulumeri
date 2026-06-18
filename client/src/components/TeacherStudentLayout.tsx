@@ -29,6 +29,11 @@ export const TeacherStudentLayout = () => {
   return (
     <div className="flex flex-col">
       <Header
+        paddingClass={
+          onSongs
+            ? 'px-7'
+            : 'px-[calc(5vw+2rem)] md:px-8'
+        }
         left={
           <button
             onClick={() => navigate('/teacher/students', { replace: true })}
@@ -61,7 +66,7 @@ export const TeacherStudentLayout = () => {
         }
       />
 
-      <main className="flex-1 overflow-y-auto pb-20">
+      <main className="flex-1 overflow-y-auto pb-24">
         <Outlet />
       </main>
     </div>

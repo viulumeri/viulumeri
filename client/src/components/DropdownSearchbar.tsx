@@ -1,11 +1,13 @@
 import { Fragment, useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
-import { ChevronLeft, ChevronRight, ScanSearch, Users } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Crown, Users } from 'lucide-react'
 
 interface SearchResultUser {
   id: string
   name: string
   email: string
+  isAdmin: boolean
+  isCurrentUser: boolean
   role: 'teacher' | 'student'
 }
 
@@ -71,24 +73,17 @@ export const DropdownSearchbar = ({
             value={searchInput}
           />
         </div>
-        <button
-          type="submit"
-          className="inline-flex items-center justify-center shrink-0 text-white bg-brand hover:bg-brand-strong focus:ring-4 focus:ring-brand-medium shadow-xs rounded-base w-10 h-10 focus:outline-none"
-          
-        >
-          <ScanSearch size={22} strokeWidth={1.5} />
-        </button>
       </form>
 
-      <div className="rounded-lg border border-neutral-700 bg-neutral-800">
-        <div className="grid grid-cols-[2fr_2fr_1fr] gap-4 px-4 py-3 text-sm font-semibold text-neutral-400">
+      <div className="overflow-visible rounded-lg border border-neutral-700 bg-neutral-800">
+        <div className="hidden grid-cols-[2fr_2fr_1fr] gap-4 px-4 py-3 text-sm font-semibold text-neutral-400 sm:grid">
           <div>Nimi</div>
           <div>Sähköposti</div>
           <div>Rooli</div>
         </div>
 
         {paginatedResults.length > 0 ? (
-          <div className="divide-y divide-neutral-700">
+          <div className="space-y-2 p-2 sm:space-y-0 sm:divide-y sm:divide-neutral-700 sm:p-0">
             {paginatedResults.map((user) => {
               const resultKey = `${user.role}-${user.id}`
               const isSelected = selectedResultKey === resultKey
@@ -98,14 +93,33 @@ export const DropdownSearchbar = ({
                   <button
                     type="button"
                     onClick={() => handleResultClick(user)}
-                    className={`grid w-full grid-cols-[2fr_2fr_1fr] gap-4 px-4 py-3 text-left transition-colors hover:bg-neutral-700 ${isSelected ? 'bg-neutral-700' : ''}`}
+                    className={`grid w-full min-w-0 grid-cols-1 gap-1 rounded-lg border border-transparent px-4 py-3 text-left transition-colors sm:grid-cols-[2fr_2fr_1fr] sm:gap-4 sm:rounded-none sm:border-0 ${
+                      isSelected ? 'bg-neutral-700' : 'hover:bg-neutral-700'
+                    }`}
                   >
-                    <div className="font-semibold text-neutral-100">{user.name}</div>
-                    <div className="text-sm text-neutral-300">{user.email}</div>
-                    <div className="text-sm text-neutral-300">{user.role === 'teacher' ? 'Opettaja' : 'Oppilas'}</div>
+                    <div className="flex min-w-0 items-center gap-2 font-semibold text-neutral-100">
+                      <span className="truncate">{user.name}</span>
+                      {user.isAdmin && (
+                        <>
+                          <Crown
+                            className="h-4 w-4 shrink-0 text-white-500 sm:hidden"
+                            aria-label="Ylläpitäjä"
+                          />
+                          <span className="hidden shrink-0 rounded bg-white-500 px-1.5 py-0.5 text-[10px] font-bold leading-none tracking-wide text-white sm:inline">
+                            ADMIN
+                          </span>
+                        </>
+                      )}
+                    </div>
+                    <div className="min-w-0 break-words text-sm text-neutral-300">{user.email}</div>
+                    <div className="hidden text-sm text-neutral-300 sm:block">{user.role === 'teacher' ? 'Opettaja' : 'Oppilas'}</div>
                   </button>
                   {isSelected && renderExpandedResult && (
-                    <div className="border-t border-neutral-700 bg-neutral-900 px-4 py-4">
+                    <div className="rounded-lg border border-neutral-700 bg-neutral-900 px-4 py-4 sm:rounded-none sm:border-x-0 sm:border-b-0">
+                      <div className="mb-3 text-sm text-neutral-300 sm:hidden">
+                        <span className="font-semibold text-neutral-200">Rooli:</span>{' '}
+                        {user.role === 'teacher' ? 'Opettaja' : 'Oppilas'}
+                      </div>
                       {renderExpandedResult(user)}
                     </div>
                   )}

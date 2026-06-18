@@ -58,7 +58,7 @@ export const HomeworkCreatePage = () => {
   )
 
   const createHw = useCreateHomework()
-  const { showError, showSuccess } = useNotification()
+  const { showError } = useNotification()
 
   const errorShownRef = useRef(false)
   useEffect(() => {
@@ -81,7 +81,6 @@ export const HomeworkCreatePage = () => {
       },
       {
         onSuccess: () => {
-          showSuccess('Läksy luotu onnistuneesti')
           navigate(`/teacher/students/${studentId}/homework`, {
             state: { studentName: state?.studentName},
             replace: true

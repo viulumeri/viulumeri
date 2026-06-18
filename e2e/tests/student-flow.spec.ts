@@ -34,6 +34,13 @@ test('student flow', async ({ page }) => {
 
   const studentCtx = await request.newContext({ baseURL: BASE_URL })
   const teacherCtx = await request.newContext({ baseURL: BASE_URL })
+  const today = new Date()
+  const expectedDateText = today.toLocaleDateString('fi-FI', {
+    day: 'numeric',
+    month: 'numeric',
+    year: 'numeric',
+    timeZone: 'Europe/Helsinki'
+  })
   let studentId: string | undefined
   let homeworkId: string | undefined
   let hw2Id: string | undefined
@@ -132,7 +139,7 @@ test('student flow', async ({ page }) => {
     studentId = student.id
 
     const homeworkRes = await teacherCtx.post('/api/homework', {
-      data: { studentId, songs: ['000-tästä-se-alkaa'], comment: 'Soita tämä' }
+      data: { studentId, songs: ['000-tästä-se-alkaa'], comment: 'Ensimmäinen harjoitus' }
     })
     expect(homeworkRes.ok()).toBeTruthy()
     const homework = await homeworkRes.json()
@@ -140,7 +147,8 @@ test('student flow', async ({ page }) => {
 
     // 8. Student sees new homework in list
     await page.reload()
-    await expect(page.getByText('Tästä se alkaa')).toBeVisible({ timeout: 15_000 })
+    const firstHomeworkComment = page.getByText('Ensimmäinen harjoitus', { exact: true })
+    await expect(firstHomeworkComment).toBeVisible({ timeout: 15_000 })
 
     // 9. Student presses "Harjoittelin" button and sees practice count update
     const practiced = page.getByRole('button', { name: 'Harjoittelin' })
@@ -149,7 +157,7 @@ test('student flow', async ({ page }) => {
 
     // 10. Generate second homework and student sees reset practice count
     const hw2Res = await teacherCtx.post('/api/homework', {
-      data: { studentId, songs: ['001-hyppyhiiri'], comment: 'Soita tämäkin' }
+      data: { studentId, songs: ['001-hyppyhiiri'], comment: 'Toinen harjoitus' }
     })
     expect(hw2Res.ok()).toBeTruthy()
     const hw2 = await hw2Res.json()
@@ -164,10 +172,22 @@ test('student flow', async ({ page }) => {
     const rightArrow = page.getByRole('button', { name: 'Seuraava kotitehtävä' })
 
     await startButton.click()
-    await expect(page.getByText('Hyppyhiiri')).toBeVisible()
+    await expect(page.getByText(expectedDateText).first()).toBeVisible({ timeout: 15_000 })
+    const secondHomeworkComment = page.getByText('Toinen harjoitus', { exact: true })
+    await expect(secondHomeworkComment).toBeVisible({ timeout: 15_000 })
+    await expect(leftArrow).toBeEnabled({ timeout: 15_000 })
+    await expect(rightArrow).toBeDisabled()
+
     await leftArrow.click()
-    await expect(page.getByText('Tästä se alkaa')).toBeVisible()
+    await expect(leftArrow).toBeDisabled({ timeout: 15_000 })
+    await expect(rightArrow).toBeEnabled()
+
+    await expect(firstHomeworkComment).toBeVisible({ timeout: 15_000 })
+
     await rightArrow.click()
+    await expect(leftArrow).toBeEnabled({ timeout: 15_000 })
+    await expect(rightArrow).toBeDisabled()
+
     await practiced.click()
     await expect(practiceBox.getByText('1', { exact: true })).toBeVisible()
 
@@ -177,8 +197,8 @@ test('student flow', async ({ page }) => {
     hw2Id = undefined
 
     await page.goto('/student/homework/list')
-    await expect(page.getByText('Hyppyhiiri')).toBeHidden({ timeout: 15_000 })
-    await expect(page.getByText('Tästä se alkaa')).toBeVisible({ timeout: 15_000 })
+    await expect(secondHomeworkComment).toBeHidden({ timeout: 15_000 })
+    await expect(firstHomeworkComment).toBeVisible({ timeout: 15_000 })
 
     // 13. Student removes teacher and still sees homework
     await page.goto('/settings')
@@ -198,7 +218,7 @@ test('student flow', async ({ page }) => {
 
     await expect(page.getByText('Ei opettajaa')).toBeVisible({ timeout: 15_000 })
     await page.goto('/student/homework/list')
-    await expect(page.getByText('Tästä se alkaa')).toBeVisible({ timeout: 15_000 })
+    await expect(page.getByText('Ensimmäinen harjoitus')).toBeVisible({ timeout: 15_000 })
 
     // 14. Student logs out
     await page.goto('/settings')

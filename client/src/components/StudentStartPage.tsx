@@ -64,7 +64,7 @@ export const StudentStartPage = () => {
         <div className="absolute bottom-0 left-0 right-0 h-25 bg-gradient-to-b from-transparent to-neutral-900 z-10" />
 
         <header className="absolute top-0 px-6 pt-6">
-          <h1 className="bg-transparent font-semibold">
+          <h1 className="flex items-center gap-3">
             Hei {parseFirstLastName(session.user.name).firstName}
           </h1>
         </header>

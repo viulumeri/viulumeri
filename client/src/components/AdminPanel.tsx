@@ -978,68 +978,68 @@ return (
                               />
                             ) : (
                              <div className="flex flex-col items-center gap-3">
-  {(block.file || block.imageUrl) && (
-    <img
-      src={
-        block.file
-          ? URL.createObjectURL(block.file)
-          : `${import.meta.env.VITE_SERVER_URL || 'http://localhost:3001'}${block.imageUrl}`
-      }
-      alt="Esikatselu"
-      className="
-        rounded-xl
-        border border-neutral-600
-        max-w-full
-        max-h-[300px]
-      "
-    />
-  )}
+                              {(block.file || block.imageUrl) && (
+                                <img
+                                  src={
+                                    block.file
+                                      ? URL.createObjectURL(block.file)
+                                      : `${import.meta.env.VITE_SERVER_URL || 'http://localhost:3001'}${block.imageUrl}`
+                                  }
+                                  alt="Esikatselu"
+                                  className="
+                                    rounded-xl
+                                    border border-neutral-600
+                                    max-w-full
+                                    max-h-[300px]
+                                  "
+                                />
+                              )}
 
-  {block.file || block.imageUrl ? (
-    <>
-      <div className="flex flex-wrap justify-center gap-3">
-        <label
-          className="
-            h-[48px]
-            px-5
-            inline-flex items-center justify-center
-            bg-neutral-100
-            text-black
-            rounded-xl
-            cursor-pointer
-            font-semibold
-            hover:bg-neutral-300
-            transition-colors
-          "
-        >
-          Valitse toinen kuva
+                              {block.file || block.imageUrl ? (
+                                <>
+                                  <div className="flex flex-wrap justify-center gap-3">
+                                    <label
+                                      className="
+                                        h-[48px]
+                                        px-5
+                                        inline-flex items-center justify-center
+                                        bg-neutral-100
+                                        text-black
+                                        rounded-xl
+                                        cursor-pointer
+                                        font-semibold
+                                        hover:bg-neutral-300
+                                        transition-colors
+                                      "
+                                    >
+                                      Valitse toinen kuva
 
-          <input
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={(e) => {
-              const file = e.target.files?.[0] ?? null
+                                      <input
+                                        type="file"
+                                        accept="image/*"
+                                        className="hidden"
+                                        onChange={(e) => {
+                                          const file = e.target.files?.[0] ?? null
 
-              setEditBlocks(prev =>
-                prev.map(item =>
-                  item.id === block.id && item.type === 'image'
-                    ? { ...item, file, imageUrl: undefined }
-                    : item
-                )
-              )
-            }}
-          />
-        </label>
+                                          setEditBlocks(prev =>
+                                            prev.map(item =>
+                                              item.id === block.id && item.type === 'image'
+                                                ? { ...item, file, imageUrl: undefined }
+                                                : item
+                                            )
+                                          )
+                                        }}
+                                      />
+                                    </label>
 
-        <button
-          type="button"
-          onClick={() => {
-            setEditBlocks(prev =>
-              prev.map(item =>
-                item.id === block.id && item.type === 'image'
-                  ? { ...item, file: null, imageUrl: undefined }
-                  : item
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setEditBlocks(prev =>
+                                          prev.map(item =>
+                                            item.id === block.id && item.type === 'image'
+                                              ? { ...item, file: null, imageUrl: undefined }
+                                              : item
                             )
                           )
                         }}
@@ -1060,9 +1060,9 @@ return (
                     <p className="text-sm text-gray-400 text-center">
                       {block.file ? block.file.name : 'Nykyinen kuva säilyy'}
                     </p>
-                  </>
-                ) : (
-                  <>
+                        </>
+                      ) : (
+                        <>
                     <label
                       className="
                         h-[48px]
@@ -1102,42 +1102,44 @@ return (
                     </p>
                   </>
                 )}
-              </div>
+                      </div>
                             )}
                           </div>
                         ))}
                       </div>
 
 
-                   <div className="flex flex-col sm:flex-row justify-center gap-3 mt-5 w-full">
-                    <button
-                      type="button"
-                      onClick={handleUpdateFaq}
-                      className="
-                        w-full sm:w-auto
-                        bg-neutral-100 text-black
-                        rounded-full px-5 py-3
-                      "
-                    >
-                      Tallenna
-                    </button>
+                    <div className="border-t border-neutral-400 pt-4 mt-5">
+                      <div className="flex flex-col sm:flex-row justify-center gap-3">
+                        <button
+                          type="button"
+                          onClick={handleUpdateFaq}
+                          className="
+                            w-full sm:w-auto
+                            bg-neutral-100 text-black
+                            rounded-full px-5 py-3
+                          "
+                        >
+                          Tallenna
+                        </button>
 
-                    <button
-                      type="button"
-                      onClick={() => {
-                      setEditingId(null)
-                      setEditQuestion('')
-                      setEditBlocks([])
-                    }}
-                      className="
-                        w-full sm:w-auto
-                        bg-red-600 hover:bg-red-700 text-white
-                        rounded-full px-5 py-3
-                      "
-                    >
-                      Peruuta
-                    </button>
-                  </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEditingId(null)
+                            setEditQuestion('')
+                            setEditBlocks([])
+                          }}
+                          className="
+                            w-full sm:w-auto
+                            bg-red-600 hover:bg-red-700 text-white
+                            rounded-full px-5 py-3
+                          "
+                        >
+                          Peruuta
+                        </button>
+                      </div>
+                    </div>
 
                       </>
                     ) : (

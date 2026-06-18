@@ -75,7 +75,7 @@ export const DropdownSearchbar = ({
         </div>
       </form>
 
-      <div className="overflow-hidden rounded-lg border border-neutral-700 bg-neutral-800">
+      <div className="overflow-visible rounded-lg border border-neutral-700 bg-neutral-800">
         <div className="hidden grid-cols-[2fr_2fr_1fr] gap-4 px-4 py-3 text-sm font-semibold text-neutral-400 sm:grid">
           <div>Nimi</div>
           <div>Sähköposti</div>

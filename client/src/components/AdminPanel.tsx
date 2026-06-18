@@ -193,7 +193,7 @@ export const AdminPanel = () => {
                       <CircleEllipsis />
                     </button>
                     {actionsOpen && (
-                      <div className="absolute right-0 mt-2 w-48 bg-neutral-900 border border-neutral-700 rounded-lg shadow-xl z-20">
+                      <div className="absolute right-0 z-50 mt-2 w-48 bg-neutral-900 border border-neutral-700 rounded-lg shadow-xl">
                         <button
                           type="button"
                           onClick={() => {

@@ -156,7 +156,7 @@ export const SettingsPage = () => {
             onClick={handleLogout}
             disabled={logout.isPending}
             className="inline-flex justify-center items-center gap-2 bg-neutral-100 text-black rounded-full
-            px-6 py-2 text-xl disabled:opacity-50 disabled:cursor-not-allowed self-center md:self-start"
+            px-6 py-2 text-base disabled:opacity-50 disabled:cursor-not-allowed self-center md:self-start"
           >
             <LogOut className="w-5 h-5" />
             {logout.isPending ? 'Kirjaudutaan ulos...' : 'Kirjaudu ulos'}
@@ -358,7 +358,7 @@ export const SettingsPage = () => {
         </h2>
         <div className="flex justify-center">
           <button
-            className="button-basic inline-flex items-center justify-center px-6 py-2 text-xl rounded-full"
+            className="button-basic inline-flex items-center justify-center rounded-full"
             onClick={() => navigate('/feedback')}>
             Anna palautetta
           </button>
@@ -375,7 +375,7 @@ export const SettingsPage = () => {
               onClick={handleDeleteAccount}
               disabled={isDeleting}
               className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white rounded-full
-              px-6 py-2 text-xl font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+              px-6 py-2 text-base font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Trash2 className="w-5 h-5" />
               {isDeleting ? 'Lähetetään vahvistusta...' : 'Poista käyttäjätili'}

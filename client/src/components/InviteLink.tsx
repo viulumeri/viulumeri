@@ -29,7 +29,7 @@ export const InviteLink = () => {
 
   return (
     <PageContainer className="space-y-6">
-      <h2 className="text-xl font-semibold">Lisää uusi oppilas</h2>
+      <h1 className="flex items-center gap-3">Lisää uusi oppilas</h1>
 
       <div className="flex justify-center">
         <button

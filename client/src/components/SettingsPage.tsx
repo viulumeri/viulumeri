@@ -137,10 +137,10 @@ export const SettingsPage = () => {
       <div className="bg-neutral-900 rounded-lg py-2">
         <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
           <div>
-            <h3 className="flex items-center gap-3 mb-5">
+            <h2 className="flex items-center gap-3 mb-4">
               <User className="w-6 h-6" />
               Käyttäjätiedot
-            </h3>
+            </h2>
             <div className="space-y-2 text-gray-300">
               <p>
                 <strong className="text-gray-100">Sähköposti:</strong>{' '}
@@ -352,10 +352,10 @@ export const SettingsPage = () => {
       )}
 
       <div className="bg-neutral-900 rounded-lg py-3">
-        <h3 className="flex items-center gap-3 mb-4">
+        <h2 className="flex items-center gap-3 mb-4">
           <MessageCircle className="w-6 h-6" />
           Palaute
-        </h3>
+        </h2>
         <div className="flex justify-center">
           <button
             className="button-basic inline-flex items-center justify-center px-6 py-2 text-xl rounded-full"

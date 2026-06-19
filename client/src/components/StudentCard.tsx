@@ -31,7 +31,7 @@ export const StudentCard = ({ id, name, practiceCount }: Props) => {
           />
         ))}
         {extraDots > 0 && (
-          <span className="text-[16px] font-bold text-white/90 pl-0.5 leading-none">
+          <span className="text-base font-bold text-white/90 pl-0.5 leading-none">
             +{extraDots}
           </span>
         )}

@@ -102,7 +102,7 @@ export const StudentStartPage = () => {
 
           <div className="flex-1 h-28 flex flex-col justify-between items-center text-center border-l border-gray-700 pl-3">
             <p className="text-sm text-gray-400 px-1">Opettaja</p>
-            <div className="text-lg text-gray-100 pb-8">{teacherDisplay}</div>
+            <div className="text-xl text-gray-100 pb-8">{teacherDisplay}</div>
           </div>
 
           <div className="flex-1 h-28 flex flex-col justify-between items-center text-center border-l border-gray-700 pl-3">

@@ -12,8 +12,8 @@ type Props = {
 }
 
 const TextEditor = ({ value, onChange, placeholder }: Props) => {
-  const skipNextUpdate = useRef(false)
   const savedSelection = useRef<{ from: number; to: number } | null>(null)
+  const isExternalUpdate = useRef(false)
   const [linkDialog, setLinkDialog] = useState<{ url: string; text: string } | null>(null)
 
   const editor = useEditor({
@@ -27,10 +27,7 @@ const TextEditor = ({ value, onChange, placeholder }: Props) => {
     ],
     content: value,
     onUpdate: ({ editor }) => {
-      if (skipNextUpdate.current) {
-        skipNextUpdate.current = false
-        return
-      }
+      if (isExternalUpdate.current) return
       onChange(editor.isEmpty ? '' : editor.getHTML())
     },
   })
@@ -48,13 +45,15 @@ const TextEditor = ({ value, onChange, placeholder }: Props) => {
     }),
   })
 
-  // Sync when value is changed externally (e.g. form reset or initial load)
+  // Sync external value changes without triggering onChange
   useEffect(() => {
     if (!editor || editor.isDestroyed) return
+    if (editor.isFocused) return
     const current = editor.getHTML()
     if (current !== value) {
-      skipNextUpdate.current = true
+      isExternalUpdate.current = true
       editor.commands.setContent(value)
+      isExternalUpdate.current = false
     }
   }, [value, editor])
 
@@ -105,7 +104,7 @@ const TextEditor = ({ value, onChange, placeholder }: Props) => {
 
   return (
     <div className="rounded-lg bg-white/20 overflow-hidden">
-      <div className="flex items-center gap-1 px-2 py-1.5 border-b border-white/10">
+      <div className="flex flex-wrap items-center gap-1 px-2 py-1.5 border-b border-white/10">
         <select
           value={state.heading}
           onChange={e => {

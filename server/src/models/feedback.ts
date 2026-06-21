@@ -10,6 +10,7 @@ const feedbackSchema = new mongoose.Schema(
       required: true,
       enum: ['bug', 'feature', 'other']
     },
+    isRead: { type: Boolean, required: true, default: false, index: true },
     message: { type: String, required: true, minlength: 5, maxlength: 4000 },
     ip: { type: String, required: false },
     userAgent: { type: String, required: false }

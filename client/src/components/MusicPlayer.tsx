@@ -1,5 +1,5 @@
 import { useCallback, useState, useRef, useEffect } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import * as Tone from 'tone'
 import { useSongById } from '../hooks/useSongs'
 import {
@@ -18,10 +18,12 @@ import {
   Guitar,
   Snail
 } from 'lucide-react'
+import { getSongImageUrl } from '../utils/songImages'
 
 export const MusicPlayer = () => {
   const { songId } = useParams<{ songId: string }>()
   const navigate = useNavigate()
+  const location = useLocation()
   const { data: song, isPending, isError, error } = useSongById(songId)
   const [isLoading, setIsLoading] = useState(false)
   const [isPlaying, setIsPlaying] = useState(false)
@@ -36,7 +38,42 @@ export const MusicPlayer = () => {
   const [dragPosition, setDragPosition] = useState(0)
   const playersRef = useRef<Tone.Players | null>(null)
   const audioTracksRef = useRef<AudioTracks | null>(null)
+  const loadedTrackKeyRef = useRef<string | null>(null)
   const [hasSlowTrack, setHasSlowTrack] = useState(false)
+  const returnTo =
+    typeof (location.state as { returnTo?: unknown } | null)?.returnTo === 'string'
+      ? (location.state as { returnTo: string }).returnTo
+      : null
+  const returnState =
+    typeof (location.state as { returnState?: unknown } | null)?.returnState === 'object' &&
+    (location.state as { returnState?: unknown } | null)?.returnState !== null
+      ? (location.state as { returnState: Record<string, unknown> }).returnState
+      : undefined
+
+  const playerState = location.state as
+    | {
+        returnTo?: string
+        returnState?: Record<string, unknown>
+        homeworkId?: string
+      }
+    | undefined
+
+  const handleBack = () => {
+    if (returnTo) {
+      navigate(returnTo, {
+        replace: true,
+        state: playerState?.homeworkId
+          ? {
+              ...returnState,
+              focusHomeworkId: playerState.homeworkId
+            }
+          : returnState
+      })
+      return
+    }
+
+    navigate(-1)
+  }
 
 const cleanupTransport = useCallback(() => {
   Tone.Transport.cancel()
@@ -45,15 +82,18 @@ const cleanupTransport = useCallback(() => {
 }, [])
 
 const loadSongTracks = useCallback(async () => {
-  if (!songId || tracksLoaded) return
+  if (!songId || !song) return
+
+  const trackKey = `${songId}:${song.updatedAt}:${isPracticeTempo ? 'slow' : 'normal'}`
+  if (tracksLoaded && loadedTrackKeyRef.current === trackKey) return
 
   try {
     setIsLoading(true)
     setAudioError(null)
 
     const tracks = isPracticeTempo
-      ? await fetchSlowSongTracks(songId)
-      : await fetchSongTracks(songId)
+      ? await fetchSlowSongTracks(songId, song.updatedAt)
+      : await fetchSongTracks(songId, song.updatedAt)
 
     if (!tracks && isPracticeTempo) {
       console.warn('Slow tempo bundle not found, falling back to normal tempo.')
@@ -66,12 +106,12 @@ const loadSongTracks = useCallback(async () => {
       throw new Error('Ääniraitoja ei löytynyt')
     }
 
-    audioTracksRef.current = tracks
-
     if (playersRef.current) {
       cleanupTransport()
       playersRef.current.dispose()
     }
+    cleanupAudioUrls()
+    audioTracksRef.current = tracks
 
     const playerUrls: { [key: string]: string } = {}
     if (tracks.melody) playerUrls.melody = tracks.melody
@@ -113,6 +153,7 @@ const loadSongTracks = useCallback(async () => {
     }
 
     setTracksLoaded(true)
+    loadedTrackKeyRef.current = trackKey
   } catch (err) {
     console.error('Error loading tracks:', err)
     setAudioError(
@@ -121,7 +162,7 @@ const loadSongTracks = useCallback(async () => {
   } finally {
     setIsLoading(false)
   }
-}, [songId, tracksLoaded, isPracticeTempo, cleanupTransport])
+}, [songId, song, tracksLoaded, isPracticeTempo, cleanupTransport])
 
 const startPlayback = async () => {
     if (!playersRef.current || !tracksLoaded) return
@@ -192,6 +233,7 @@ const startPlayback = async () => {
   const togglePracticeTempo = () => {
     setIsPracticeTempo(!isPracticeTempo)
     setTracksLoaded(false)
+    loadedTrackKeyRef.current = null
   }
 
   const handleSliderChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -223,12 +265,12 @@ const startPlayback = async () => {
     if (!songId) return
 
     const verifyTracks = async () => {
-      const isAvailable = await checkSlowTrackAvailability(songId)
+      const isAvailable = await checkSlowTrackAvailability(songId, song?.updatedAt)
       setHasSlowTrack(isAvailable)
     }
 
     verifyTracks()
-  }, [songId])
+  }, [songId, song?.updatedAt])
 
   useEffect(() => {
     loadSongTracks()
@@ -262,17 +304,21 @@ const startPlayback = async () => {
       }
       cleanupTransport()
       cleanupAudioUrls()
+      loadedTrackKeyRef.current = null
     }
   }, [cleanupTransport])
 
   useEffect(() => {
     if (!song?.title) return
 
-    const shouldLoop = song.title.toLowerCase().includes('impro')
+    const shouldLoop =
+      song.metadata?.isImpro === true ||
+      song.id.toLowerCase().includes('impro') ||
+      song.title.toLowerCase().includes('impro')
     
     setIsLooping(shouldLoop)
     Tone.Transport.loop = shouldLoop
-  }, [song?.title])
+  }, [song?.id, song?.metadata?.isImpro, song?.title])
 
   if (!songId) {
     return <div>Ei kappaletta</div>
@@ -289,8 +335,9 @@ const startPlayback = async () => {
   return (
     <div className="min-h-screen flex flex-col">
       <button
-        onClick={() => navigate(-1)}
-        className="absolute left-4 top-4 z-10"
+        onClick={handleBack}
+        className="absolute left-6 top-4 z-10 rounded-full bg-black/35 p-1 backdrop-blur-sm transition hover:bg-black/50"
+        aria-label="Palaa takaisin"
       >
         <ArrowLeft className="w-8 h-8 text-white" />
       </button>
@@ -299,8 +346,8 @@ const startPlayback = async () => {
         <div
           className="relative flex flex-col justify-end h-[80vh] px-6"
           style={{
-            backgroundImage: song?.metadata?.imgurl
-              ? `url("${song.metadata.imgurl}")`
+            backgroundImage: song?.metadata
+              ? `url("${getSongImageUrl(song.metadata, 'hero')}")`
               : undefined,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
@@ -308,7 +355,7 @@ const startPlayback = async () => {
           }}
         >
           <div className="absolute inset-x-0 bottom-0 h-30 bg-gradient-to-t from-neutral-900 via-neutral-900/70 to-transparent z-0" />
-          <div className="pb-6 pl-3 realtive z-10">
+          <div className="pb-6 relative z-10">
             <h1 className="text-4xl">{song.title}</h1>
           </div>
         </div>
@@ -316,7 +363,7 @@ const startPlayback = async () => {
 
       {isLoading && <p>Ladataan ääniraitoja...</p>}
       <div>
-        <div className="w-full px-4">
+        <div className="w-full px-6">
           {tracksLoaded && (
             <div className="w-full">
               <input
@@ -337,7 +384,7 @@ const startPlayback = async () => {
                 onTouchEnd={handleSliderRelease}
                 disabled={!tracksLoaded}
               />
-              <div className="flex justify-between w-full px-2 text-gray-400">
+              <div className="flex justify-between w-full text-gray-400">
                 <span>{formatTime(Math.floor(displayTime))}</span>
                 <span>{formatTime(Math.floor(duration))}</span>
               </div>
@@ -345,7 +392,7 @@ const startPlayback = async () => {
           )}
         </div>
 
-        <div className="w-full px-10 py-5">
+        <div className="w-full px-6 py-5">
           <div className="relative flex items-center justify-between">
             <div className="w-16 flex items-center">
               <button

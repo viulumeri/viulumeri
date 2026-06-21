@@ -5,11 +5,13 @@ import { useField } from '../hooks/useField'
 import type { AppSessionUser } from '../../../shared/types'
 import { StudentSettings } from './StudentSettings'
 import { TeacherSettings } from './TeacherSettings'
-import { User, Key, Settings, LogOut, Trash2, FileQuestionMark, MessageCircle } from 'lucide-react'
+import { User, Key, Settings, LogOut, Trash2, FileQuestionMark, MessageCircle, Download } from 'lucide-react'
 import { useNotification } from '../hooks/useNotification'
 import { faqService, type FAQ } from '../services/faq'
 import { renderWithLinks } from "../utils/renderLinks"
 import { useNavigate } from 'react-router-dom'
+import { PageContainer } from './PageContainer'
+import { InstallPromptPopup } from './InstallPromptPopup'
 
 export const SettingsPage = () => {
   const { data: session, isPending } = useSession()
@@ -23,6 +25,8 @@ export const SettingsPage = () => {
   const [fqaOpen, setfqaOpen] = useState(false);
   const { showError, showSuccess } = useNotification()
   const navigate = useNavigate()
+  const [instructionsOpen, setInstructionsOpen] = useState(false)
+  const [showInstall, setShowInstall] = useState<'android' | 'ios' | null>(null)
 
   const deleteUser = useDeleteUser({
     onSuccess: () => {
@@ -124,48 +128,43 @@ export const SettingsPage = () => {
   )
 
   return (
-
-    <div className="space-y-4 p-5 pb-24">
+    <PageContainer>
       <h1 className="flex items-center gap-3">
         <Settings className="w-8 h-8" />
         Asetukset
       </h1>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
-      <div className="bg-neutral-900 rounded-lg p-2 -mb-4">
-        <h3 className="flex items-center gap-3 mb-5">
-          <User className="w-6 h-6" />
-          Käyttäjätiedot
-        </h3>
-        <div className="space-y-2 text-gray-300">
-          <p>
-            <strong className="text-gray-100">Sähköposti:</strong>{' '}
-            {session.user.email}
-          </p>
-          <p>
-            <strong className="text-gray-100">Tyyppi:</strong>{' '}
-            {userType === 'teacher' ? 'Opettaja' : 'Oppilas'}
-          </p>
-        </div>
-      </div>
-        <div className="bg-neutral-900 rounded-lg p-2 flex items-center justify-center">
-
-          <div className="flex justify-start">
-        <button
-          onClick={handleLogout}
-          disabled={logout.isPending}
+      <div className="bg-neutral-900 rounded-lg py-2">
+        <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+          <div>
+            <h3 className="flex items-center gap-3 mb-5">
+              <User className="w-6 h-6" />
+              Käyttäjätiedot
+            </h3>
+            <div className="space-y-2 text-gray-300">
+              <p>
+                <strong className="text-gray-100">Sähköposti:</strong>{' '}
+                {session.user.email}
+              </p>
+              <p>
+                <strong className="text-gray-100">Tyyppi:</strong>{' '}
+                {userType === 'teacher' ? 'Opettaja' : 'Oppilas'}
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={handleLogout}
+            disabled={logout.isPending}
             className="inline-flex justify-center items-center gap-2 bg-neutral-100 text-black rounded-full
-            px-6 py-2 text-xl disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          <LogOut className="w-5 h-5" />
-          {logout.isPending ? 'Kirjaudutaan ulos...' : 'Kirjaudu ulos'}
-
-        </button>
+            px-6 py-2 text-xl disabled:opacity-50 disabled:cursor-not-allowed self-center md:self-start"
+          >
+            <LogOut className="w-5 h-5" />
+            {logout.isPending ? 'Kirjaudutaan ulos...' : 'Kirjaudu ulos'}
+          </button>
         </div>
       </div>
-    </div>
 
-      <div className="bg-neutral-900 rounded-lg p-3">
+      <div className="bg-neutral-900 rounded-lg py-3">
         <button
           type="button"
           onClick={() => setPasswordOpen(!passwordOpen)}
@@ -191,7 +190,7 @@ export const SettingsPage = () => {
           <div>
             <label
               htmlFor="current-password"
-              className="block text-sm font-medium text-gray-300 mb-1 mt-4"
+              className="block text-sm font-medium text-gray-300 mb-1"
             >
               Nykyinen salasana:
             </label>
@@ -250,11 +249,11 @@ export const SettingsPage = () => {
         )}
       </div>
 
-       <div className="bg-neutral-900 rounded-lg p-3 mb-4">
+       <div className="bg-neutral-900 rounded-lg py-3 mb-4">
         <button
           type="button"
           onClick={() => setfqaOpen(!fqaOpen)}
-          className="w-full flex items-center justify-between gap-3 mb-4
+          className="w-full flex items-center justify-between gap-3 mb-1
           bg-neutral-800 hover:bg-neutral-700 border border-neutral-700
           rounded-md px-4 py-3 text-left transition-colors px-4 py-3 min-h-[58px]"
         >
@@ -294,40 +293,35 @@ export const SettingsPage = () => {
                     </button>
 
                     {openFaqId === faq._id && (
-                      <div className="mt-3 bg-neutral-700 border border-neutral-600 rounded-xl px-4 py-3 text-gray-200 space-y-3">
+                      <div className="mt-3 bg-neutral-700 border border-neutral-600 rounded-xl px-4 py-3 text-gray-200 leading-relaxed">
+                        {(faq.blocks ?? []).map((block, index) => {
+                          if (block.type === 'text') {
+                            return (
+                              <div key={index}>
+                                {renderWithLinks(block.content ?? '')}
+                              </div>
+                            )
+                          }
 
-                    {(faq.blocks ?? []).map((block, index) => {
-                      if (block.type === 'text') {
-                        return (
-                          <div key={index}>
-                            {renderWithLinks(block.content ?? '')}
-                          </div>
-                        )
-                      }
-
-                      return (
-                        <img
-                          key={index}
-                          src={`${
-                            import.meta.env.VITE_SERVER_URL || 'http://localhost:3001'
-                          }${block.imageUrl}`}
-                          alt=""
-                          className="rounded-xl border border-neutral-600 max-w-full"
-                        />
-                      )
-                    })}
-
-                    <p className="mt-3 text-sm text-gray-400">
-                      {faq.updatedAt &&
-                      faq.createdAt &&
-                      faq.updatedAt !== faq.createdAt
-                        ? `Päivitetty: ${new Date(faq.updatedAt).toLocaleDateString('fi-FI')}`
-                        : faq.createdAt
-                          ? `Lisätty: ${new Date(faq.createdAt).toLocaleDateString('fi-FI')}`
-                          : 'ei tiedossa'}
-                    </p>
-
-                  </div>
+                          return (
+                            <img
+                              key={index}
+                              src={`${import.meta.env.VITE_SERVER_URL || 'http://localhost:3001'}${block.imageUrl}`}
+                              alt=""
+                              className="rounded-xl border border-neutral-600 max-w-full"
+                            />
+                          )
+                        })}
+                        <p className="mt-3 text-sm text-gray-400">
+                        {faq.updatedAt &&
+                        faq.createdAt &&
+                        faq.updatedAt !== faq.createdAt
+                          ? `Päivitetty: ${new Date(faq.updatedAt).toLocaleDateString('fi-FI')}`
+                          : faq.createdAt
+                            ? `Lisätty: ${new Date(faq.createdAt).toLocaleDateString('fi-FI')}`
+                            : 'ei tiedossa'}
+                      </p>
+                      </div>
                     )}
                   </div>
                 ))
@@ -336,7 +330,45 @@ export const SettingsPage = () => {
           )}
       </div>
 
-      <div className="bg-neutral-900 rounded-lg p-3">
+      <div className="bg-neutral-900 rounded-lg py-3 mb-4">
+        <button
+          type="button"
+          onClick={() => setInstructionsOpen(!instructionsOpen)}
+          className="w-full flex items-center justify-between gap-3 mb-1
+          bg-neutral-800 hover:bg-neutral-700 border border-neutral-700
+          rounded-md px-4 py-3 text-left transition-colors px-4 py-3 min-h-[58px]"
+        >
+          <span className="flex items-center gap-3">
+            <Download className="w-6 h-6" />
+            Asennusohjeet
+          </span>
+
+          <span
+            className={`transition-transform duration-200 ${
+              instructionsOpen ? "rotate-180" : ""
+            }`}
+          >
+            ▼
+          </span>
+        </button>
+
+        {instructionsOpen && (
+          <div className="flex gap-3 justify-center bg-neutral-700 border border-neutral-600 rounded-lg px-4 py-4">
+            <button className="back-button-basic hover:bg-neutral-500" onClick={() => setShowInstall('android')}>
+              Android
+            </button>
+            <button className="button-basic bg-neutral-200 hover:bg-neutral-500" onClick={() => setShowInstall('ios')}>
+              iOS
+            </button>
+          </div>
+        )}
+      </div>
+
+      {showInstall && (
+        <InstallPromptPopup onClose={() => setShowInstall(null)} platform={showInstall} />
+      )}
+
+      <div className="bg-neutral-900 rounded-lg py-3">
         <h3 className="flex items-center gap-3 mb-4">
           <MessageCircle className="w-6 h-6" />
           Palaute
@@ -353,7 +385,7 @@ export const SettingsPage = () => {
       {userType === 'teacher' && <TeacherSettings />}
       {userType === 'student' && <StudentSettings />}
 
-      <div className="bg-neutral-900 rounded-lg p-6">
+      <div className="bg-neutral-900 rounded-lg py-6">
         <div className="space-y-4">
           <div className="flex justify-center">
             <button
@@ -381,6 +413,6 @@ export const SettingsPage = () => {
             : new Date(__BUILD_TIME__).toLocaleString('fi-FI')}
         </p>
       )}
-    </div>
+    </PageContainer>
   )
 }

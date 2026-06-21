@@ -1,0 +1,23 @@
+# Dev-only Dockerfile with two targets: server-dev and client-dev.
+# Runs nodemon and Vite with hot reload instead of compiled production builds.
+# Used by docker-compose.dev.yml. Production uses the root Dockerfile.
+
+FROM node:22 AS base
+WORKDIR /usr/src/app
+COPY package*.json ./
+COPY server/package*.json ./server/
+COPY client/package*.json ./client/
+RUN npm install
+COPY shared/ ./shared/
+
+FROM base AS server-dev
+COPY server/ ./server/
+WORKDIR /usr/src/app/server
+EXPOSE 3001
+CMD ["npx", "nodemon", "--legacy-watch", "src/index.ts"]
+
+FROM base AS client-dev
+COPY client/ ./client/
+WORKDIR /usr/src/app/client
+EXPOSE 5173
+CMD ["npm", "run", "dev", "--", "--host"]

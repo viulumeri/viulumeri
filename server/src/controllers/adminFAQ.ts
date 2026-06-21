@@ -1,96 +1,121 @@
-import type { Request, Response } from 'express'
+import type { Request, Response, NextFunction } from 'express'
 import express from 'express'
 import multer from 'multer'
 import { Faq } from '../models/FAQ'
 
 const adminFaqRouter = express.Router()
+const upload = multer()
 
-const upload = multer({ dest: 'uploads/' })
+type FaqBlockInput = {
+  type: 'text' | 'image'
+  content?: string
+  fileKey?: string
+  imageUrl?: string
+  order?: number
+}
 
-adminFaqRouter.post(
-  '/',
-  upload.any(),
-  async (req: Request, res: Response) => {
-    const rawBlocks = req.body.blocks ? JSON.parse(req.body.blocks) : []
-    const files = Array.isArray(req.files) ? req.files : []
+const maybeUpload = (req: Request, res: Response, next: NextFunction) => {
+  if (req.is('multipart/form-data')) {
+    return upload.any()(req, res, next)
+  }
 
-    const blocks = rawBlocks.map((block: any) => {
-      if (block.type === 'text') {
-        return {
-          type: 'text',
-          content: block.content,
-          order: block.order
-        }
-      }
+  next()
+}
 
-      const file = files.find(
-        uploadedFile => uploadedFile.fieldname === block.fileKey
-      )
+const parseBlocks = (blocks: unknown): FaqBlockInput[] => {
+  if (!blocks) return []
 
+  if (typeof blocks === 'string') {
+    const parsed = JSON.parse(blocks)
+    return Array.isArray(parsed) ? parsed : []
+  }
+
+  return Array.isArray(blocks) ? (blocks as FaqBlockInput[]) : []
+}
+
+const buildBlocks = (
+  rawBlocks: FaqBlockInput[],
+  files: Express.Multer.File[]
+) => {
+  return rawBlocks.map(block => {
+    if (block.type === 'text') {
       return {
-        type: 'image',
-        imageUrl: file ? `/uploads/${file.filename}` : '',
-        order: block.order
+        type: 'text',
+        content: block.content ?? '',
+        order: Number(block.order ?? 0)
       }
-    })
+    }
 
-    const faq = new Faq({
+    const file = files.find(
+      uploadedFile => uploadedFile.fieldname === block.fileKey
+    )
+
+    return {
+      type: 'image',
+      imageUrl: file ? `/uploads/${file.originalname}` : block.imageUrl ?? '',
+      order: Number(block.order ?? 0)
+    }
+  })
+}
+
+adminFaqRouter.post('/', maybeUpload, async (req: Request, res: Response) => {
+  try {
+    const files = Array.isArray(req.files) ? req.files : []
+    const blocks = buildBlocks(parseBlocks(req.body.blocks), files)
+
+    const saved = await Faq.create({
       question: req.body.question,
-      order: Number(req.body.order),
+      order: Number(req.body.order ?? 1),
       blocks
     })
 
-    const saved = await faq.save()
-
     res.status(201).json(saved)
+  } catch (error) {
+    console.error('FAQ create failed:', error)
+    res.status(500).json({ error: 'FAQ create failed' })
   }
-)
+})
 
-adminFaqRouter.put(
-  '/:id',
-  upload.any(),
-  async (req: Request, res: Response) => {
-    const rawBlocks = req.body.blocks ? JSON.parse(req.body.blocks) : []
+adminFaqRouter.put('/:id', maybeUpload, async (req: Request, res: Response) => {
+  try {
     const files = Array.isArray(req.files) ? req.files : []
 
-    const blocks = rawBlocks.map((block: any) => {
-      if (block.type === 'text') {
-        return {
-          type: 'text',
-          content: block.content,
-          order: block.order
-        }
-      }
+    const update: {
+      question?: string
+      order?: number
+      blocks?: ReturnType<typeof buildBlocks>
+    } = {}
 
-      const file = files.find(
-        uploadedFile => uploadedFile.fieldname === block.fileKey
-      )
+    if (req.body.question !== undefined) {
+      update.question = req.body.question
+    }
 
-      return {
-        type: 'image',
-        imageUrl: file
-          ? `/uploads/${file.filename}`
-          : block.imageUrl || '',
-        order: block.order
-      }
+    if (req.body.order !== undefined) {
+      update.order = Number(req.body.order)
+    }
+
+    if (req.body.blocks !== undefined) {
+      update.blocks = buildBlocks(parseBlocks(req.body.blocks), files)
+    }
+
+    const updated = await Faq.findByIdAndUpdate(req.params.id, update, {
+      new: true,
+      runValidators: true
     })
 
-    const updated = await Faq.findByIdAndUpdate(
-      req.params.id,
-      {
-        question: req.body.question,
-        blocks
-      },
-      { new: true }
-    )
+    if (!updated) {
+      return res.status(404).json({ error: 'FAQ not found' })
+    }
 
-    res.json(updated)
+    res.status(200).json(updated)
+  } catch (error) {
+    console.error('FAQ update failed:', error)
+    res.status(500).json({ error: 'FAQ update failed' })
   }
-)
+})
 
 adminFaqRouter.delete('/:id', async (req, res) => {
   await Faq.findByIdAndDelete(req.params.id)
-
   res.status(204).end()
 })
 

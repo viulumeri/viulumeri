@@ -1,11 +1,13 @@
 import express from 'express'
 import cors from 'cors'
 import path from 'path'
+import { ObjectId } from 'mongodb'
 import { toNodeHandler } from 'better-auth/node'
 import { auth } from './utils/auth'
 import { corsOrigin } from './utils/config'
 import { requestLogger } from './utils/middleware'
 import { authenticate } from './utils/auth-middleware'
+import { client } from './db'
 import songsRouter from './controllers/songs'
 import inviteRouter from './controllers/invite'
 import teacherRouter from './controllers/teacher'
@@ -31,10 +33,39 @@ if (process.env.NODE_ENV === 'development') {
   app.use(requestLogger)
 }
 
+app.post(
+  '/api/auth/admin/impersonate-user',
+  express.json({ limit: '100mb' }),
+  async (req, res, next) => {
+    const userId = typeof req.body?.userId === 'string' ? req.body.userId : null
+    if (!userId) return next()
+
+    const userIdFilters: ({ id: string } | { _id: ObjectId })[] = [{ id: userId }]
+    if (ObjectId.isValid(userId)) {
+      userIdFilters.push({ _id: new ObjectId(userId) })
+    }
+
+    const targetUser = await client
+      .db()
+      .collection<{ role?: string }>('user')
+      .findOne(
+        { $or: userIdFilters },
+        { projection: { role: 1 } }
+      )
+
+    if (targetUser?.role === 'admin') {
+      return res.status(403).json({ error: 'Admin users cannot be impersonated' })
+    }
+
+    next()
+  }
+)
+
 app.all('/api/auth/{*splat}', toNodeHandler(auth))
 
-app.use(express.json())
+app.use(express.json({ limit: '100mb' }))
 app.use('/uploads', express.static('uploads'))
+app.use(express.json({ limit: '100mb' }))
 app.use('/api', authenticate)
 app.use('/api/popup-messages', popupMessagesRouter)
 app.use('/api/songs', songsRouter)

@@ -4,6 +4,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useSession } from '../auth-client'
 import { useEffect } from 'react'
 import { useNotification } from '../hooks/useNotification'
+import { disableAdminRegularUserView } from '../utils/adminRegularUserView'
 
 export const Login = () => {
   const email = useField('email')
@@ -11,12 +12,9 @@ export const Login = () => {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const { data: session } = useSession()
-  const { showError, showSuccess } = useNotification()
+  const { showError } = useNotification()
 
   const loginMutation = useLogin({
-    onSuccess: () => {
-      showSuccess('Kirjautuminen onnistui')
-    },
     onError: error => {
       const message = error instanceof Error ? error.message : 'Kirjautuminen epäonnistui'
       showError(message)
@@ -26,7 +24,11 @@ export const Login = () => {
 
   useEffect(() => {
     if (session) {
-      const nextPath = searchParams.get('next') || '/'
+      const role = (session.user as { role?: string } | undefined)?.role
+      if (role === 'admin') {
+        disableAdminRegularUserView()
+      }
+      const nextPath = role === 'admin' ? '/admin' : searchParams.get('next') || '/'
       navigate(nextPath, { replace: true })
     }
   }, [session, navigate, searchParams])

@@ -1,5 +1,18 @@
 import { useQuery, useMutation, useQueryClient, type UseQueryOptions, type UseMutationOptions } from '@tanstack/react-query'
-import { adminService, type SummaryResponse, type Teacher, type Student, type GetAdminFeedbacksResponse, type ImpersonateAdminRequest, type ImpersonateAdminResponse  } from '../services/admin'
+import {
+  adminService,
+  type AdminSongItem,
+  type AdminSongSavePayload,
+  type GetAdminFeedbacksResponse,
+  type ImpersonateAdminRequest,
+  type ImpersonateAdminResponse,
+  type Student,
+  type SummaryResponse,
+  type Teacher,
+  type UpdateAdminUserRequest,
+  type UpdateAdminUserResponse
+} from '../services/admin'
+import { clearCachedSongAudio } from '../services/audio'
 
 export const useAdminSummary = (
   options?: Omit<UseQueryOptions<SummaryResponse, Error>, 'queryKey' | 'queryFn'>
@@ -28,6 +41,69 @@ export const useAdminStudents = (
     ...options
   })
 
+export const useAdminSongs = (
+  options?: Omit<UseQueryOptions<{ songs: AdminSongItem[] }, Error>, 'queryKey' | 'queryFn'>
+) =>
+  useQuery({
+    queryKey: ['admin', 'songs'],
+    queryFn: adminService.getAdminSongs,
+    ...options
+  })
+
+export const useCreateAdminSong = (
+  options?: UseMutationOptions<{ song: AdminSongItem }, Error, AdminSongSavePayload>
+) => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: adminService.createAdminSong,
+    ...options,
+    onSuccess: (data, ...args) => {
+      void clearCachedSongAudio(data.song.id)
+      queryClient.invalidateQueries({ queryKey: ['admin', 'songs'] })
+      queryClient.invalidateQueries({ queryKey: ['songs'] })
+      queryClient.invalidateQueries({ queryKey: ['song'] })
+      options?.onSuccess?.(data, ...args)
+    }
+  })
+}
+
+export const useUpdateAdminSong = (
+  options?: UseMutationOptions<{ song: AdminSongItem }, Error, { id: string; body: AdminSongSavePayload }>
+) => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ id, body }) => adminService.updateAdminSong(id, body),
+    ...options,
+    onSuccess: (data, variables, ...args) => {
+      void clearCachedSongAudio(variables.id)
+      queryClient.invalidateQueries({ queryKey: ['admin', 'songs'] })
+      queryClient.invalidateQueries({ queryKey: ['songs'] })
+      queryClient.invalidateQueries({ queryKey: ['song'] })
+      options?.onSuccess?.(data, variables, ...args)
+    }
+  })
+}
+
+export const useDeleteAdminSong = (
+  options?: UseMutationOptions<void, Error, string>
+) => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: adminService.deleteAdminSong,
+    ...options,
+    onSuccess: (data, songId, ...args) => {
+      void clearCachedSongAudio(songId)
+      queryClient.invalidateQueries({ queryKey: ['admin', 'songs'] })
+      queryClient.invalidateQueries({ queryKey: ['songs'] })
+      queryClient.invalidateQueries({ queryKey: ['song'] })
+      options?.onSuccess?.(data, songId, ...args)
+    }
+  })
+}
+
 export const useDeleteAdminTeacher = (
   options?: UseMutationOptions<void, Error, string>
 ) => {
@@ -53,6 +129,22 @@ export const useAdminFeedbacks = (
     ...options
   })
 
+export const useUpdateAdminFeedbackReadStatus = (
+  options?: UseMutationOptions<{ feedback: { id: string; isRead: boolean } }, Error, { id: string; isRead: boolean }>
+) => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ id, isRead }) =>
+      adminService.updateAdminFeedbackReadStatus(id, isRead),
+    ...options,
+    onSuccess: (...args) => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'feedbacks'] })
+      options?.onSuccess?.(...args)
+    }
+  })
+}
+
 export const useDeleteAdminStudent = (
   options?: UseMutationOptions<void, Error, string>
 ) => {
@@ -69,11 +161,42 @@ export const useDeleteAdminStudent = (
   })
 }
 
+export const useUpdateAdminUser = (
+  options?: UseMutationOptions<UpdateAdminUserResponse, Error, UpdateAdminUserRequest>
+) => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: adminService.updateUser,
+    ...options,
+    onSuccess: (...args) => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'teachers'] })
+      queryClient.invalidateQueries({ queryKey: ['admin', 'students'] })
+      options?.onSuccess?.(...args)
+    }
+  })
+}
+
 export const useImpersonateAdminUser = (
   options?: UseMutationOptions<ImpersonateAdminResponse, Error, ImpersonateAdminRequest>
 ) => {
   return useMutation({
     mutationFn: adminService.impersonateUser,
     ...options
+  })
+}
+
+export const useDeleteAdminFeedback = (
+  options?: UseMutationOptions<void, Error, string>
+) => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (id: string) => adminService.deleteFeedback(id),
+    ...options,
+    onSuccess: (...args) => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'feedbacks'] })
+      options?.onSuccess?.(...args)
+    }
   })
 }

@@ -1,7 +1,7 @@
-import { test, expect } from '@playwright/test'
+import { test, expect, type Page } from '@playwright/test'
 import { MongoClient } from 'mongodb'
 import { SEED_USERS } from '../global-setup'
-import { markStartupAnnouncementsAsSeen } from './announcement-state'
+import { markInstallPromptAsSeen, markStartupAnnouncementsAsSeen } from './announcement-state'
 
 const MONGODB_URI =
   process.env.E2E_MONGODB_URI ||
@@ -17,7 +17,7 @@ const student = (() => {
   return found
 })()
 
-const dismissNotificationIfVisible = async (page: any) => {
+const dismissNotificationIfVisible = async (page: Page) => {
   const closeButton = page.getByRole('button', { name: /sulje ilmoitus/i })
   if (await closeButton.isVisible().catch(() => false)) {
     await closeButton.evaluate(button => {
@@ -27,12 +27,13 @@ const dismissNotificationIfVisible = async (page: any) => {
   }
 }
 
-const loginAsStudent = async (page: any) => {
+const loginAsStudent = async (page: Page) => {
   await page.goto('/login')
   await markStartupAnnouncementsAsSeen(page, student.email)
+  await markInstallPromptAsSeen(page)
   await page.getByPlaceholder('Sähköpostiosoite').fill(student.email)
   await page.getByPlaceholder('Salasana').fill(student.password)
-  const signInResponsePromise = page.waitForResponse((response: any) => {
+  const signInResponsePromise = page.waitForResponse(response => {
     return (
       response.url().includes('/api/auth/sign-in/email') &&
       response.request().method() === 'POST'

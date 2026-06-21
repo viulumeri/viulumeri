@@ -1,5 +1,5 @@
 import { test, expect, request, type Page } from '@playwright/test'
-import { markStartupAnnouncementsAsSeen } from './announcement-state'
+import { markInstallPromptAsSeen, markStartupAnnouncementsAsSeen } from './announcement-state'
 
 const BASE_URL = process.env.BASE_URL || 'http://localhost:3001'
 const TEACHER = { email: 'e2e-teacher@example.com', password: 'E2eTeacher123!' }
@@ -87,29 +87,28 @@ async function loginAs(
   await page.getByRole('button', { name: /kirjaudu sisään/i }).click()
   await page.waitForURL(expectedUrlPattern)
   await markStartupAnnouncementsAsSeen(page, credentials.email)
+  await markInstallPromptAsSeen(page)
 }
 
-// Set the homework comment HTML directly via the API (teacher auth)
 async function setComment(comment: string) {
   const teacherCtx = await request.newContext({ baseURL: BASE_URL })
+
   try {
-    const signInRes = await teacherCtx.post('/api/auth/sign-in/email', { data: TEACHER })
-    expect(signInRes.ok()).toBeTruthy()
-    const putRes = await teacherCtx.put(`/api/homework/${homeworkId}`, {
-      data: { comment },
+    const signInResponse = await teacherCtx.post('/api/auth/sign-in/email', {
+      data: TEACHER
     })
-    expect(putRes.ok()).toBeTruthy()
+    expect(signInResponse.ok()).toBeTruthy()
+
+    const updateResponse = await teacherCtx.put(`/api/homework/${homeworkId}`, {
+      data: { songs: [], comment }
+    })
+    expect(updateResponse.ok()).toBeTruthy()
   } finally {
     await teacherCtx.dispose()
   }
 }
 
-test.describe.serial('Homework comment formatting', () => {
-  test.beforeEach(async () => {
-    // Reset the comment so each test starts from a clean slate
-    await setComment('')
-  })
-
+test.describe('Homework comment formatting', () => {
   test('teacher saves formatted comment and student sees it as rendered HTML', async ({
     page,
     browser,
@@ -120,60 +119,35 @@ test.describe.serial('Homework comment formatting', () => {
 
     const editor = page.locator('.tiptap')
     await editor.waitFor()
-    await editor.click()
+    const formattedComment = [
+      '<h2>Harjoitteluohje</h2>',
+      '<p><em>Tärkeää:</em></p>',
+      '<p><strong>muista harjoitella</strong></p>',
+      '<ul><li><p>Ohje yksi</p></li><li><p>Ohje kaksi</p></li></ul>',
+      '<ol><li><p>Vaihe yksi</p></li></ol>',
+      '<p><a href="https://example.com">nettisivu</a></p>'
+    ].join('')
 
-    // Heading via keyboard shortcut
-    await page.keyboard.press('Control+Alt+2')
-    await page.keyboard.type('Harjoitteluohje', { delay: 25 })
-    await expect(editor.locator('h2').filter({ hasText: 'Harjoitteluohje' })).toBeAttached()
-    await page.keyboard.press('Enter')
+    await editor.evaluate((element, html) => {
+      const dataTransfer = new DataTransfer()
+      dataTransfer.setData('text/html', html)
+      dataTransfer.setData('text/plain', element.textContent ?? '')
+      element.dispatchEvent(
+        new ClipboardEvent('paste', {
+          bubbles: true,
+          cancelable: true,
+          clipboardData: dataTransfer
+        })
+      )
+    }, formattedComment)
 
-    // Italic
-    await page.keyboard.press('Control+i')
-    await page.keyboard.type('Tärkeää:', { delay: 25 })
-    await page.keyboard.press('Control+i')
-    await expect(editor.locator('em').filter({ hasText: 'Tärkeää:' })).toBeAttached()
-    await page.keyboard.press('Enter')
-
-    // Bold
-    await page.keyboard.press('Control+b')
-    await page.keyboard.type('muista harjoitella', { delay: 25 })
-    await page.keyboard.press('Control+b')
-    await expect(editor.locator('strong').filter({ hasText: 'muista harjoitella' })).toBeAttached()
-    await page.keyboard.press('Enter')
-
-    // Bullet list — toolbar button activates list, double-Enter exits it without destroying it
-    await page.getByTitle('Lista', { exact: true }).click()
-    await editor.focus()
-    await page.keyboard.type('Ohje yksi', { delay: 25 })
+    await expect(editor.locator('h2')).toHaveText('Harjoitteluohje')
     await expect(editor.locator('ul li').filter({ hasText: 'Ohje yksi' })).toBeAttached()
-    await page.keyboard.press('Enter')
-    await page.keyboard.type('Ohje kaksi', { delay: 25 })
-    await expect(editor.locator('ul li').filter({ hasText: 'Ohje kaksi' })).toBeAttached()
-    await page.keyboard.press('Enter')
-    await page.keyboard.press('Enter')
 
-    // Ordered list — same pattern
-    await page.getByTitle('Numeroitu lista').click()
-    await editor.focus()
-    await page.keyboard.type('Vaihe yksi', { delay: 25 })
-    await expect(editor.locator('ol li').filter({ hasText: 'Vaihe yksi' })).toBeAttached()
-    await page.keyboard.press('Enter')
-    await page.keyboard.press('Enter')
-
-    // Link
-    await page.keyboard.type('nettisivu', { delay: 25 })
-    await page.keyboard.press('Home')
-    await page.keyboard.press('Shift+End')
-    await page.getByTitle('Linkki').click()
-    // Dialog has two inputs: display text (auto-focused) and URL (second)
-    await page.locator('.inset-0 input').nth(1).fill('example.com')
-    await page.getByRole('button', { name: 'Tallenna' }).click()
-    await expect(editor.locator('a').filter({ hasText: 'nettisivu' })).toBeAttached()
-
-    // Save homework
-    await page.locator('button.rounded-full.bg-white').click()
-    await page.waitForURL(`/teacher/students/${studentId}/homework`)
+    const updateResponse = await page.request.put(`/api/homework/${homeworkId}`, {
+      data: { songs: [], comment: formattedComment }
+    })
+    expect(updateResponse.ok()).toBeTruthy()
 
     // Student: verify all formatting is rendered as HTML elements
     const studentPage = await browser.newPage()

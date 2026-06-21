@@ -13,6 +13,7 @@ const baseFeedback: {
   category: AdminFeedbackItem['category']
   message: string
   createdAt: Date
+  isRead: boolean
 } = {
   id: 'f1',
   userId: 'u1',
@@ -20,7 +21,8 @@ const baseFeedback: {
   title: 'Test title',
   category: 'bug',
   message: 'Test message',
-  createdAt: makeDate('2024-03-01T10:00:00.000Z')
+  createdAt: makeDate('2024-03-01T10:00:00.000Z'),
+  isRead: false
 }
 
 describe('mapFeedbacksToAdminItems', () => {
@@ -76,6 +78,7 @@ describe('mapFeedbacksToAdminItems', () => {
     assert.strictEqual(item.category, 'bug')
     assert.strictEqual(item.message, 'Test message')
     assert.strictEqual(item.createdAt, '2024-03-01T10:00:00.000Z')
+    assert.strictEqual(item.isRead, false)
   })
 
   it('should handle multiple feedbacks from different user types', () => {

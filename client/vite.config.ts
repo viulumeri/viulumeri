@@ -5,6 +5,7 @@ import { VitePWA } from 'vite-plugin-pwa'
 
 const appVersion = process.env.VITE_APP_VERSION || '0.0.0'
 const buildTime = process.env.VITE_BUILD_TIME || ''
+const serverTarget = process.env.SERVER_URL || 'http://localhost:3001'
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -48,9 +49,14 @@ export default defineConfig({
     })
   ],
   server: {
+    host: true,
+    watch: {
+      usePolling: true,
+      interval: 300
+    },
     proxy: {
       '/api': {
-        target: 'http://localhost:3001',
+        target: serverTarget,
         changeOrigin: true,
         secure: false
       }

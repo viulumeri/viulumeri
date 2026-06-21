@@ -202,6 +202,7 @@ test('student flow', async ({ page }) => {
 
     // 13. Student removes teacher and still sees homework
     await page.goto('/settings')
+    await page.getByRole('button', { name: 'Opettajan hallinta' }).click()
     await expect(page.getByText('Nykyinen opettaja:')).toBeVisible()
     await expect(page.getByText('E2E Teacher')).toBeVisible()
 

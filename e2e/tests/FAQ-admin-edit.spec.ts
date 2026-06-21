@@ -9,7 +9,6 @@ if (!adminUser) {
 }
 
 const ADMIN = adminUser
-
 const closeNotificationsIfOpen = async (page: Page) => {
   const dialog = page.getByRole('dialog', { name: 'Ilmoitukset' })
   const okButton = dialog.getByRole('button', { name: 'OK' })

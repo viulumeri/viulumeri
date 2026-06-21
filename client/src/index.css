@@ -32,10 +32,10 @@
 
 @layer components {
   .button-basic {
-    @apply bg-neutral-100 text-black rounded-full px-6 py-2 text-base;
+    @apply bg-neutral-100 text-black rounded-full px-6 py-2 text-xl;
   }
   .back-button-basic {
-    @apply bg-neutral-800 text-gray-200 rounded-full px-3 py-2 text-base;
+    @apply bg-neutral-800 text-gray-200 rounded-full px-3 py-2 text-xl;
   }
   .scrollbar-hide {
     -ms-overflow-style: none;

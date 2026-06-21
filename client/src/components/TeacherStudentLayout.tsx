@@ -47,7 +47,7 @@ export const TeacherStudentLayout = () => {
               className="w-8 h-8 rounded-full"
               style={{ backgroundColor: color }}
             />
-            <h2>{firstName}</h2>
+            <h1>{firstName}</h1>
           </div>
         }
         right={

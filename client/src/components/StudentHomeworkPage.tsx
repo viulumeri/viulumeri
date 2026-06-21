@@ -33,7 +33,7 @@ export const StudentHomeworkPage = () => {
               </button>
             </div>
             <div className="pl-2">
-              <h1>Tehtäväsi</h1>
+              <h1 className="flex items-center gap-3">Tehtäväsi</h1>
             </div>
           </div>
         }

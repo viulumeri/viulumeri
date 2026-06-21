@@ -397,6 +397,11 @@ test('admin flow covers dashboard, users, popups, feedback, FAQ, and user view',
     const createPopupForm = popupSection.locator('form').first()
     await createPopupForm.locator('#popup-title').fill(popupTitle)
     await createPopupForm.locator('#popup-content').fill(popupContent)
+    await createPopupForm.locator('#popup-images').setInputFiles({
+      name: 'popup-image.jpg',
+      mimeType: 'image/jpeg',
+      buffer: fixtureImage
+    })
     await createPopupForm.getByLabel('Opettajat').uncheck()
     await createPopupForm.locator('#popup-visible-from').fill(today)
     await createPopupForm.locator('#popup-visible-until').fill(today)
@@ -411,16 +416,22 @@ test('admin flow covers dashboard, users, popups, feedback, FAQ, and user view',
     await popupSection.getByTestId('popup-create-submit').click()
     const createPopupResponse = await createPopupResponsePromise
     expect(createPopupResponse.ok()).toBe(true)
+    const createPopupBody = (await createPopupResponse.json()) as {
+      message?: { images?: unknown[] }
+    }
+    expect(createPopupBody.message?.images).toHaveLength(1)
 
     let popupCard = popupSection.getByTestId('popup-message-card').filter({ hasText: popupTitle }).first()
     await expect(popupCard).toBeVisible({ timeout: 15_000 })
     await expect(popupCard).toContainText('Oppilaat')
     await expect(popupCard).toContainText('Julkaistu')
     await expect(popupCard).toContainText('Voimassa')
+    await expect(popupCard.locator('img[alt="popup-image.jpg"]')).toBeVisible()
 
     await page.goto('/admin')
     await expect(overviewSection).toContainText(popupTitle)
     await expect(overviewSection).toContainText(popupContent)
+    await expect(overviewSection.locator('img[alt="popup-image.jpg"]')).toBeVisible()
     await expect(overviewSection).toContainText('Näkyvyys: Oppilaat')
 
     await page.goto('/admin/popup')
@@ -439,10 +450,15 @@ test('admin flow covers dashboard, users, popups, feedback, FAQ, and user view',
     await popupSection.getByRole('button', { name: 'Tallenna', exact: true }).click()
     const updatePopupResponse = await updatePopupResponsePromise
     expect(updatePopupResponse.ok()).toBe(true)
+    const updatePopupBody = (await updatePopupResponse.json()) as {
+      message?: { images?: unknown[] }
+    }
+    expect(updatePopupBody.message?.images).toHaveLength(1)
 
     popupCard = popupSection.getByTestId('popup-message-card').filter({ hasText: updatedPopupTitle }).first()
     await expect(popupCard).toContainText(updatedPopupContent)
     await expect(popupCard).toContainText('Opettajat, Oppilaat')
+    await expect(popupCard.locator('img[alt="popup-image.jpg"]')).toBeVisible()
 
     await popupCard.getByRole('switch').click()
     await expect(popupCard).toContainText('Luonnos', { timeout: 15_000 })

@@ -2,9 +2,13 @@ import { UserRound, LogOut } from 'lucide-react'
 import { useNotification } from '../hooks/useNotification'
 import { useLogout } from '../hooks/useAuth'
 import { enableAdminRegularUserView } from '../utils/adminRegularUserView'
+import { useSession } from '../auth-client'
+import type { AppSessionUser } from '../../../shared/types'
 
 export const AdminUserViewPage = () => {
   const { showError } = useNotification()
+  const { data: session } = useSession()
+  const userType = (session?.user as AppSessionUser | undefined)?.userType
 
   const logout = useLogout({
     onSuccess: () => {
@@ -18,7 +22,8 @@ export const AdminUserViewPage = () => {
 
   const handleEnterRegularUserView = () => {
     enableAdminRegularUserView()
-    window.location.href = '/student/homework'
+    window.location.href =
+      userType === 'teacher' ? '/teacher/students' : '/student/homework'
   }
 
   return (

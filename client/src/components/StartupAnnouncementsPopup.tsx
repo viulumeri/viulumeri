@@ -134,6 +134,18 @@ export const StartupAnnouncementsPopup = ({ userId, isPending }: Props) => {
                 <div className="mt-2 whitespace-pre-wrap break-words text-neutral-100/90">
                   {a.content}
                 </div>
+                {a.images && a.images.length > 0 && (
+                  <div className="mt-4 space-y-3">
+                    {a.images.map((image, index) => (
+                      <img
+                        key={`${image.name}-${index}`}
+                        src={image.data}
+                        alt={image.name}
+                        className="max-h-[34vh] w-full rounded-xl border border-neutral-700 object-contain bg-black/20"
+                      />
+                    ))}
+                  </div>
+                )}
               </div>
             ))}
           </div>

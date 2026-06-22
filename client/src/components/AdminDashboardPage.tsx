@@ -125,6 +125,23 @@ export const AdminDashboardPage = () => {
                   <p className="mt-1 text-sm text-gray-300 whitespace-pre-line break-words">
                     {message.content}
                   </p>
+                  {message.images && message.images.length > 0 && (
+                    <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3">
+                      {message.images.slice(0, 3).map((image, index) => (
+                        <img
+                          key={`${image.name}-${index}`}
+                          src={image.data}
+                          alt={image.name}
+                          className="h-20 w-full rounded-md border border-neutral-700 object-cover"
+                        />
+                      ))}
+                      {message.images.length > 3 && (
+                        <div className="flex h-20 items-center justify-center rounded-md border border-neutral-700 bg-neutral-900 text-xs text-gray-300">
+                          +{message.images.length - 3} kuvaa
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </li>
               ))}
             </ul>

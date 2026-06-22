@@ -4,18 +4,11 @@ import { useAdminTeachers, useAdminStudents, useDeleteAdminTeacher, useDeleteAdm
 import { DropdownSearchbar } from './DropdownSearchbar'
 import { useNotification } from '../hooks/useNotification'
 import type { Teacher, Student } from '../services/admin'
+import type { SearchResultUser } from '../types/admin'
 
-
-interface SearchResultUser {
-  id: string
-  name: string
-  email: string
-  isAdmin: boolean
-  isCurrentUser: boolean
-  role: 'teacher' | 'student'
-}
 
 export const AdminPanel = () => {
+
   const { data: teachersData, error: teachersError } = useAdminTeachers()
   const { data: studentsData, error: studentsError } = useAdminStudents()
 
@@ -303,11 +296,72 @@ export const AdminPanel = () => {
                 )}
               </div>
             )}
+                    )}
+                  </div>
+                </div>
+                {editing && (
+                  <form
+                    className="space-y-3 border-t border-neutral-700 pt-4"
+                    onSubmit={(event) => {
+                      event.preventDefault()
+                      if (updateUser.isPending) return
+                      updateUser.mutate({
+                        id: selectedUser.id,
+                        role: 'studentCount' in selectedUser ? 'teacher' : 'student',
+                        name: editName.trim(),
+                        email: editEmail.trim()
+                      })
+                    }}
+                  >
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <label className="space-y-1 text-left text-sm text-neutral-300">
+                        <span className="font-semibold">Nimi</span>
+                        <input
+                          type="text"
+                          required
+                          value={editName}
+                          onChange={(event) => setEditName(event.target.value)}
+                          className="w-full rounded-lg border border-neutral-600 bg-neutral-800 px-3 py-2 text-neutral-100 focus:border-neutral-400 focus:outline-none"
+                        />
+                      </label>
+                      <label className="space-y-1 text-left text-sm text-neutral-300">
+                        <span className="font-semibold">Sähköposti</span>
+                        <input
+                          type="email"
+                          required
+                          value={editEmail}
+                          onChange={(event) => setEditEmail(event.target.value)}
+                          className="w-full rounded-lg border border-neutral-600 bg-neutral-800 px-3 py-2 text-neutral-100 focus:border-neutral-400 focus:outline-none"
+                        />
+                      </label>
+                    </div>
+                    <div className="flex justify-end gap-2">
+                      <button
+                        type="button"
+                        disabled={updateUser.isPending}
+                        onClick={() => setEditing(false)}
+                        className="rounded-lg border border-neutral-600 px-4 py-2 text-sm hover:bg-neutral-800 disabled:opacity-50"
+                      >
+                        Peruuta
+                      </button>
+                      <button
+                        type="submit"
+                        disabled={updateUser.isPending}
+                        className="rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white hover:bg-brand-strong disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        {updateUser.isPending ? 'Tallennetaan...' : 'Tallenna'}
+                      </button>
+                    </div>
+                  </form>
+                )}
+              </div>
+            )}
             searchInput={searchUserInput}
             searchResults={searchResults}
             selectedResultKey={selectedResultKey}
           />
         </div>
+
       </div>
     </div>
   )

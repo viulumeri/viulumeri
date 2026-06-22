@@ -11,6 +11,12 @@ import { Faq } from '../models/FAQ'
 
 const api = supertest(app)
 
+const textBlock = (content: string, order = 0) => ({
+  type: 'text',
+  content,
+  order
+})
+
 before(async () => {
   await TestHelper.setupTestDatabase()
 })
@@ -417,44 +423,27 @@ describe('FAQ admin endpoints', () => {
       .set('Cookie', sessionCookie)
       .send({
         question: 'Testikysymys?',
-        answer: 'Testivastaus.'
+        blocks: [textBlock('Testivastaus.')]
       })
 
     assert.strictEqual(response.status, 201)
     assert.strictEqual(response.body.question, 'Testikysymys?')
-    assert.strictEqual(response.body.answer, 'Testivastaus.')
+    assert.strictEqual(response.body.blocks[0].content, 'Testivastaus.')
 
     const savedFaq = await Faq.findOne({ question: 'Testikysymys?' })
     assert.ok(savedFaq)
-    assert.strictEqual(savedFaq.answer, 'Testivastaus.')
-  })
-
-  it('allows an admin to delete an FAQ', async () => {
-    const { sessionCookie } = await TestHelper.createAuthenticatedAdmin(api)
-    const created = await api
-      .post('/api/admin/faq')
-      .set('Cookie', sessionCookie)
-      .send({
-        question: 'Poistettava kysymys',
-        answer: 'Poistettava vastaus'
-      })
-
-    const response = await api
-      .delete(`/api/admin/faq/${created.body._id}`)
-      .set('Cookie', sessionCookie)
-
-    assert.strictEqual(response.status, 204)
-    assert.strictEqual(await Faq.findById(created.body._id), null)
+    assert.strictEqual(savedFaq.blocks[0].content, 'Testivastaus.')
   })
 
   it('allows an admin to update an FAQ', async () => {
     const { sessionCookie } = await TestHelper.createAuthenticatedAdmin(api)
+
     const created = await api
       .post('/api/admin/faq')
       .set('Cookie', sessionCookie)
       .send({
         question: 'Vanha kysymys',
-        answer: 'Vanha vastaus'
+        blocks: [textBlock('Vanha vastaus')]
       })
 
     const response = await api
@@ -462,27 +451,28 @@ describe('FAQ admin endpoints', () => {
       .set('Cookie', sessionCookie)
       .send({
         question: 'Uusi kysymys',
-        answer: 'Uusi vastaus'
+        blocks: [textBlock('Uusi vastaus')]
       })
 
     assert.strictEqual(response.status, 200)
     assert.strictEqual(response.body.question, 'Uusi kysymys')
-    assert.strictEqual(response.body.answer, 'Uusi vastaus')
+    assert.strictEqual(response.body.blocks[0].content, 'Uusi vastaus')
 
     const updatedFaq = await Faq.findById(created.body._id)
     assert.ok(updatedFaq)
     assert.strictEqual(updatedFaq.question, 'Uusi kysymys')
-    assert.strictEqual(updatedFaq.answer, 'Uusi vastaus')
+    assert.strictEqual(updatedFaq.blocks[0].content, 'Uusi vastaus')
   })
 
   it('returns saved FAQs', async () => {
     const { sessionCookie } = await TestHelper.createAuthenticatedAdmin(api)
+
     await api
       .post('/api/admin/faq')
       .set('Cookie', sessionCookie)
       .send({
         question: 'Visible question',
-        answer: 'Visible answer',
+        blocks: [textBlock('Visible answer')],
         order: 1
       })
 
@@ -493,25 +483,27 @@ describe('FAQ admin endpoints', () => {
     assert.strictEqual(response.status, 200)
     assert.strictEqual(response.body.length, 1)
     assert.strictEqual(response.body[0].question, 'Visible question')
-    assert.strictEqual(response.body[0].answer, 'Visible answer')
+    assert.strictEqual(response.body[0].blocks[0].content, 'Visible answer')
   })
 
   it('returns FAQs in order', async () => {
     const { sessionCookie } = await TestHelper.createAuthenticatedAdmin(api)
+
     await api
       .post('/api/admin/faq')
       .set('Cookie', sessionCookie)
       .send({
         question: 'Toinen kysymys',
-        answer: 'Toinen vastaus',
+        blocks: [textBlock('Toinen vastaus')],
         order: 2
       })
+
     await api
       .post('/api/admin/faq')
       .set('Cookie', sessionCookie)
       .send({
         question: 'First question',
-        answer: 'First answer',
+        blocks: [textBlock('First answer')],
         order: 1
       })
 
@@ -526,14 +518,16 @@ describe('FAQ admin endpoints', () => {
 
   it('does not return deleted FAQs', async () => {
     const { sessionCookie } = await TestHelper.createAuthenticatedAdmin(api)
+
     const created = await api
       .post('/api/admin/faq')
       .set('Cookie', sessionCookie)
       .send({
         question: 'Poistettava kysymys',
-        answer: 'Poistettava vastaus',
+        blocks: [textBlock('Poistettava vastaus')],
         order: 1
       })
+
     await api
       .delete(`/api/admin/faq/${created.body._id}`)
       .set('Cookie', sessionCookie)

@@ -20,13 +20,13 @@ export const Navbar = () => {
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 h-16 z-50 bg-neutral-900">
-      <div className="mx-auto w-full max-w-4xl h-full flex items-center justify-around pb-4">
+      <div className="mx-auto w-full max-w-4xl h-full flex items-center gap-2 px-6 pb-4">
         {role === 'admin' && !isAdminRegularUserView && (
           <>
-            <Link to="/admin" className={isActive('/admin')}>
+            <Link to="/admin" className={`flex-1 flex justify-center ${isActive('/admin')}`}>
               <Banana className="w-6 h-6" />
             </Link>
-            <Link to="/admin/popup" className={isActive('/admin/popup')}>
+            <Link to="/admin/popup" className={`flex-1 flex justify-center ${isActive('/admin/popup')}`}>
               <Bell className="w-6 h-6" />
             </Link>
           </>
@@ -34,28 +34,28 @@ export const Navbar = () => {
         {userType === 'teacher' && (
           <Link
             to="/teacher/students"
-            className={isActive('/teacher/students')}
+            className={`flex-1 flex justify-center ${isActive('/teacher/students')}`}
           >
             <Users className="w-6 h-6" />
           </Link>
         )}
 
-        {(userType === 'student' || isAdminRegularUserView) && (
+        {userType === 'student' && (
           <Link
             to={lastRoute}
-            className={
+            className={`flex-1 flex justify-center ${
               location.pathname.startsWith('/student/homework')
                 ? 'text-white'
                 : 'text-gray-500'
-            }
+            }`}
           >
             <BookOpenText className="w-6 h-6" />
           </Link>
         )}
-        <Link to="/songslist" className={isActive('/songslist')}>
+        <Link to="/songslist" className={`flex-1 flex justify-center pl-3 ${isActive('/songslist')}`}>
           <Music className="w-6 h-6" />
         </Link>
-        <Link to="/settings" className={isActive('/settings')}>
+        <Link to="/settings" className={`flex-1 flex justify-center pl-3 ${isActive('/settings')}`}>
           <Settings className="w-6 h-6" />
         </Link>
       </div>

@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useNotification } from '../hooks/useNotification'
 import { adminService } from '../services/admin'
-import { Bell, Trash2 } from 'lucide-react'
-import type { AdminPopupMessage } from '../services/admin'
+import { Bell, Trash2, X } from 'lucide-react'
+import type { AdminPopupImagePayload, AdminPopupMessage } from '../services/admin'
 import { notifyAdminPopupsUpdated } from '../utils/adminPopupEvents'
 
 type AudienceState = {
@@ -96,11 +96,58 @@ const hasInvalidVisibilityWindow = (window: VisibilityWindowState): boolean => {
   return Boolean(window.visibleFrom && window.visibleUntil && window.visibleFrom > window.visibleUntil)
 }
 
+const MAX_POPUP_IMAGES = 6
+const IMAGE_EXTENSION_PATTERN = /\.(avif|gif|heic|heif|jpe?g|png|webp|svg)$/i
+
+const isLikelyImageFile = (file: File): boolean =>
+  file.type.startsWith('image/') || IMAGE_EXTENSION_PATTERN.test(file.name)
+
+const SelectedImagePreview = ({
+  file,
+  onRemove
+}: {
+  file: File
+  onRemove: () => void
+}) => {
+  const [previewUrl, setPreviewUrl] = useState('')
+
+  useEffect(() => {
+    const url = URL.createObjectURL(file)
+    setPreviewUrl(url)
+    return () => URL.revokeObjectURL(url)
+  }, [file])
+
+  return (
+    <div className="relative overflow-hidden rounded-md border border-neutral-700 bg-neutral-900">
+      {previewUrl && (
+        <img
+          src={previewUrl}
+          alt={file.name}
+          className="h-24 w-full object-cover"
+        />
+      )}
+      <div className="absolute inset-x-0 bottom-0 bg-black/70 px-2 py-1 text-xs text-white">
+        <span className="block truncate">{file.name}</span>
+      </div>
+      <button
+        type="button"
+        className="absolute right-1 top-1 rounded bg-black/70 p-1 text-white hover:bg-black"
+        onClick={onRemove}
+        aria-label={`Poista kuva ${file.name}`}
+      >
+        <X className="h-4 w-4" />
+      </button>
+    </div>
+  )
+}
+
 export const PopupAdminPage = () => {
   const { showError, showSuccess } = useNotification()
 
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
+  const [imageFiles, setImageFiles] = useState<File[]>([])
+  const [imageInputKey, setImageInputKey] = useState(0)
   const [isDraft, setIsDraft] = useState(true)
   const [audience, setAudience] = useState<AudienceState>(DEFAULT_AUDIENCE)
   const [messages, setMessages] = useState<AdminPopupMessage[]>([])
@@ -111,6 +158,9 @@ export const PopupAdminPage = () => {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editTitle, setEditTitle] = useState('')
   const [editContent, setEditContent] = useState('')
+  const [editExistingImages, setEditExistingImages] = useState<AdminPopupImagePayload[]>([])
+  const [editImageFiles, setEditImageFiles] = useState<File[]>([])
+  const [editImageInputKey, setEditImageInputKey] = useState(0)
   const [editIsDraft, setEditIsDraft] = useState(false)
   const [editAudience, setEditAudience] = useState<AudienceState>(DEFAULT_AUDIENCE)
   const [visibilityWindow, setVisibilityWindow] = useState<VisibilityWindowState>(
@@ -123,6 +173,8 @@ export const PopupAdminPage = () => {
   const resetCreateForm = () => {
     setTitle('')
     setContent('')
+    setImageFiles([])
+    setImageInputKey(current => current + 1)
     setIsDraft(true)
     setAudience(DEFAULT_AUDIENCE)
     setVisibilityWindow(DEFAULT_VISIBILITY_WINDOW)
@@ -132,6 +184,9 @@ export const PopupAdminPage = () => {
     setEditingId(null)
     setEditTitle('')
     setEditContent('')
+    setEditExistingImages([])
+    setEditImageFiles([])
+    setEditImageInputKey(current => current + 1)
     setEditIsDraft(false)
     setEditAudience(DEFAULT_AUDIENCE)
     setEditVisibilityWindow(DEFAULT_VISIBILITY_WINDOW)
@@ -139,6 +194,34 @@ export const PopupAdminPage = () => {
 
   const hasSelectedAudience = (state: AudienceState) =>
     state.teachers || state.students
+
+  const addImageFiles = (
+    files: FileList | null | undefined,
+    setter: React.Dispatch<React.SetStateAction<File[]>>,
+    existingCount = 0
+  ) => {
+    const incoming = Array.from(files ?? [])
+    const selected = incoming.filter(isLikelyImageFile)
+    if (selected.length === 0) return
+    if (selected.length < incoming.length) {
+      showError('Osa tiedostoista ohitettiin, koska ne eivÃ¤t nÃ¤ytÃ¤ kuvilta')
+    }
+
+    setter(current => {
+      const availableSlots = Math.max(0, MAX_POPUP_IMAGES - existingCount - current.length)
+      if (selected.length > availableSlots) {
+        showError(`Voit lisÃ¤tÃ¤ enintÃ¤Ã¤n ${MAX_POPUP_IMAGES} kuvaa`)
+      }
+      return [...current, ...selected.slice(0, availableSlots)]
+    })
+  }
+
+  const removeImageFile = (
+    index: number,
+    setter: React.Dispatch<React.SetStateAction<File[]>>
+  ) => {
+    setter(current => current.filter((_, currentIndex) => currentIndex !== index))
+  }
 
   const loadMessages = useCallback(async (options?: { silent?: boolean }) => {
     if (!options?.silent) {
@@ -196,7 +279,8 @@ export const PopupAdminPage = () => {
         visibleToTeachers: audience.teachers,
         visibleToStudents: audience.students,
         visibleFrom: visibilityWindow.visibleFrom || null,
-        visibleUntil: visibilityWindow.visibleUntil || null
+        visibleUntil: visibilityWindow.visibleUntil || null,
+        images: imageFiles
       })
       showSuccess(isDraft ? 'Luonnos tallennettu' : 'Pop-up julkaistu')
       resetCreateForm()
@@ -238,6 +322,9 @@ export const PopupAdminPage = () => {
     setEditingId(message.id)
     setEditTitle(message.title)
     setEditContent(message.content)
+    setEditExistingImages(message.images ?? [])
+    setEditImageFiles([])
+    setEditImageInputKey(current => current + 1)
     setEditIsDraft(message.isDraft)
     setEditAudience({
       teachers: message.visibleToTeachers !== false,
@@ -279,7 +366,9 @@ export const PopupAdminPage = () => {
         visibleToTeachers: editAudience.teachers,
         visibleToStudents: editAudience.students,
         visibleFrom: editVisibilityWindow.visibleFrom || null,
-        visibleUntil: editVisibilityWindow.visibleUntil || null
+        visibleUntil: editVisibilityWindow.visibleUntil || null,
+        existingImages: editExistingImages,
+        images: editImageFiles
       })
       showSuccess(editIsDraft ? 'Luonnos tallennettu' : 'Pop-up julkaistu')
       resetEditForm()
@@ -390,6 +479,38 @@ export const PopupAdminPage = () => {
               className="w-full bg-neutral-700 border border-neutral-600 rounded-md px-3 py-2 text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               placeholder="Kirjoita viesti tähän..."
             />
+          </div>
+
+          <div>
+            <label
+              htmlFor="popup-images"
+              className="block text-sm font-medium text-gray-300 mb-1"
+            >
+              Kuvat:
+            </label>
+            <input
+              key={imageInputKey}
+              id="popup-images"
+              type="file"
+              accept="image/*"
+              multiple
+              onChange={event => {
+                addImageFiles(event.target.files, setImageFiles)
+                event.target.value = ''
+              }}
+              className="block w-full rounded-md border border-neutral-600 bg-neutral-700 px-3 py-2 text-sm text-gray-100 file:mr-3 file:rounded-md file:border-0 file:bg-neutral-600 file:px-3 file:py-1.5 file:text-gray-100 hover:file:bg-neutral-500 focus:border-transparent focus:ring-2 focus:ring-blue-500"
+            />
+            {imageFiles.length > 0 && (
+              <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
+                {imageFiles.map((file, index) => (
+                  <SelectedImagePreview
+                    key={`${file.name}-${file.lastModified}-${index}`}
+                    file={file}
+                    onRemove={() => removeImageFile(index, setImageFiles)}
+                  />
+                ))}
+              </div>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -559,6 +680,74 @@ export const PopupAdminPage = () => {
                         />
                       </div>
 
+                      <div>
+                        <label
+                          htmlFor={`edit-popup-images-${message.id}`}
+                          className="block text-sm font-medium text-gray-300 mb-1"
+                        >
+                          Kuvat:
+                        </label>
+                        <input
+                          key={editImageInputKey}
+                          id={`edit-popup-images-${message.id}`}
+                          type="file"
+                          accept="image/*"
+                          multiple
+                          onChange={event => {
+                            addImageFiles(
+                              event.target.files,
+                              setEditImageFiles,
+                              editExistingImages.length
+                            )
+                            event.target.value = ''
+                          }}
+                          className="block w-full rounded-md border border-neutral-600 bg-neutral-700 px-3 py-2 text-sm text-gray-100 file:mr-3 file:rounded-md file:border-0 file:bg-neutral-600 file:px-3 file:py-1.5 file:text-gray-100 hover:file:bg-neutral-500 focus:border-transparent focus:ring-2 focus:ring-blue-500"
+                        />
+                        {(editExistingImages.length > 0 || editImageFiles.length > 0) && (
+                          <div className="mt-3 space-y-3">
+                            {editExistingImages.length > 0 && (
+                              <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                                {editExistingImages.map((image, index) => (
+                                  <div
+                                    key={`${image.name}-${index}`}
+                                    className="relative overflow-hidden rounded-md border border-neutral-700 bg-neutral-900"
+                                  >
+                                    <img
+                                      src={image.data}
+                                      alt={image.name}
+                                      className="h-24 w-full object-cover"
+                                    />
+                                    <button
+                                      type="button"
+                                      className="absolute right-1 top-1 rounded bg-black/70 p-1 text-white hover:bg-black"
+                                      onClick={() =>
+                                        setEditExistingImages(current =>
+                                          current.filter((_, currentIndex) => currentIndex !== index)
+                                        )
+                                      }
+                                      aria-label={`Poista kuva ${image.name}`}
+                                    >
+                                      <X className="h-4 w-4" />
+                                    </button>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                            {editImageFiles.length > 0 && (
+                              <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                                {editImageFiles.map((file, index) => (
+                                  <SelectedImagePreview
+                                    key={`${file.name}-${file.lastModified}-${index}`}
+                                    file={file}
+                                    onRemove={() => removeImageFile(index, setEditImageFiles)}
+                                  />
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+
                       <div className="space-y-2">
                         <p className="block text-sm font-medium text-gray-300">Näkyvyys:</p>
                         <label className="flex items-center gap-2 text-sm text-gray-300">
@@ -722,6 +911,23 @@ export const PopupAdminPage = () => {
                       </div>
 
                       <p className="whitespace-pre-wrap text-gray-200 break-words">{message.content}</p>
+                      {message.images && message.images.length > 0 && (
+                        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                          {message.images.slice(0, 3).map((image, index) => (
+                            <img
+                              key={`${image.name}-${index}`}
+                              src={image.data}
+                              alt={image.name}
+                              className="h-24 w-full rounded-md border border-neutral-700 object-cover"
+                            />
+                          ))}
+                          {message.images.length > 3 && (
+                            <div className="flex h-24 items-center justify-center rounded-md border border-neutral-700 bg-neutral-900 text-sm text-gray-300">
+                              +{message.images.length - 3} kuvaa
+                            </div>
+                          )}
+                        </div>
+                      )}
                       <p className="text-xs text-gray-400">
                         {message.isDraft ? 'Luotu' : 'Julkaistu'}:{' '}
                         {formatDateTime(message.postedAt)}

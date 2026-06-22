@@ -4,6 +4,9 @@ import { useField } from '../hooks/useField'
 import { useSignUp } from '../hooks/useAuth'
 import { useNotification } from '../hooks/useNotification'
 
+const MIN_PASSWORD_LENGTH = 8
+const MAX_PASSWORD_LENGTH = 128
+
 export const Signup = () => {
   const navigate = useNavigate()
   const email = useField('email')
@@ -16,6 +19,9 @@ export const Signup = () => {
   const { showError, showSuccess } = useNotification()
   const confirmTouched = confirmPassword.value.length > 0
   const showPasswordMismatch = confirmTouched && !passwordsMatch
+  const passwordMeetsRequirements =
+    password.value.length >= MIN_PASSWORD_LENGTH &&
+    password.value.length <= MAX_PASSWORD_LENGTH
 
   const signUpMutation = useSignUp({
     onSuccess: () => {
@@ -36,6 +42,11 @@ export const Signup = () => {
     }
     if (!passwordsMatch) {
       showError('Salasanat eivät täsmää')
+      return
+    }
+
+    if (!passwordMeetsRequirements) {
+      showError(`Salasanan täytyy olla 8-128 merkkiä pitkä.`)
       return
     }
 
@@ -92,10 +103,21 @@ export const Signup = () => {
             type="password"
             placeholder="Salasana"
             autoComplete="new-password"
+            aria-describedby="password-requirements"
             className="w-full rounded-lg text-gray-100 px-3 py-2 border border-gray-400
                      focus:bg-white/10 placeholder-gray-400"
             required
           />
+          <p
+            id="password-requirements"
+            className={`mt-1 text-sm ${
+              password.value && !passwordMeetsRequirements
+                ? 'text-amber-300'
+                : 'text-gray-300'
+            }`}
+          >
+            Salasanan täytyy olla 8-128 merkkiä pitkä.
+          </p>
         </div>
 
         <div>
@@ -153,7 +175,13 @@ export const Signup = () => {
 
         <button
           type="submit"
-          disabled={signUpMutation.isPending || !passwordsMatch || !password.value || !confirmPassword.value}
+          disabled={
+            signUpMutation.isPending ||
+            !passwordsMatch ||
+            !passwordMeetsRequirements ||
+            !password.value ||
+            !confirmPassword.value
+          }
           className="button-basic active:bg-gray-300 block mx-auto"
         >
           {signUpMutation.isPending ? 'Luodaan…' : 'Rekisteröidy'}

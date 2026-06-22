@@ -498,9 +498,13 @@ test('admin flow covers dashboard, users, popups, feedback, FAQ, and user view',
 
     await page.goto('/admin/faq')
     const faqSection = page.locator('[data-section-id="faq"]')
-    await faqSection.getByRole('button').filter({ hasText: 'Lisää uusi kysymys' }).click()
-    await faqSection.locator('input[placeholder="Kirjoita kysymys"]').fill(faqQuestion)
-    await faqSection.locator('textarea[placeholder="Kirjoita vastaus"]').fill(faqAnswer)
+  await faqSection.getByRole('button').filter({ hasText: 'Lisää uusi kysymys' }).click()
+  await faqSection.locator('input[placeholder="Kirjoita kysymys"]').fill(faqQuestion)
+
+  await faqSection.getByRole('button', { name: 'Lisää tekstiosio' }).click()
+  await faqSection
+  .locator('textarea[placeholder="Kirjoita tekstiosion sisältö"]')
+  .fill(faqAnswer)
 
     const createFaqResponsePromise = page.waitForResponse(response => {
       return (

@@ -75,11 +75,11 @@ export const FeedbackPage = () => {
         >
           <ArrowLeft className="w-8 h-8 text-white" />
         </button>
-        <h2 className="m-0">Palaute</h2>
+        <h1 className="flex items-center gap-3">Palaute</h1>
       </div>
 
       <div className="bg-neutral-900 rounded-lg py-6">
-        <h3 className="mb-4">Lähetä palaute</h3>
+        <h2 className="mb-4">Lähetä palaute</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label

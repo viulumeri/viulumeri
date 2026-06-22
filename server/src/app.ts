@@ -64,6 +64,8 @@ app.post(
 app.all('/api/auth/{*splat}', toNodeHandler(auth))
 
 app.use(express.json({ limit: '100mb' }))
+app.use('/uploads', express.static('uploads'))
+app.use(express.json({ limit: '100mb' }))
 app.use('/api', authenticate)
 app.use('/api/popup-messages', popupMessagesRouter)
 app.use('/api/songs', songsRouter)

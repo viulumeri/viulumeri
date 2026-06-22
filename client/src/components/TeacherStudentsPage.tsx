@@ -1,12 +1,13 @@
 import { TeacherStudentsList } from './TeacherStudentsList'
-import { Header } from './Header'
 import { PageContainer } from './PageContainer'
 
 export const TeacherStudentsPage = () => {
   return (
     <div className="flex flex-col">
-      <Header left={<h1 className="ml-7">Oppilaat</h1>} sticky={false} />
       <PageContainer>
+        <div className="px-6">
+          <h1 className="flex items-center gap-3">Oppilaat</h1>
+        </div>
         <TeacherStudentsList />
       </PageContainer>
     </div>

@@ -4,18 +4,11 @@ import { useAdminTeachers, useAdminStudents, useDeleteAdminTeacher, useDeleteAdm
 import { DropdownSearchbar } from './DropdownSearchbar'
 import { useNotification } from '../hooks/useNotification'
 import type { Teacher, Student } from '../services/admin'
+import type { SearchResultUser } from '../types/admin'
 
-
-interface SearchResultUser {
-  id: string
-  name: string
-  email: string
-  isAdmin: boolean
-  isCurrentUser: boolean
-  role: 'teacher' | 'student'
-}
 
 export const AdminPanel = () => {
+
   const { data: teachersData, error: teachersError } = useAdminTeachers()
   const { data: studentsData, error: studentsError } = useAdminStudents()
 
@@ -193,7 +186,7 @@ export const AdminPanel = () => {
                       <CircleEllipsis />
                     </button>
                     {actionsOpen && (
-                      <div className="absolute right-0 mt-2 w-48 bg-neutral-900 border border-neutral-700 rounded-lg shadow-xl z-20">
+                      <div className="absolute right-0 z-50 mt-2 w-48 bg-neutral-900 border border-neutral-700 rounded-lg shadow-xl">
                         <button
                           type="button"
                           onClick={() => {
@@ -308,6 +301,7 @@ export const AdminPanel = () => {
             selectedResultKey={selectedResultKey}
           />
         </div>
+
       </div>
     </div>
   )

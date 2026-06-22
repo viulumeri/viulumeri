@@ -1,11 +1,36 @@
 
 import axios from 'axios'
 
+export interface User {
+  id: string
+  name: string
+  email: string
+}
+
+export type DraftFaqBlock =
+  | {
+      id: string
+      type: 'text'
+      content: string
+    }
+  | {
+      id: string
+      type: 'image'
+      file: File | null
+      imageUrl?: string
+    }
+
+export interface FAQBlock {
+  type: 'text' | 'image'
+  content?: string
+  imageUrl?: string
+  order: number
+}
+
 export interface FAQ {
   _id?: string
   question: string
-  answer: string
-  order: number
+  blocks: FAQBlock[]
   createdAt?: string
   updatedAt?: string
 }
@@ -19,32 +44,32 @@ export const faqService = {
     return response.data
   },
 
-  createFaq: async (body: FAQ): Promise<FAQ> => {
-    const response = await axios.post(
-      '/api/admin/faq',
-      body,
-      {
-        withCredentials: true
-      }
-    )
+  createFaq: async (formData: FormData) => {
+  const response = await axios.post(
+    '/api/admin/faq',
+    formData,
+    {
+      withCredentials: true
+    }
+  )
 
-    return response.data
-  },
+  return response.data
+},
 
-  updateFaq: async (
-    id: string,
-    body: Partial<FAQ>
-  ): Promise<FAQ> => {
-    const response = await axios.put(
-      `/api/admin/faq/${id}`,
-      body,
-      {
-        withCredentials: true
-      }
-    )
+ updateFaq: async (
+  id: string,
+  body: Partial<FAQ> | FormData
+): Promise<FAQ> => {
+  const response = await axios.put(
+    `/api/admin/faq/${id}`,
+    body,
+    {
+      withCredentials: true
+    }
+  )
 
-    return response.data
-  },
+  return response.data
+},
 
   deleteFaq: async (id: string): Promise<void> => {
     await axios.delete(

@@ -5,6 +5,7 @@ type PopupMessageDTO = {
   id: string
   title: string
   content: string
+  images?: PopupMessageImage[]
   postedAt: string
   visibleToTeachers: boolean
   visibleToStudents: boolean
@@ -12,10 +13,17 @@ type PopupMessageDTO = {
   visibleUntil?: string
 }
 
+type PopupMessageImage = {
+  data: string
+  name: string
+  type: string
+}
+
 type PopupMessageLean = {
   _id: { toString(): string }
   title: string
   content: string
+  images?: PopupMessageImage[]
   postedAt: Date
   visibleToTeachers?: boolean
   visibleToStudents?: boolean
@@ -49,6 +57,27 @@ const parseEnvMessages = (): Omit<PopupMessageDTO, 'id'>[] => {
 }
 
 const popupMessagesRouter = Router()
+
+const serializePopupImages = (images: unknown): PopupMessageImage[] => {
+  if (!Array.isArray(images)) return []
+
+  return images
+    .filter((image): image is PopupMessageImage => {
+      if (!image || typeof image !== 'object') return false
+      const record = image as Record<string, unknown>
+      return (
+        typeof record.data === 'string' &&
+        typeof record.name === 'string' &&
+        typeof record.type === 'string' &&
+        record.type.startsWith('image/')
+      )
+    })
+    .map(image => ({
+      data: image.data,
+      name: image.name,
+      type: image.type
+    }))
+}
 
 const getLocalDateKey = (date = new Date()): string => {
   const year = date.getFullYear()
@@ -104,6 +133,7 @@ popupMessagesRouter.get('/', async (_request, response) => {
         id: m._id.toString(),
         title: m.title,
         content: m.content,
+        images: serializePopupImages(m.images),
         postedAt: new Date(m.postedAt).toISOString(),
         visibleToTeachers: m.visibleToTeachers !== false,
         visibleToStudents: m.visibleToStudents !== false,

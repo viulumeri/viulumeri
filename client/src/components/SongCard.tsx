@@ -25,12 +25,13 @@ const SongCard = ({ song, playerState }: Props) => {
         <h2 className="font-bold text-white tracking-wide [text-shadow:_1px_1px_0_rgba(0,0,0,0.6),_-1px_-1px_0_rgba(0,0,0,0.6),_1px_-1px_0_rgba(0,0,0,0.6),_-1px_1px_0_rgba(0,0,0,0.6),_0_2px_4px_rgba(0,0,0,0.4)]">
           {song.title}
         </h2>
-        <ChevronRight
-          size={24}
-          color="white"
-          strokeWidth={2}
-          className="drop-shadow-lg"
-        />
+        <div className="rounded-full bg-black/40 p-1">
+          <ChevronRight
+            size={18}
+            color="white"
+            strokeWidth={2.5}
+          />
+        </div>
       </div>
     </Link>
   )

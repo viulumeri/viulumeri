@@ -3,6 +3,11 @@ export type StartupAnnouncement = {
   id?: string
   title: string
   content: string
+  images?: {
+    data: string
+    name: string
+    type: string
+  }[]
   /** ISO date string (e.g. 2026-05-26 or 2026-05-26T12:00:00Z) */
   postedAt: string
   visibleToTeachers?: boolean
@@ -43,8 +48,15 @@ export const getStartupAnnouncementsFromEnv = (): StartupAnnouncement[] => {
   }
 }
 
+const getImagesFingerprint = (m: StartupAnnouncement): string => {
+  if (!m.images || m.images.length === 0) return 'no-images'
+  return m.images
+    .map(image => `${image.name}:${image.type}:${image.data.length}`)
+    .join(',')
+}
+
 export const getAnnouncementKey = (m: StartupAnnouncement): string =>
-  m.id || `${m.postedAt}::${m.title}`
+  `${m.id || 'announcement'}::${m.postedAt}::${m.title}::${m.content.length}::${getImagesFingerprint(m)}`
 
 export const computeAnnouncementsMarker = (
   announcements: StartupAnnouncement[]

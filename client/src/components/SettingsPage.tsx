@@ -119,7 +119,7 @@ export const SettingsPage = () => {
 
 
   const visibleFaqs = faqs
-  
+
   .filter((faq) => faq.question.trim())
   .sort(
     (a, b) =>
@@ -137,10 +137,10 @@ export const SettingsPage = () => {
       <div className="bg-neutral-900 rounded-lg py-2">
         <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
           <div>
-            <h3 className="flex items-center gap-3 mb-5">
+            <h2 className="flex items-center gap-3 mb-4">
               <User className="w-6 h-6" />
               Käyttäjätiedot
-            </h3>
+            </h2>
             <div className="space-y-2 text-gray-300">
               <p>
                 <strong className="text-gray-100">Sähköposti:</strong>{' '}
@@ -294,7 +294,24 @@ export const SettingsPage = () => {
 
                     {openFaqId === faq._id && (
                       <div className="mt-3 bg-neutral-700 border border-neutral-600 rounded-xl px-4 py-3 text-gray-200 leading-relaxed">
-                        <div>{renderWithLinks(faq.answer)}</div>
+                        {(faq.blocks ?? []).map((block, index) => {
+                          if (block.type === 'text') {
+                            return (
+                              <div key={index}>
+                                {renderWithLinks(block.content ?? '')}
+                              </div>
+                            )
+                          }
+
+                          return (
+                            <img
+                              key={index}
+                              src={`${import.meta.env.VITE_SERVER_URL || 'http://localhost:3001'}${block.imageUrl}`}
+                              alt=""
+                              className="rounded-xl border border-neutral-600 max-w-full"
+                            />
+                          )
+                        })}
                         <p className="mt-3 text-sm text-gray-400">
                         {faq.updatedAt &&
                         faq.createdAt &&
@@ -312,7 +329,7 @@ export const SettingsPage = () => {
             </div>
           )}
       </div>
-      
+
       <div className="bg-neutral-900 rounded-lg py-3 mb-4">
         <button
           type="button"
@@ -334,7 +351,7 @@ export const SettingsPage = () => {
             ▼
           </span>
         </button>
-        
+
         {instructionsOpen && (
           <div className="flex gap-3 justify-center bg-neutral-700 border border-neutral-600 rounded-lg px-4 py-4">
             <button className="back-button-basic hover:bg-neutral-500" onClick={() => setShowInstall('android')}>
@@ -352,13 +369,13 @@ export const SettingsPage = () => {
       )}
 
       <div className="bg-neutral-900 rounded-lg py-3">
-        <h3 className="flex items-center gap-3 mb-4">
+        <h2 className="flex items-center gap-3 mb-4">
           <MessageCircle className="w-6 h-6" />
           Palaute
-        </h3>
+        </h2>
         <div className="flex justify-center">
           <button
-            className="button-basic inline-flex items-center justify-center px-6 py-2 text-xl rounded-full"
+            className="button-basic inline-flex items-center justify-center rounded-full"
             onClick={() => navigate('/feedback')}>
             Anna palautetta
           </button>

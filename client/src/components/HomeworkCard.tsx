@@ -204,7 +204,7 @@ const HomeworkCard = ({
           hw.comment && (
             <>
               <h3 className="mt-5 mb-3">Opettajan kommentti</h3>
-              <div className="text-[14px] text-gray-400
+              <div className="text-sm text-gray-400
                 [&_p]:my-1
                 [&_p:empty]:h-[1em]
                 [&_strong]:font-semibold [&_strong]:text-gray-300

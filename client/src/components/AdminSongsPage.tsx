@@ -11,7 +11,6 @@ import {
   Pencil,
   Plus,
   RotateCcw,
-  ScanSearch,
   Minus,
   Trash2
 } from 'lucide-react'
@@ -681,12 +680,6 @@ export const AdminSongsPage = () => {
                     value={searchInput}
                   />
                 </div>
-                <button
-                  type="submit"
-                  className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-base bg-brand text-white shadow-xs hover:bg-brand-strong focus:outline-none focus:ring-4 focus:ring-brand-medium"
-                >
-                  <ScanSearch size={22} strokeWidth={1.5} />
-                </button>
               </form>
 
               <label className="flex items-center gap-2 text-sm text-neutral-300">

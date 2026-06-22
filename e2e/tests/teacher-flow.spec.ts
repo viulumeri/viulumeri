@@ -246,6 +246,8 @@ test('teacher flow', async ({ page }) => {
     // 10. Teacher deletes the student
     await page.goto('/settings')
 
+    await page.getByRole('button', { name: 'Oppilaiden hallinta' }).click()
+
     const deleteStudentResponsePromise = page.waitForResponse(
       response =>
         response.url().includes(`/api/students/${studentId}`) &&

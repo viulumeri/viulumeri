@@ -136,23 +136,14 @@ export const StartupAnnouncementsPopup = ({ userId, isPending }: Props) => {
                 </div>
                 {a.images && a.images.length > 0 && (
                   <div className="mt-4 space-y-3">
-                    <img
-                      src={a.images[0].data}
-                      alt={a.images[0].name}
-                      className="max-h-[34vh] w-full rounded-xl border border-neutral-700 object-contain bg-black/20"
-                    />
-                    {a.images.length > 1 && (
-                      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-                        {a.images.slice(1).map((image, index) => (
-                          <img
-                            key={`${image.name}-${index}`}
-                            src={image.data}
-                            alt={image.name}
-                            className="h-24 w-full rounded-lg border border-neutral-700 object-cover"
-                          />
-                        ))}
-                      </div>
-                    )}
+                    {a.images.map((image, index) => (
+                      <img
+                        key={`${image.name}-${index}`}
+                        src={image.data}
+                        alt={image.name}
+                        className="max-h-[34vh] w-full rounded-xl border border-neutral-700 object-contain bg-black/20"
+                      />
+                    ))}
                   </div>
                 )}
               </div>

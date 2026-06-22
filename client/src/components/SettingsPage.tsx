@@ -340,7 +340,24 @@ export const SettingsPage = () => {
 
                   {openFaqId === faq._id && (
                     <div className="mt-3 bg-neutral-700 border border-neutral-600 rounded-xl px-4 py-3 text-gray-200 leading-relaxed">
-                      <div>{renderWithLinks(faq.answer)}</div>
+                      {(faq.blocks ?? []).map((block, index) => {
+                        if (block.type === 'text') {
+                          return (
+                            <div key={index}>
+                              {renderWithLinks(block.content ?? '')}
+                            </div>
+                          )
+                        }
+
+                        return (
+                          <img
+                            key={index}
+                            src={`${import.meta.env.VITE_SERVER_URL || 'http://localhost:3001'}${block.imageUrl}`}
+                            alt=""
+                            className="rounded-xl border border-neutral-600 max-w-full"
+                          />
+                        )
+                      })}
                       <p className="mt-3 text-sm text-gray-400">
                         {faq.updatedAt && faq.createdAt && faq.updatedAt !== faq.createdAt
                           ? `Päivitetty: ${new Date(faq.updatedAt).toLocaleDateString('fi-FI')}`
@@ -373,6 +390,7 @@ export const SettingsPage = () => {
             ▼
           </span>
         </button>
+
         {instructionsOpen && (
           <div className="flex gap-3 justify-center bg-neutral-700 border border-neutral-600 rounded-lg mx-4 mt-4 p-4">
             <button className="back-button-basic hover:bg-neutral-500" onClick={() => setShowInstall('android')}>

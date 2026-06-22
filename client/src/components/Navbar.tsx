@@ -40,7 +40,7 @@ export const Navbar = () => {
           </Link>
         )}
 
-        {(userType === 'student' || isAdminRegularUserView) && (
+        {userType === 'student' && (
           <Link
             to={lastRoute}
             className={

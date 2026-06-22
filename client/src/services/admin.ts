@@ -33,6 +33,7 @@ interface AdminPopupMessage {
   id: string
   title: string
   content: string
+  images?: AdminPopupImagePayload[]
   postedAt: string
   isDraft: boolean
   visibleToTeachers: boolean
@@ -57,6 +58,46 @@ export interface AdminSongFilePayload {
   data: string
   name: string
   type: string
+}
+
+export interface AdminPopupImagePayload {
+  data: string
+  name: string
+  type: string
+}
+
+export interface AdminPopupSavePayload {
+  title: string
+  content: string
+  isDraft?: boolean
+  visibleToTeachers?: boolean
+  visibleToStudents?: boolean
+  visibleFrom?: string | null
+  visibleUntil?: string | null
+  images?: File[]
+  existingImages?: AdminPopupImagePayload[]
+}
+
+const buildPopupFormData = (body: AdminPopupSavePayload): FormData => {
+  const formData = new FormData()
+  formData.append('title', body.title)
+  formData.append('content', body.content)
+  if (typeof body.isDraft === 'boolean') formData.append('isDraft', String(body.isDraft))
+  if (typeof body.visibleToTeachers === 'boolean') {
+    formData.append('visibleToTeachers', String(body.visibleToTeachers))
+  }
+  if (typeof body.visibleToStudents === 'boolean') {
+    formData.append('visibleToStudents', String(body.visibleToStudents))
+  }
+  formData.append('visibleFrom', body.visibleFrom ?? '')
+  formData.append('visibleUntil', body.visibleUntil ?? '')
+  if (body.existingImages) {
+    formData.append('existingImages', JSON.stringify(body.existingImages))
+  }
+  for (const file of body.images ?? []) {
+    formData.append('images', file, file.name)
+  }
+  return formData
 }
 
 export interface AdminSongItem {
@@ -195,18 +236,10 @@ export const adminService = {
     }
   },
 
-  createPopupMessage: async (body: {
-    title: string
-    content: string
-    isDraft?: boolean
-    visibleToTeachers?: boolean
-    visibleToStudents?: boolean
-    visibleFrom?: string | null
-    visibleUntil?: string | null
-  }): Promise<{
+  createPopupMessage: async (body: AdminPopupSavePayload): Promise<{
     message: AdminPopupMessage
   }> => {
-    const response = await axios.post('/api/admin/popup-messages', body, {
+    const response = await axios.post('/api/admin/popup-messages', buildPopupFormData(body), {
       withCredentials: true
     })
     return response.data
@@ -226,19 +259,11 @@ export const adminService = {
 
   updateAdminPopupMessage: async (
     id: string,
-    body: {
-      title: string
-      content: string
-      isDraft: boolean
-      visibleToTeachers: boolean
-      visibleToStudents: boolean
-      visibleFrom?: string | null
-      visibleUntil?: string | null
-    }
+    body: AdminPopupSavePayload
   ): Promise<{ message: AdminPopupMessage }> => {
     const response = await axios.patch(
       `/api/admin/popup-messages/${id}`,
-      body,
+      buildPopupFormData(body),
       { withCredentials: true }
     )
     return response.data

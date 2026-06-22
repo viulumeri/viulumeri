@@ -285,12 +285,12 @@ const App = () => {
     ) : (
           <Navigate
             to={
-              userType === 'teacher'
-                ? '/teacher/students'
-                : userType === 'student'
-                  ? '/student/homework'
-                  : userType === 'admin'
-                    ? '/admin'
+              role === 'admin'
+                ? '/admin'
+                : userType === 'teacher'
+                  ? '/teacher/students'
+                  : userType === 'student'
+                    ? '/student/homework'
                     : '/login'
             }
             
@@ -307,12 +307,12 @@ const App = () => {
           element={
             <Navigate
               to={
-                userType === 'teacher'
-                  ? '/teacher/students'
-                  : userType === 'student'
-                    ? '/student/homework'
-                    : userType === 'admin'
-                      ? '/admin'
+                role === 'admin'
+                  ? '/admin'
+                  : userType === 'teacher'
+                    ? '/teacher/students'
+                    : userType === 'student'
+                      ? '/student/homework'
                       : '/login'
               }
               replace

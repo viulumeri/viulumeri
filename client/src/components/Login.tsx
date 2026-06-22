@@ -75,16 +75,16 @@ export const Login = () => {
         </button>
       </form>
 
-      <div>
+      <div className="flex flex-col items-center sm:flex-row justify-center gap-4 mt-4">
         <button type="button"
           onClick={() => navigate('/forgot-password')}
-          className="back-button-basic active:bg-white/10 block mx-auto mt-4"
+          className="back-button-basic active:bg-white/10"
         >
           Unohdin salasanani
         </button>
         <button type="button"
           onClick={() => navigate('/signup')}
-          className="back-button-basic active:bg-white/10 block mx-auto mt-4"
+          className="back-button-basic active:bg-white/10"
         >
           Luo uusi käyttäjä
         </button>

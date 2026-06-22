@@ -144,10 +144,10 @@ export const AdminPanel = () => {
     : null
 
   return (
-    <div className="space-y-4 p-5 pb-24">
+    <div className="admin-page">
       <div className="admin-panel">
-        <h1 className="flex items-center gap-3">
-          <Search className="w-8 h-8" />
+        <h1 className="admin-page-title">
+          <Search className="admin-page-title-icon" />
           Käyttäjähaku
         </h1>
 
@@ -164,7 +164,7 @@ export const AdminPanel = () => {
             onSubmit={handleSubmit}
             renderExpandedResult={() => selectedUser && (
               <div className="space-y-4">
-                <div className="flex items-center justify-between gap-4">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                   <div className="text-sm text-neutral-300">
                     <div className="mt-3 space-y-2 text-sm text-neutral-200">
                       {'studentCount' in selectedUser ? (
@@ -183,7 +183,7 @@ export const AdminPanel = () => {
                       )}
                     </div>
                   </div>
-                  <div className="relative text-right">
+                  <div className="relative self-end text-right sm:self-auto">
                     <button
                       type="button"
                       aria-label="Avaa käyttäjätoiminnot"
@@ -282,7 +282,7 @@ export const AdminPanel = () => {
                         />
                       </label>
                     </div>
-                    <div className="flex justify-end gap-2">
+                    <div className="flex flex-wrap justify-end gap-2">
                       <button
                         type="button"
                         disabled={updateUser.isPending}

@@ -75,21 +75,21 @@ export const AdminFaqPage = () => {
     )
 
   return (
-    <div className="space-y-4 p-5 pb-24">
-      <h1 className="flex items-center gap-3">
-        <FileQuestionMark className="w-8 h-8" />
+    <div className="admin-page">
+      <h1 className="admin-page-title">
+        <FileQuestionMark className="admin-page-title-icon" />
         Usein kysytyt kysymykset
       </h1>
 
-      <div className="bg-neutral-900 rounded-lg p-4 space-y-4">
-        <div className="bg-neutral-900 rounded-lg p-3 mb-4">
+      <div className="space-y-4">
+        <div className="rounded-lg bg-neutral-900">
           <button
             type="button"
             onClick={() => setCreateFaqOpen(!createFaqOpen)}
-            className="w-full flex items-center justify-between gap-3 bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 rounded-md px-4 py-3 text-left transition-colors min-h-[58px]"
+            className="flex min-h-[58px] w-full items-center justify-between gap-3 rounded-md border border-neutral-700 bg-neutral-800 px-3 py-3 text-left transition-colors hover:bg-neutral-700 sm:px-4"
           >
-            <span className="flex items-center gap-3 font-semibold">
-              <CirclePlus className="w-6 h-6 shrink-0" />
+            <span className="flex min-w-0 items-center gap-3 font-semibold">
+              <CirclePlus className="h-6 w-6 shrink-0" />
               Lisää uusi kysymys
             </span>
 
@@ -103,7 +103,7 @@ export const AdminFaqPage = () => {
           </button>
 
           {createFaqOpen && (
-            <div className="space-y-2 mt-3 pl-3 border-l border-neutral-700">
+            <div className="mt-3 space-y-2 border-l border-neutral-700 pl-3">
               <p className="font-semibold text-gray-200">Kysymys:</p>
 
               <input
@@ -134,14 +134,14 @@ export const AdminFaqPage = () => {
           )}
         </div>
 
-        <div className="bg-neutral-900 rounded-lg p-3">
+        <div className="rounded-lg bg-neutral-900">
           <button
             type="button"
             onClick={() => setBrowseFaqOpen(!browseFaqOpen)}
-            className="w-full flex items-center justify-between gap-3 bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 rounded-md px-4 py-3 text-left transition-colors min-h-[58px]"
+            className="flex min-h-[58px] w-full items-center justify-between gap-3 rounded-md border border-neutral-700 bg-neutral-800 px-3 py-3 text-left transition-colors hover:bg-neutral-700 sm:px-4"
           >
-            <span className="flex items-center gap-3 font-semibold">
-              <Pen className="w-6 h-6 shrink-0" />
+            <span className="flex min-w-0 items-center gap-3 font-semibold">
+              <Pen className="h-6 w-6 shrink-0" />
               Selaa ja muokkaa kysymyksiä
             </span>
 
@@ -155,9 +155,9 @@ export const AdminFaqPage = () => {
           </button>
 
           {browseFaqOpen && (
-            <div className="space-y-3 mt-3 pl-3 border-l border-neutral-700">
+            <div className="mt-3 space-y-3 border-l border-neutral-700 pl-3">
               {visibleFaqs.length === 0 ? (
-                <div className="ml-4 bg-neutral-800 border border-neutral-700 rounded-xl px-4 py-6 text-center text-gray-400 italic">
+                <div className="rounded-xl border border-neutral-700 bg-neutral-800 px-4 py-6 text-center text-gray-400 italic sm:ml-4">
                   Ei näytettaviä kysymyksiä
                 </div>
               ) : (
@@ -168,9 +168,9 @@ export const AdminFaqPage = () => {
                       onClick={() =>
                         setOpenFaqId(openFaqId === faq._id ? null : faq._id ?? null)
                       }
-                      className="w-full flex items-center justify-between gap-3 ml-4 max-w-[96%] bg-neutral-800 hover:bg-neutral-600 border border-neutral-600 rounded-xl px-4 py-3 text-left transition-colors shadow-sm"
+                      className="flex w-full items-center justify-between gap-3 rounded-xl border border-neutral-600 bg-neutral-800 px-3 py-3 text-left shadow-sm transition-colors hover:bg-neutral-600 sm:px-4"
                     >
-                      <span className="font-semibold">{faq.question}</span>
+                      <span className="min-w-0 break-words font-semibold">{faq.question}</span>
 
                       <span
                         className={`transition-transform duration-200 ${
@@ -182,7 +182,7 @@ export const AdminFaqPage = () => {
                     </button>
 
                     {openFaqId === faq._id && (
-                      <div className="space-y-3 mt-2 ml-8 bg-neutral-800 border border-neutral-700 rounded-xl p-4 shadow-inner">
+                      <div className="mt-2 space-y-3 rounded-xl border border-neutral-700 bg-neutral-800 p-3 shadow-inner sm:p-4">
                         {editingId === faq._id ? (
                           <>
                             <input
@@ -197,7 +197,7 @@ export const AdminFaqPage = () => {
                               onChange={e => setEditAnswer(e.target.value)}
                             />
 
-                            <div className="flex gap-3">
+                            <div className="flex flex-wrap gap-3">
                               <button
                                 onClick={handleUpdateFaq}
                                 className="bg-neutral-100 text-black rounded-full px-5 py-2"
@@ -223,7 +223,7 @@ export const AdminFaqPage = () => {
                               {renderWithLinks(faq.answer)}
                             </div>
                             <div className="space-y-2">
-                              <div className="flex gap-3">
+                              <div className="flex flex-wrap gap-3">
                                 <button onClick={() => startEditFaq(faq)}>
                                   Muokkaa
                                 </button>

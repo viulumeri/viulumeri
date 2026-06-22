@@ -16,13 +16,13 @@ export const AdminFeedbackPage = () => {
   const feedbacks = data?.feedbacks ?? []
 
   return (
-    <div className="space-y-4 p-5 pb-24">
-      <h1 className="flex items-center gap-3">
-        <MessageSquare className="w-8 h-8" />
+    <div className="admin-page">
+      <h1 className="admin-page-title">
+        <MessageSquare className="admin-page-title-icon" />
         Palautteet
       </h1>
 
-      <div className="bg-neutral-900 rounded-lg p-6">
+      <div className="admin-card">
         {isLoading ? (
           <p className="text-gray-400">Ladataan palautteita...</p>
         ) : error ? (
@@ -32,11 +32,11 @@ export const AdminFeedbackPage = () => {
         ) : (
           <ul className="space-y-4">
             {feedbacks.map(item => (
-              <li key={item.id} className="bg-neutral-800 rounded-lg p-4 space-y-2">
-                <div className="flex items-center justify-between gap-2">
-                  <span className="font-semibold">{item.title}</span>
+              <li key={item.id} className="space-y-2 rounded-lg bg-neutral-800 p-4">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                  <span className="break-words font-semibold">{item.title}</span>
 
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center justify-between gap-3 sm:justify-end">
                     <span className="text-xs text-gray-400">
                       {new Date(item.createdAt).toLocaleString('fi-FI', { 
                         dateStyle: 'short', 

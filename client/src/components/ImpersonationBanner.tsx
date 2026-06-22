@@ -2,7 +2,7 @@ import { adminService } from '../services/admin'
 import { useNotification } from '../hooks/useNotification'
 import { useSession } from '../auth-client'
 import { Bell } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import {
   disableAdminRegularUserView,
   isAdminRegularUserViewEnabled
@@ -31,7 +31,26 @@ export default function ImpersonationBanner({
     role === 'admin' && isAdminRegularUserViewEnabled()
 
   const [isExpanded, setIsExpanded] = useState(false)
+  const bannerRef = useRef<HTMLDivElement | null>(null)
   const { showSuccess, showError } = useNotification()
+
+  useEffect(() => {
+    if (!isExpanded) return
+
+    const onPointerDown = (event: PointerEvent) => {
+      const target = event.target
+      if (!(target instanceof Node)) return
+      if (bannerRef.current?.contains(target)) return
+
+      setIsExpanded(false)
+    }
+
+    document.addEventListener('pointerdown', onPointerDown)
+
+    return () => {
+      document.removeEventListener('pointerdown', onPointerDown)
+    }
+  }, [isExpanded])
 
   const description = isImpersonating
     ? `Olet käyttäjän ${session?.user?.name ?? 'tuntematon'} näkymässä`
@@ -72,6 +91,7 @@ export default function ImpersonationBanner({
       className="fixed inset-x-4 bottom-20 z-[9999] flex justify-end sm:inset-x-auto sm:bottom-6 sm:right-6"
     >
       <div
+        ref={bannerRef}
         className={`
           flex items-center overflow-hidden
           bg-yellow-900 text-white shadow-xl

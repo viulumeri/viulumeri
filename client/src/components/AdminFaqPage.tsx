@@ -806,10 +806,10 @@ const startEditFaq = (faq: FAQ) => {
   {(block.file || block.imageUrl) && (
     <img
       src={
-        block.file
-          ? URL.createObjectURL(block.file)
-          : `${import.meta.env.VITE_SERVER_URL || 'http://localhost:3001'}${block.imageUrl}`
-      }
+  block.file
+    ? URL.createObjectURL(block.file)
+    : block.imageUrl
+}
       alt="Esikatselu"
       className="
         rounded-xl
@@ -980,9 +980,7 @@ const startEditFaq = (faq: FAQ) => {
                           return (
                             <img
                               key={index}
-                              src={`${
-                                import.meta.env.VITE_SERVER_URL || 'http://localhost:3001'
-                              }${block.imageUrl}`}
+                              src={block.imageUrl}
                               className="rounded-xl border border-neutral-600 max-w-full"
                             />
                           )

@@ -450,7 +450,9 @@ adminRouter.post('/songs', json({ limit: '100mb' }), async (request, response) =
     response.status(201).json({ song })
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to create song'
-    response.status(400).json({ error: message })
+    response
+      .status(error instanceof AdminSongError ? error.statusCode : 400)
+      .json({ error: message })
   }
 })
 

@@ -1,4 +1,5 @@
 import fs from 'fs/promises'
+import { constants } from 'fs'
 import path from 'path'
 import { inflateRawSync } from 'zlib'
 import sharp from 'sharp'
@@ -125,6 +126,23 @@ const exists = async (filePath: string) => {
     return true
   } catch {
     return false
+  }
+}
+
+const ensureWritableMusicDir = async (musicDir: string) => {
+  try {
+    await fs.mkdir(musicDir, { recursive: true })
+    await fs.access(musicDir, constants.W_OK)
+  } catch (error) {
+    const code =
+      typeof error === 'object' && error !== null && 'code' in error
+        ? String((error as { code?: unknown }).code)
+        : ''
+    const suffix = code ? ` (${code})` : ''
+    throw new AdminSongError(
+      `Kappaleiden tallennuskansioon ei voi kirjoittaa: ${musicDir}${suffix}`,
+      500
+    )
   }
 }
 
@@ -626,7 +644,7 @@ export const adminSongsService = {
     }
 
     const musicDir = getMusicDir()
-    await fs.mkdir(musicDir, { recursive: true })
+    await ensureWritableMusicDir(musicDir)
 
     const songId = await uniqueSongId(musicDir, name)
     const songDir = getSongDir(musicDir, songId)

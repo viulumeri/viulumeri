@@ -50,11 +50,13 @@ const buildBlocks = (
       uploadedFile => uploadedFile.fieldname === block.fileKey
     )
 
-    return {
-      type: 'image',
-      imageUrl: file ? `/uploads/${file.originalname}` : block.imageUrl ?? '',
-      order: Number(block.order ?? 0)
-    }
+                return {
+          type: 'image',
+          imageUrl: file
+            ? `data:${file.mimetype};base64,${file.buffer.toString('base64')}`
+            : block.imageUrl ?? '',
+          order: Number(block.order ?? 0)
+        }
   })
 }
 

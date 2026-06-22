@@ -23,6 +23,7 @@
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.3",
     "@types/jsonwebtoken": "^9.0.10",
+    "@types/multer": "^2.1.0",
     "@types/node": "^24.2.1",
     "@types/react": "^19.1.9",
     "@types/react-dom": "^19.1.7",
@@ -45,6 +46,7 @@
     "jsonwebtoken": "^9.0.2",
     "mongodb": "^6.18.0",
     "mongoose": "^8.16.5",
+    "multer": "^2.2.0",
     "resend": "^6.0.0",
     "sharp": "^0.35.1",
     "uncrypto": "^0.1.3"

@@ -4,18 +4,11 @@ import { useAdminTeachers, useAdminStudents, useDeleteAdminTeacher, useDeleteAdm
 import { DropdownSearchbar } from './DropdownSearchbar'
 import { useNotification } from '../hooks/useNotification'
 import type { Teacher, Student } from '../services/admin'
+import type { SearchResultUser } from '../types/admin'
 
-
-interface SearchResultUser {
-  id: string
-  name: string
-  email: string
-  isAdmin: boolean
-  isCurrentUser: boolean
-  role: 'teacher' | 'student'
-}
 
 export const AdminPanel = () => {
+
   const { data: teachersData, error: teachersError } = useAdminTeachers()
   const { data: studentsData, error: studentsError } = useAdminStudents()
 
@@ -308,6 +301,7 @@ export const AdminPanel = () => {
             selectedResultKey={selectedResultKey}
           />
         </div>
+
       </div>
     </div>
   )

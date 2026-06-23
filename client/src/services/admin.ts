@@ -236,6 +236,21 @@ export const adminService = {
     }
   },
 
+  updateAdminSongOrder: async (
+    songIds: string[]
+  ): Promise<{ songs: AdminSongItem[] }> => {
+    try {
+      const response = await axios.patch(
+        '/api/admin/songs/order',
+        { songIds },
+        { withCredentials: true }
+      )
+      return response.data
+    } catch (error) {
+      throw new Error(getApiErrorMessage(error, 'Kappaleiden järjestyksen tallennus epäonnistui'))
+    }
+  },
+
   createPopupMessage: async (body: AdminPopupSavePayload): Promise<{
     message: AdminPopupMessage
   }> => {

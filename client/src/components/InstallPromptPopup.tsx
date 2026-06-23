@@ -93,11 +93,11 @@ export const InstallPromptPopup = ({ userId, onClose, platform }: Props) => {
                 <IosIcon className="w-8 h-8" />
                 <span className="sr-only">iPhone / iPad</span>
               </p>
-              <StepImage srcs={["/PWA-install-instructions/threedots.jpg"]} alts={["kolmepistevalikko"]}>
+              <StepImage srcs={["/PWA-install-instructions/threedotsios.jpg"]} alts={["kolmepistevalikko"]}>
                 <p className="pl-4 text-sm">1. Paina selaimen kolmepistevalikkoa näytön alareunassa</p>
               </StepImage>
-              <StepImage srcs={["/PWA-install-instructions/share.jpg"]} alts={["Jaa-painike"]}>
-                <p className="pl-4 text-sm">2. Paina Share / Jaa -painiketta (neliö, josta lähtee nuoli ylöspäin)</p>
+              <StepImage srcs={["/PWA-install-instructions/shareios.jpg"]} alts={["Jaa-painike"]}>
+                <p className="pl-4 text-sm">2. Paina Share / Jaa -painiketta</p>
               </StepImage>
               <StepImage srcs={["/PWA-install-instructions/addtohomeios.jpg"]} alts={["lisää aloitusnäyttöön"]}>
                 <p className="pl-4 text-sm">3. Valitse "Add to Home Screen" / "Lisää aloitusnäyttöön"</p>

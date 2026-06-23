@@ -75,7 +75,7 @@ export const Login = () => {
         </button>
       </form>
 
-      <div className="flex flex-col items-center sm:flex-row justify-center gap-8 mt-4 font-size-sm">
+      <div className="flex flex-row flex-wrap items-center justify-center gap-8 mt-4 text-sm">
         <button type="button"
           onClick={() => navigate('/forgot-password')}
           className="font-normal text-gray-100 underline underline-offset-4 transition-all duration-200 hover:text-white hover:underline-offset-6 active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white/70"

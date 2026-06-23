@@ -123,11 +123,11 @@ test('Install instruction accordion opens, closes and shows contents', async ({ 
   await page.getByText('Asennusohjeet').click()
 
   // Opened tab, shows android and ios buttons
-  await expect(page.getByRole('button', { name: /ios/i })).toBeVisible();
-  await expect(page.getByRole('button', { name: /android/i })).toBeVisible();
+  await expect(page.getByTestId('install-ios')).toBeVisible();
+  await expect(page.getByTestId('install-android')).toBeVisible();
 
   // Verify that teacher sees ios install prompt
-  await page.getByText('iOS').click()
+  await page.getByTestId('install-ios').click()
   await expect(page.getByText('Sovelluksen asennus')).toBeVisible({ timeout: 15_000 })
   await expect(page.getByText('iPhone / iPad')).toBeVisible({ timeout: 15_000 })
   
@@ -140,7 +140,7 @@ test('Install instruction accordion opens, closes and shows contents', async ({ 
   await page.getByText('OK').click()
 
   // Verify that teacher sees android install prompt
-  await page.getByRole('button', { name: /android/i }).click()
+  await page.getByTestId('install-android').click()
   await expect(page.getByText('Sovelluksen asennus')).toBeVisible({ timeout: 15_000 })
   await expect(page.getByLabel('Asenna sovellus').getByText('Android')).toBeVisible({ timeout: 15_000 })
   

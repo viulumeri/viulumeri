@@ -1,4 +1,7 @@
 import { useState } from 'react'
+import BaselineAndroidIcon from '@iconify-react/ic/baseline-android'
+import BaselineAppleIcon from '@iconify-react/ic/baseline-apple'
+import IosIcon from '@iconify-react/simple-icons/ios'
 
 const STORAGE_KEY = 'installPromptSeen'
 
@@ -49,57 +52,70 @@ export const InstallPromptPopup = ({ userId, onClose, platform }: Props) => {
   if (isStandalone || (dismissed && !onClose) || (!userId && !onClose)) return null
 
   return (
-    <div
-      className="fixed inset-x-0 top-8 z-50 flex justify-center px-4 pointer-events-none "
-      role="dialog"
-      aria-label="Asenna sovellus"
-    >
-      <div className="pointer-events-auto w-full max-w-2xl rounded-2xl border border-neutral-700 bg-neutral-800 text-neutral-100 shadow-2xl shadow-black/40">
-        <div className="p-6 flex flex-col max-h-[85vh]">
-            <h1 className="flex justify-center">Tervetuloa Viulumereen</h1>
-            <h2 className="mt-5">Sovelluksen asennus</h2>
-          <div className="mt-1 space-y-3 text-neutral-100/90 overflow-y-auto flex-1">
-            <p>
-              Voit asentaa sovelluksen laitteellesi ja käyttää sitä kuin tavallista sovellusta
-            </p>
+  <div
+    className="fixed inset-x-0 top-8 z-50 flex justify-center px-4 pointer-events-none"
+    role="dialog"
+    aria-label="Asenna sovellus"
+  >
+    <div className="pointer-events-auto w-full max-w-2xl rounded-2xl border border-neutral-700 bg-neutral-800 text-neutral-100 shadow-2xl shadow-black/40">
+      <div className="p-6 flex flex-col max-h-[85vh]">
+
+        <h1 className="text-center">Tervetuloa Viulumereen</h1>
+        <h2 className="mt-5">Sovelluksen asennus</h2>
+        <p className="mt-1 text-neutral-400 text-sm">
+          Voit asentaa sovelluksen laitteellesi ja käyttää sitä kuin tavallista sovellusta
+        </p>
+
+        <div className="mt-4 space-y-3 text-neutral-100/90 overflow-y-auto flex-1">
 
           {showAndroid && (
-            <div>
-              <p className="font-semibold mb-1">Android</p>
+            <div className="space-y-3">
+              <p className="font-semibold flex items-center gap-2">
+                <BaselineAndroidIcon className="w-8 h-8" /> Android
+              </p>
               <p>1. Asenna joko:</p>
               <StepImage srcs={["/PWA-install-instructions/prompt.jpg"]} alts={["Asennusilmoitus"]}>
                 <p className="pl-4 text-sm">a. automaattisen asennusilmoituksen kautta</p>
               </StepImage>
               <StepImage srcs={["/PWA-install-instructions/addtohomescreen.jpg", "/PWA-install-instructions/choose.jpg"]} alts={["Aloitusnäyttöön lisäys", "Valitse install"]}>
-                <p className="pl-4 text-sm mt-2">b. selaimen valikon (⋮) kautta valitsemalla <span className="italic">Lisää aloitusnäyttöön</span></p>
+                <p className="pl-4 text-sm">b. selaimen valikon (⋮) kautta valitsemalla <span className="italic">Lisää aloitusnäyttöön</span></p>
               </StepImage>
               <StepImage srcs={["/PWA-install-instructions/prompt2.jpg"]} alts={["paina asenna"]}>
-                <p className="mt-2">2. Paina <span className="italic">Asenna</span></p>
+                <p>2. Paina <span className="italic">Asenna</span></p>
               </StepImage>
             </div>
           )}
 
           {showIos && (
-            <div>
-              <p className="font-semibold mb-1">iPhone / iPad</p>
+            <div className="space-y-3">
+              <p className="font-semibold flex items-center gap-2"> 
+                <BaselineAppleIcon className="w-8 h-8" />
+                <IosIcon className="w-8 h-8" />
+                <span className="sr-only">iPhone / iPad</span>
+              </p>
               <StepImage srcs={["/PWA-install-instructions/threedots.jpg"]} alts={["kolmepistevalikko"]}>
                 <p className="pl-4 text-sm">1. Paina selaimen kolmepistevalikkoa näytön alareunassa</p>
               </StepImage>
               <StepImage srcs={["/PWA-install-instructions/share.jpg"]} alts={["Jaa-painike"]}>
-                <p className="pl-4 text-sm mt-2">2. Paina Share / Jaa -painiketta (neliö, josta lähtee nuoli ylöspäin)</p>
+                <p className="pl-4 text-sm">2. Paina Share / Jaa -painiketta (neliö, josta lähtee nuoli ylöspäin)</p>
               </StepImage>
               <StepImage srcs={["/PWA-install-instructions/addtohomeios.jpg"]} alts={["lisää aloitusnäyttöön"]}>
-                <p className="pl-4 text-sm mt-2">3. Valitse "Add to Home Screen" / "Lisää aloitusnäyttöön"</p>
+                <p className="pl-4 text-sm">3. Valitse "Add to Home Screen" / "Lisää aloitusnäyttöön"</p>
               </StepImage>
             </div>
           )}
-          </div>
-            <p className="mt-5"> Nämä ohjeet löytyvät myös asetuksista</p>
-            <button type="button" className="button-basic mx-auto mt-4" onClick={onOk}>
-              OK
-            </button>
+
         </div>
+
+        <p className="mt-5 text-sm text-neutral-400 text-center">
+          Nämä ohjeet löytyvät myös asetuksista
+        </p>
+        <button type="button" className="button-basic mx-auto mt-4" onClick={onOk}>
+          OK
+        </button>
+
       </div>
     </div>
-  )
+  </div>
+)
 }

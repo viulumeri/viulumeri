@@ -5,11 +5,6 @@ import { adminService } from '../services/admin'
 import type { AdminPopupMessage } from '../services/admin'
 import { ADMIN_POPUPS_UPDATED_EVENT } from '../utils/adminPopupEvents'
 
-const formatDelta = (value: number) => {
-  if (value > 0) return `+${value}`
-  return `${value}`
-}
-
 const popupAudienceLabel = (message: AdminPopupMessage) => {
   const visibleToTeachers = message.visibleToTeachers !== false
   const visibleToStudents = message.visibleToStudents !== false
@@ -24,8 +19,6 @@ export const AdminDashboardPage = () => {
   const { data: summary } = useAdminSummary({ refetchInterval: 30000 })
   const { data: feedbackData } = useAdminFeedbacks({ refetchInterval: 30000 })
   const [messages, setMessages] = useState<AdminPopupMessage[]>([])
-  const [baselineTeacherCount, setBaselineTeacherCount] = useState<number | null>(null)
-  const [baselineStudentCount, setBaselineStudentCount] = useState<number | null>(null)
 
   const fetchMessages = useCallback(async () => {
     const response = await adminService.getAdminPopupMessages()
@@ -49,20 +42,8 @@ export const AdminDashboardPage = () => {
     }
   }, [fetchMessages])
 
-  useEffect(() => {
-    if (!summary) return
-    if (baselineTeacherCount === null) {
-      setBaselineTeacherCount(summary.teacherCount)
-    }
-    if (baselineStudentCount === null) {
-      setBaselineStudentCount(summary.studentCount)
-    }
-  }, [summary, baselineTeacherCount, baselineStudentCount])
-
   const teacherCount = summary?.teacherCount ?? 0
   const studentCount = summary?.studentCount ?? 0
-  const teacherDelta = baselineTeacherCount === null ? 0 : teacherCount - baselineTeacherCount
-  const studentDelta = baselineStudentCount === null ? 0 : studentCount - baselineStudentCount
   const unreadFeedbackCount = (feedbackData?.feedbacks ?? []).filter(item => !item.isRead).length
   const activePopups = messages.filter(
     message =>
@@ -92,7 +73,6 @@ export const AdminDashboardPage = () => {
             Opettajat
           </h3>
           <p className="mt-1 text-center text-2xl font-bold md:text-3xl">{teacherCount}</p>
-          <p className="mt-1 text-center text-xs text-gray-400">Muutos: {formatDelta(teacherDelta)}</p>
         </div>
 
         <div className="rounded-lg bg-neutral-900 p-4">
@@ -101,7 +81,6 @@ export const AdminDashboardPage = () => {
             Oppilaat
           </h3>
           <p className="mt-1 text-center text-2xl font-bold md:text-3xl">{studentCount}</p>
-          <p className="mt-1 text-center text-xs text-gray-400">Muutos: {formatDelta(studentDelta)}</p>
         </div>
       </div>
 

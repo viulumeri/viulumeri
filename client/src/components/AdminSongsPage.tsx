@@ -1,11 +1,13 @@
-import { Fragment, useEffect, useMemo, useRef, useState } from 'react'
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import {
   Check,
   ChevronLeft,
   ChevronRight,
   FileAudio,
+  GripVertical,
   ImagePlus,
+  ListOrdered,
   Music,
   Music2,
   Pencil,
@@ -18,7 +20,8 @@ import {
   useAdminSongs,
   useCreateAdminSong,
   useDeleteAdminSong,
-  useUpdateAdminSong
+  useUpdateAdminSong,
+  useUpdateAdminSongOrder
 } from '../hooks/useAdmin'
 import type {
   AdminSongFilePayload,
@@ -249,6 +252,10 @@ export const AdminSongsPage = () => {
   const [editingSong, setEditingSong] = useState<AdminSongItem | null>(null)
   const [form, setForm] = useState<FormState>(emptyFormState)
   const [fileInputKey, setFileInputKey] = useState(0)
+  const [orderMode, setOrderMode] = useState(false)
+  const [orderedSongs, setOrderedSongs] = useState<AdminSongItem[]>([])
+  const [orderDirty, setOrderDirty] = useState(false)
+  const [draggingSongId, setDraggingSongId] = useState<string | null>(null)
 
   const createSong = useCreateAdminSong({
     onSuccess: () => {
@@ -276,6 +283,15 @@ export const AdminSongsPage = () => {
       closeForm()
     },
     onError: error => showError(`Kappaleen poistaminen epäonnistui: ${error.message}`)
+  })
+
+  const updateSongOrder = useUpdateAdminSongOrder({
+    onSuccess: data => {
+      setOrderedSongs(data.songs)
+      setOrderDirty(false)
+      showSuccess('Kappaleiden järjestys tallennettu')
+    },
+    onError: error => showError(`Järjestyksen tallennus epäonnistui: ${error.message}`)
   })
 
   const songs = useMemo(() => {
@@ -337,7 +353,126 @@ export const AdminSongsPage = () => {
     window.localStorage.setItem(SONG_SORT_STORAGE_KEY, sortMode)
   }, [sortMode])
 
+  useEffect(() => {
+    if (!orderMode || orderDirty) return
+    setOrderedSongs(data?.songs ?? [])
+  }, [data, orderDirty, orderMode])
+
   const resetFiles = () => setFileInputKey(current => current + 1)
+
+  const openOrderMode = () => {
+    setOrderMode(true)
+    setOrderedSongs(data?.songs ?? [])
+    setOrderDirty(false)
+    setSearchInput('')
+    setPage(0)
+  }
+
+  const closeOrderMode = () => {
+    setOrderMode(false)
+    setDraggingSongId(null)
+    setOrderDirty(false)
+  }
+
+  const moveOrderedSongToIndex = useCallback((songId: string, targetIndex: number) => {
+    setOrderedSongs(current => {
+      const fromIndex = current.findIndex(song => song.id === songId)
+      if (fromIndex < 0) return current
+
+      const next = [...current]
+      const [moved] = next.splice(fromIndex, 1)
+      const clampedIndex = Math.max(0, Math.min(targetIndex, next.length))
+      const adjustedIndex = clampedIndex > fromIndex ? clampedIndex : clampedIndex
+      if (fromIndex === adjustedIndex) return current
+
+      next.splice(adjustedIndex, 0, moved)
+      setOrderDirty(true)
+      return next
+    })
+  }, [])
+
+  const moveDraggedSongToPointer = useCallback((songId: string, clientY: number) => {
+    const rows = Array.from(
+      document.querySelectorAll<HTMLElement>('[data-order-song-id]')
+    )
+    const targetIndex = rows.reduce((nextIndex, row) => {
+      const rowSongId = row.dataset.orderSongId
+      if (!rowSongId || rowSongId === songId) return nextIndex
+
+      const rect = row.getBoundingClientRect()
+      const midpoint = rect.top + rect.height / 2
+      return clientY > midpoint ? nextIndex + 1 : nextIndex
+    }, 0)
+
+    moveOrderedSongToIndex(songId, targetIndex)
+  }, [moveOrderedSongToIndex])
+
+  const onOrderPointerEnd = () => {
+    setDraggingSongId(null)
+  }
+
+  useEffect(() => {
+    if (!draggingSongId) return
+
+    const onPointerMove = (event: PointerEvent) => {
+      event.preventDefault()
+      moveDraggedSongToPointer(draggingSongId, event.clientY)
+
+      const edgeSize = 96
+      const maxSpeed = 18
+      const viewportHeight = window.innerHeight
+      let scrollBy = 0
+
+      if (event.clientY < edgeSize) {
+        scrollBy = -Math.ceil(maxSpeed * ((edgeSize - event.clientY) / edgeSize))
+      } else if (event.clientY > viewportHeight - edgeSize) {
+        scrollBy = Math.ceil(
+          maxSpeed * ((event.clientY - (viewportHeight - edgeSize)) / edgeSize)
+        )
+      }
+
+      if (scrollBy !== 0) {
+        const scrollContainer = document.querySelector<HTMLElement>(
+          '[data-admin-scroll-container="true"]'
+        )
+        const songsSection = document.querySelector<HTMLElement>(
+          '[data-section-id="songs"]'
+        )
+
+        if (scrollContainer && songsSection) {
+          const minScrollTop = songsSection.offsetTop
+          const maxScrollTop = Math.max(
+            minScrollTop,
+            songsSection.offsetTop + songsSection.offsetHeight - scrollContainer.clientHeight
+          )
+          const nextScrollTop = Math.max(
+            minScrollTop,
+            Math.min(maxScrollTop, scrollContainer.scrollTop + scrollBy)
+          )
+
+          scrollContainer.scrollTop = nextScrollTop
+        }
+      }
+    }
+    const onPointerEnd = () => setDraggingSongId(null)
+    const onWheel = (event: WheelEvent) => event.preventDefault()
+
+    window.addEventListener('pointermove', onPointerMove, { passive: false })
+    window.addEventListener('pointerup', onPointerEnd)
+    window.addEventListener('pointercancel', onPointerEnd)
+    window.addEventListener('wheel', onWheel, { passive: false })
+
+    return () => {
+      window.removeEventListener('pointermove', onPointerMove)
+      window.removeEventListener('pointerup', onPointerEnd)
+      window.removeEventListener('pointercancel', onPointerEnd)
+      window.removeEventListener('wheel', onWheel)
+    }
+  }, [draggingSongId, moveDraggedSongToPointer])
+
+  const saveSongOrder = () => {
+    updateSongOrder.mutate(orderedSongs.map(song => song.id))
+  }
 
   const closeForm = () => {
     setMode(null)
@@ -429,19 +564,109 @@ export const AdminSongsPage = () => {
             <Music className="admin-page-title-icon" />
             Kappaleet
           </h1>
-          {!mode && (
-            <button
-              type="button"
-              onClick={openCreateForm}
-              className="button-basic inline-flex items-center justify-center gap-2"
-            >
-              <Plus className="h-4 w-4 sm:h-5 sm:w-5" />
-              Lisää kappale
-            </button>
+          {!mode && !orderMode && (
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={openOrderMode}
+                className="button-basic inline-flex items-center justify-center gap-2"
+              >
+                <ListOrdered className="h-4 w-4 sm:h-5 sm:w-5" />
+                Järjestys
+              </button>
+              <button
+                type="button"
+                onClick={openCreateForm}
+                className="button-basic inline-flex items-center justify-center gap-2"
+              >
+                <Plus className="h-4 w-4 sm:h-5 sm:w-5" />
+                Lisää kappale
+              </button>
+            </div>
           )}
         </div>
 
-        {mode ? (
+        {orderMode ? (
+          <div className="space-y-4">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <h2 className="flex items-center gap-2 text-lg font-semibold">
+                <ListOrdered className="h-5 w-5 text-neutral-300" />
+                Kappaleiden järjestys
+              </h2>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={closeOrderMode}
+                  className="button-basic"
+                >
+                  Takaisin
+                </button>
+                <button
+                  type="button"
+                  onClick={saveSongOrder}
+                  disabled={!orderDirty || updateSongOrder.isPending}
+                  className="button-basic disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {updateSongOrder.isPending ? 'Tallennetaan...' : 'Tallenna'}
+                </button>
+              </div>
+            </div>
+
+            {shouldShowLoading ? (
+              <div className="rounded-lg border border-neutral-700 bg-neutral-800 px-4 py-5 text-sm text-neutral-300">
+                Ladataan kappaleita...
+              </div>
+            ) : shouldShowError ? (
+              <div className="rounded-lg border border-neutral-700 bg-neutral-800 px-4 py-5 text-sm text-rose-300">
+                Kappaleiden lataus epäonnistui
+              </div>
+            ) : (
+              <ul
+                className="flex flex-col gap-1 px-4 pt-2"
+                onPointerUp={onOrderPointerEnd}
+                onPointerCancel={onOrderPointerEnd}
+                onLostPointerCapture={onOrderPointerEnd}
+              >
+                {orderedSongs.map(song => (
+                  <li
+                    key={song.id}
+                    data-order-song-id={song.id}
+                    className={`rounded-lg transition ${
+                      draggingSongId === song.id ? 'bg-white/10' : ''
+                    }`}
+                  >
+                    <div className="flex items-center gap-4 rounded-lg p-3">
+                      <button
+                        type="button"
+                        className={`touch-none rounded-full p-2 text-neutral-300 hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-500 ${
+                          draggingSongId === song.id ? 'cursor-grabbing' : 'cursor-grab'
+                        }`}
+                        aria-label={`Siirrä kappaletta ${song.title}`}
+                        onPointerDown={event => {
+                          event.preventDefault()
+                          setDraggingSongId(song.id)
+                        }}
+                      >
+                        <GripVertical className="h-5 w-5" />
+                      </button>
+                      <img
+                        src={getAdminSongImageUrl(song)}
+                        alt={song.title}
+                        className="h-14 w-14 rounded-full object-cover"
+                        loading="lazy"
+                        decoding="async"
+                        onError={handleSongImageError}
+                      />
+                      <div className="flex min-w-0 flex-1 items-center">
+                        <h3 className="min-w-0 flex-1 truncate">{song.title}</h3>
+                      </div>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        ) : mode ? (
           <form onSubmit={onSubmit} className="admin-card space-y-4 sm:space-y-6">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
               <h2 className="flex items-center gap-2 text-lg font-semibold">

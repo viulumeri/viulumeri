@@ -104,6 +104,23 @@ export const useDeleteAdminSong = (
   })
 }
 
+export const useUpdateAdminSongOrder = (
+  options?: UseMutationOptions<{ songs: AdminSongItem[] }, Error, string[]>
+) => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: adminService.updateAdminSongOrder,
+    ...options,
+    onSuccess: (data, ...args) => {
+      queryClient.setQueryData(['admin', 'songs'], data)
+      queryClient.invalidateQueries({ queryKey: ['admin', 'songs'] })
+      queryClient.invalidateQueries({ queryKey: ['songs'] })
+      options?.onSuccess?.(data, ...args)
+    }
+  })
+}
+
 export const useDeleteAdminTeacher = (
   options?: UseMutationOptions<void, Error, string>
 ) => {

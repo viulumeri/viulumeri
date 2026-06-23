@@ -6,6 +6,7 @@ import sharp from 'sharp'
 import type { SongMetadata } from '../../../shared/types'
 import { musicService } from './music'
 import { isImproSong } from '../utils/songMetadata'
+import { readSongOrder, sortBySongOrder, writeSongOrder } from './songOrder'
 
 const IMAGE_VARIANTS = {
   list: { width: 112, height: 112 },
@@ -629,9 +630,10 @@ export const adminSongsService = {
         .map(entry => readAdminSong(musicDir, entry.name))
     )
 
-    return songs
-      .filter((song): song is AdminSongListItem => Boolean(song))
-      .sort((left, right) => left.title.localeCompare(right.title, 'fi'))
+    return sortBySongOrder(
+      songs.filter((song): song is AdminSongListItem => Boolean(song)),
+      await readSongOrder(musicDir)
+    )
   },
 
   async createSong(payload: AdminSongPayload): Promise<AdminSongListItem> {
@@ -672,10 +674,48 @@ export const adminSongsService = {
       isHidden: payload.isHidden === true
     })
 
+    const currentOrder = await readSongOrder(musicDir)
+    if (currentOrder.length > 0) {
+      await writeSongOrder(musicDir, [...currentOrder, songId])
+    }
     await reloadSongs()
     const song = await readAdminSong(musicDir, songId)
     if (!song) throw new Error('Failed to read created song')
     return song
+  },
+
+  async updateSongOrder(songIds: string[]): Promise<AdminSongListItem[]> {
+    const musicDir = getMusicDir()
+    await ensureWritableMusicDir(musicDir)
+
+    const deletedSongIds = await readDeletedSongIds(musicDir)
+    const entries = await fs.readdir(musicDir, { withFileTypes: true })
+    const existingSongIds = entries
+      .filter(
+        entry =>
+          entry.isDirectory() &&
+          !isDeletedSongDir(entry.name) &&
+          !deletedSongIds.has(entry.name)
+      )
+      .map(entry => entry.name)
+
+    const existingSet = new Set(existingSongIds)
+    const requestedSet = new Set(songIds)
+    const invalidIds = songIds.filter(id => !existingSet.has(id))
+    if (invalidIds.length > 0) {
+      throw new AdminSongError('Song order contains unknown songs', 400)
+    }
+
+    const nextOrder = [
+      ...songIds,
+      ...existingSongIds
+        .filter(id => !requestedSet.has(id))
+        .sort((left, right) => left.localeCompare(right, 'fi'))
+    ]
+
+    await writeSongOrder(musicDir, nextOrder)
+    await reloadSongs()
+    return this.listSongs()
   },
 
   async updateSong(songId: string, payload: AdminSongPayload): Promise<AdminSongListItem> {

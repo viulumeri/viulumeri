@@ -372,6 +372,21 @@ test('admin flow covers dashboard, users, popups, feedback, FAQ, and user view',
     songRow = songTitleButton.locator('xpath=ancestor::div[contains(@class, "grid")][1]')
     await expect(songRow).toContainText('Hidas instr.')
 
+    await songsSection.getByRole('button', { name: 'Järjestys' }).click()
+    await expect(songsSection).toContainText('Kappaleiden järjestys')
+    await expect(songsSection.getByText(updatedSongTitle)).toBeVisible()
+    await expect(
+      songsSection.getByRole('button', { name: new RegExp(`Siirr.*${updatedSongTitle}`) })
+    ).toBeVisible()
+    await songsSection.getByRole('button', { name: 'Takaisin' }).click()
+    await songsSection.locator('input[placeholder="Etsi kappaleita..."]').fill(updatedSongTitle)
+    songTitleButton = songsSection.getByRole('button', {
+      name: updatedSongTitle,
+      exact: true
+    })
+    await expect(songTitleButton).toBeVisible({ timeout: 15_000 })
+    songRow = songTitleButton.locator('xpath=ancestor::div[contains(@class, "grid")][1]')
+
     const deleteSongResponsePromise = page.waitForResponse(response => {
       return (
         response.url().includes('/api/admin/songs/') &&

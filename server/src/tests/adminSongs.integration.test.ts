@@ -287,6 +287,74 @@ describe('Admin songs API create, edit, delete integration', () => {
     assert.strictEqual(missingSlowBundle.status, 404)
   })
 
+  it('persists admin song order for admin and regular user song lists', async () => {
+    const { sessionCookie: adminCookie } = await TestHelper.createAuthenticatedAdmin(
+      api,
+      'admin.order-songs@edu.hel.fi',
+      'Admin Order Songs'
+    )
+    const { sessionCookie: studentCookie } = await TestHelper.createAuthenticatedStudent(
+      api,
+      'student.order-songs@edu.hel.fi',
+      'Student Order Songs'
+    )
+
+    const zetaResponse = await api
+      .post('/api/admin/songs')
+      .set('Cookie', adminCookie)
+      .send(createSongPayload({ name: 'Zeta Order Song' }))
+    const alphaResponse = await api
+      .post('/api/admin/songs')
+      .set('Cookie', adminCookie)
+      .send(createSongPayload({ name: 'Alpha Order Song' }))
+    const middleResponse = await api
+      .post('/api/admin/songs')
+      .set('Cookie', adminCookie)
+      .send(createSongPayload({ name: 'Middle Order Song' }))
+
+    assert.strictEqual(zetaResponse.status, 201)
+    assert.strictEqual(alphaResponse.status, 201)
+    assert.strictEqual(middleResponse.status, 201)
+
+    const zeta = zetaResponse.body.song
+    const alpha = alphaResponse.body.song
+    const middle = middleResponse.body.song
+
+    const defaultAdminList = await api.get('/api/admin/songs').set('Cookie', adminCookie)
+    assert.strictEqual(defaultAdminList.status, 200)
+    assert.deepStrictEqual(
+      defaultAdminList.body.songs.map((song: { id: string }) => song.id),
+      [alpha.id, middle.id, zeta.id]
+    )
+
+    const invalidOrder = await api
+      .patch('/api/admin/songs/order')
+      .set('Cookie', adminCookie)
+      .send({ songIds: [zeta.id, 'missing-song'] })
+
+    assert.strictEqual(invalidOrder.status, 400)
+    assert.strictEqual(invalidOrder.body.error, 'Song order contains unknown songs')
+
+    const customOrder = [zeta.id, alpha.id, middle.id]
+    const orderResponse = await api
+      .patch('/api/admin/songs/order')
+      .set('Cookie', adminCookie)
+      .send({ songIds: customOrder })
+
+    assert.strictEqual(orderResponse.status, 200)
+    assert.deepStrictEqual(
+      orderResponse.body.songs.map((song: { id: string }) => song.id),
+      customOrder
+    )
+
+    const publicList = await api.get('/api/songs').set('Cookie', studentCookie)
+    assert.strictEqual(publicList.status, 200)
+    assert.deepStrictEqual(
+      publicList.body.map((song: { id: string }) => song.id),
+      customOrder
+    )
+  })
+
   it('deletes songs from admin and regular user views', async () => {
     const { sessionCookie: adminCookie } = await TestHelper.createAuthenticatedAdmin(
       api,

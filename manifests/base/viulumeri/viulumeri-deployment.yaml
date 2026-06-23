@@ -73,7 +73,6 @@ spec:
           volumeMounts:
             - name: audio-storage
               mountPath: /var/www/audio
-              readOnly: true
           resources:
             requests:
               memory: '512Mi'

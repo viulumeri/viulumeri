@@ -438,16 +438,16 @@ export const PopupAdminPage = () => {
   }
 
   return (
-    <div className="space-y-4 p-5 pb-24">
-      <h1 className="flex items-center gap-3">
-        <Bell className="w-8 h-8" />
+    <div className="admin-page">
+      <h1 className="admin-page-title">
+        <Bell className="admin-page-title-icon" />
         Pop-up
       </h1>
 
-      <div className="bg-neutral-900 rounded-lg p-6">
-        <h3 className="mb-4">Lähetä pop-up</h3>
+      <div className="admin-card">
+        <h3 className="admin-card-title">Lähetä pop-up</h3>
 
-        <form onSubmit={onSubmit} className="space-y-4">
+        <form onSubmit={onSubmit} className="-mx-4 space-y-4 sm:-mx-6">
           <div>
             <label
               htmlFor="popup-title"
@@ -627,9 +627,9 @@ export const PopupAdminPage = () => {
         </form>
       </div>
 
-      <div className="bg-neutral-900 rounded-lg p-6 space-y-4">
+      <div className="admin-card space-y-4">
         <div className="flex items-center gap-4">
-          <h3>Nykyiset pop-upit</h3>
+          <h3 className="admin-card-title mb-0">Nykyiset pop-upit</h3>
         </div>
 
         {isLoadingMessages ? (
@@ -821,7 +821,7 @@ export const PopupAdminPage = () => {
                         </div>
                       </div>
 
-                      <div className="flex items-center justify-between rounded-md border border-neutral-700 bg-neutral-800 px-3 py-2">
+                      <div className="flex flex-col gap-3 rounded-md border border-neutral-700 bg-neutral-800 px-3 py-2 sm:flex-row sm:items-center sm:justify-between">
                         <div>
                           <p className="text-sm font-medium text-gray-200">Tila</p>
                           <p className="text-xs text-gray-400">OFF = Luonnos, ON = Julkaistu</p>
@@ -864,7 +864,7 @@ export const PopupAdminPage = () => {
                         {buildVisibilitySummary(editVisibilityWindow)}
                       </p>
 
-                      <div className="flex flex-wrap gap-2">
+                      <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
                         <button
                           type="button"
                           className="button-basic disabled:opacity-50 disabled:cursor-not-allowed"
@@ -885,9 +885,9 @@ export const PopupAdminPage = () => {
                     </div>
                   ) : (
                     <>
-                      <div className="flex items-start justify-between gap-4">
-                        <h4 className="text-lg font-semibold break-words">{message.title}</h4>
-                        <div className="flex flex-wrap gap-2 justify-end">
+                      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                        <h4 className="break-words text-lg font-semibold">{message.title}</h4>
+                        <div className="flex flex-wrap gap-2 sm:justify-end">
                           <span
                             className={`text-xs px-2 py-1 rounded ${
                               message.isDraft
@@ -936,7 +936,7 @@ export const PopupAdminPage = () => {
                         {buildVisibilitySummary(message)}
                       </p>
 
-                      <div className="flex flex-wrap items-end justify-between gap-2">
+                      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end sm:justify-between">
                         <div className="flex flex-wrap items-center gap-2">
                           <button
                             type="button"
@@ -948,7 +948,7 @@ export const PopupAdminPage = () => {
                           </button>
                           <button
                             type="button"
-                            className="button-basic inline-flex h-10 w-10 items-center justify-center px-0 py-0 text-black disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="button-basic inline-flex h-10 w-10 min-w-10 items-center justify-center rounded-full !px-0 !py-0 text-black disabled:cursor-not-allowed disabled:opacity-50"
                             disabled={isProcessingThis}
                             onClick={() => void onDeleteOne(message.id)}
                             aria-label="Poista pop-up"
@@ -957,7 +957,7 @@ export const PopupAdminPage = () => {
                             <Trash2 className="h-4 w-4" />
                           </button>
                         </div>
-                        <div className="flex items-center gap-2 text-sm text-gray-200">
+                        <div className="flex items-center gap-2 text-sm text-gray-200 sm:justify-end">
                           <span
                             className={`text-xs px-2 py-1 rounded ${
                               message.isDraft

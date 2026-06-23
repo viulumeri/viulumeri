@@ -52,9 +52,9 @@ export const AdminFeedbackPage = () => {
   }
 
   return (
-    <div className="space-y-4 p-5 pb-24">
-      <h1 className="flex items-center gap-3">
-        <MessageSquare className="w-8 h-8" />
+    <div className="admin-page">
+      <h1 className="admin-page-title">
+        <MessageSquare className="admin-page-title-icon" />
         Palautteet
       </h1>
 

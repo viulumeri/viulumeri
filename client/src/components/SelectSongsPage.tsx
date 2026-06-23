@@ -91,7 +91,7 @@ export const SelectSongsPage = () => {
             <ArrowLeft className="w-6 h-6 text-gray-300" />
           </button>
         }
-        center={<h2>Valitse kappaleita</h2>}
+        center={<h1>Valitse kappaleita</h1>}
       />
 
       <main

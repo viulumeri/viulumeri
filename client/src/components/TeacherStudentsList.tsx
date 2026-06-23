@@ -22,7 +22,7 @@ export const TeacherStudentsList = () => {
 
   return (
     <div className="px-6 mt-4">
-      <div className="grid grid-cols-2 gap-5">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
         {list.map(s => (
           <StudentCard key={s.id} id={s.id} name={s.name} practiceCount={s.latestHomework?.practiceCount ?? 0} />
         ))}

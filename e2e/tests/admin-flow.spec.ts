@@ -372,6 +372,24 @@ test('admin flow covers dashboard, users, popups, feedback, FAQ, and user view',
     songRow = songTitleButton.locator('xpath=ancestor::div[contains(@class, "grid")][1]')
     await expect(songRow).toContainText('Hidas instr.')
 
+    await songsSection.getByRole('button', { name: 'Järjestys' }).click()
+    await expect(songsSection).toContainText('Kappaleiden järjestys')
+    await expect(songsSection.getByText(updatedSongTitle)).toBeVisible()
+    await expect(
+      songsSection.getByRole('button', { name: new RegExp(`Siirr.*${updatedSongTitle}`) })
+    ).toBeVisible()
+    await expect(
+      songsSection.getByRole('button', { name: 'Tallenna', exact: true })
+    ).not.toBeVisible()
+    await songsSection.getByRole('button', { name: 'Takaisin' }).click()
+    await songsSection.locator('input[placeholder="Etsi kappaleita..."]').fill(updatedSongTitle)
+    songTitleButton = songsSection.getByRole('button', {
+      name: updatedSongTitle,
+      exact: true
+    })
+    await expect(songTitleButton).toBeVisible({ timeout: 15_000 })
+    songRow = songTitleButton.locator('xpath=ancestor::div[contains(@class, "grid")][1]')
+
     const deleteSongResponsePromise = page.waitForResponse(response => {
       return (
         response.url().includes('/api/admin/songs/') &&
@@ -397,6 +415,11 @@ test('admin flow covers dashboard, users, popups, feedback, FAQ, and user view',
     const createPopupForm = popupSection.locator('form').first()
     await createPopupForm.locator('#popup-title').fill(popupTitle)
     await createPopupForm.locator('#popup-content').fill(popupContent)
+    await createPopupForm.locator('#popup-images').setInputFiles({
+      name: 'popup-image.jpg',
+      mimeType: 'image/jpeg',
+      buffer: fixtureImage
+    })
     await createPopupForm.getByLabel('Opettajat').uncheck()
     await createPopupForm.locator('#popup-visible-from').fill(today)
     await createPopupForm.locator('#popup-visible-until').fill(today)
@@ -411,16 +434,22 @@ test('admin flow covers dashboard, users, popups, feedback, FAQ, and user view',
     await popupSection.getByTestId('popup-create-submit').click()
     const createPopupResponse = await createPopupResponsePromise
     expect(createPopupResponse.ok()).toBe(true)
+    const createPopupBody = (await createPopupResponse.json()) as {
+      message?: { images?: unknown[] }
+    }
+    expect(createPopupBody.message?.images).toHaveLength(1)
 
     let popupCard = popupSection.getByTestId('popup-message-card').filter({ hasText: popupTitle }).first()
     await expect(popupCard).toBeVisible({ timeout: 15_000 })
     await expect(popupCard).toContainText('Oppilaat')
     await expect(popupCard).toContainText('Julkaistu')
     await expect(popupCard).toContainText('Voimassa')
+    await expect(popupCard.locator('img[alt="popup-image.jpg"]')).toBeVisible()
 
     await page.goto('/admin')
     await expect(overviewSection).toContainText(popupTitle)
     await expect(overviewSection).toContainText(popupContent)
+    await expect(overviewSection.locator('img[alt="popup-image.jpg"]')).toBeVisible()
     await expect(overviewSection).toContainText('Näkyvyys: Oppilaat')
 
     await page.goto('/admin/popup')
@@ -439,10 +468,15 @@ test('admin flow covers dashboard, users, popups, feedback, FAQ, and user view',
     await popupSection.getByRole('button', { name: 'Tallenna', exact: true }).click()
     const updatePopupResponse = await updatePopupResponsePromise
     expect(updatePopupResponse.ok()).toBe(true)
+    const updatePopupBody = (await updatePopupResponse.json()) as {
+      message?: { images?: unknown[] }
+    }
+    expect(updatePopupBody.message?.images).toHaveLength(1)
 
     popupCard = popupSection.getByTestId('popup-message-card').filter({ hasText: updatedPopupTitle }).first()
     await expect(popupCard).toContainText(updatedPopupContent)
     await expect(popupCard).toContainText('Opettajat, Oppilaat')
+    await expect(popupCard.locator('img[alt="popup-image.jpg"]')).toBeVisible()
 
     await popupCard.getByRole('switch').click()
     await expect(popupCard).toContainText('Luonnos', { timeout: 15_000 })
@@ -465,6 +499,8 @@ test('admin flow covers dashboard, users, popups, feedback, FAQ, and user view',
     const feedbackSection = page.locator('[data-section-id="feedback"]')
     const feedbackCard = feedbackSection.locator('li').filter({ hasText: feedbackTitle })
     await expect(feedbackCard).toBeVisible({ timeout: 15_000 })
+    await expect(feedbackCard).toContainText('Lukematta')
+    await feedbackCard.getByRole('button', { name: new RegExp(feedbackTitle) }).click()
     await expect(feedbackCard).toContainText(feedbackMessage)
     await expect(feedbackCard).toContainText(STUDENT.email)
 
@@ -487,7 +523,7 @@ test('admin flow covers dashboard, users, popups, feedback, FAQ, and user view',
 
     page.once('dialog', dialog => dialog.accept())
 
-    await feedbackCard.getByRole('button', { name: 'Poista' }).click()
+    await feedbackCard.getByRole('button', { name: 'Poista palaute' }).click()
 
     const deleteFeedbackResponse = await deleteFeedbackResponsePromise
     expect(deleteFeedbackResponse.ok()).toBe(true)
@@ -575,7 +611,7 @@ await expect(
     await userViewSection
       .getByRole('button', { name: 'Siirry käyttäjänäkymään' })
       .click()
-    await page.waitForURL(/\/student\/homework/, { timeout: 15_000 })
+    await page.waitForURL(/\/(teacher\/students|student\/homework)/, { timeout: 15_000 })
   } finally {
     await cleanupE2eData(disposableStudent.email, runPrefix)
     await cleanupE2eSongs(runPrefix)

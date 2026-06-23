@@ -1,4 +1,4 @@
-# Asiakastapaaminen 11.06.2026 / Sprintti 3.
+# Pöytäkirja 11.06.2026 / Sprintti 4
 
 
 ## Admin-tilan kehittäminen:
@@ -74,7 +74,7 @@ toiminto kuvien ja biisien hallintaan.
 
 ## Tekninen velka:
 
-*Teknisen velan osalta e2e-testejä voidaan vähentää. 3 minuuttia ei ole vielä paha.
+* Teknisen velan osalta e2e-testejä voidaan vähentää. 3 minuuttia ei ole vielä paha.
 * Lähtökohta on ollut hyvä.
 * Parempi dokumentointi.
 * Vielä parannuksia inpersonete-näkymään.

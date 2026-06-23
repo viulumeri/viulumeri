@@ -1,5 +1,13 @@
 # Technology decisions
 
+## 21.6.2025
+
+## cross-env
+
+Added `cross-env` to make npm scripts that set environment variables work consistently across operating systems.
+The server test scripts need variables like `NODE_ENV=test` and `TS_NODE_PROJECT=tsconfig.test.json`. The previous syntax works in Unix-like shells, but can fail on Windows because npm may run scripts through a different shell.
+Using `cross-env` keeps commands like `npm run test` and `npm run check:all` working the same way on Linux, macOS, and Windows.
+
 ## 17.6.2026
 
 ### Tiptap, Dompurify

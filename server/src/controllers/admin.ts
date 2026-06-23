@@ -1,4 +1,5 @@
-import { Router, json, type Request, type Response } from 'express'
+import { Router, json, type NextFunction, type Request, type Response } from 'express'
+import multer from 'multer'
 import { fromNodeHeaders } from 'better-auth/node'
 import { requireAdmin } from '../utils/auth-middleware'
 import { auth } from '../utils/auth'
@@ -24,6 +25,7 @@ type PopupMessageLean = {
   _id: { toString(): string }
   title: string
   content: string
+  images?: PopupMessageImage[]
   postedAt: Date
   isDraft?: boolean
   visibleToTeachers?: boolean
@@ -33,11 +35,53 @@ type PopupMessageLean = {
 }
 
 type PopupMessageRequestBody = Record<string, unknown>
+type PopupMessageImage = {
+  data: string
+  name: string
+  type: string
+}
 
 const adminRouter = Router()
 adminRouter.use(requireAdmin)
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+const MAX_POPUP_IMAGES = 6
+const MAX_POPUP_IMAGE_BYTES = 5 * 1024 * 1024
+const MAX_POPUP_IMAGES_TOTAL_BYTES = 10 * 1024 * 1024
+const IMAGE_EXTENSION_PATTERN = /\.(avif|gif|heic|heif|jpe?g|png|webp|svg)$/i
+const popupImageUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    files: MAX_POPUP_IMAGES,
+    fileSize: MAX_POPUP_IMAGE_BYTES,
+    fieldSize: MAX_POPUP_IMAGES_TOTAL_BYTES * 2
+  }
+})
+const parsePopupImageUpload = (
+  request: Request,
+  response: Response,
+  next: NextFunction
+) => {
+  popupImageUpload.array('images')(request, response, error => {
+    if (!error) {
+      next()
+      return
+    }
+
+    if (error instanceof multer.MulterError) {
+      const message =
+        error.code === 'LIMIT_FILE_SIZE'
+          ? 'YksittÃ¤inen kuva saa olla enintÃ¤Ã¤n 5 Mt'
+          : error.code === 'LIMIT_FILE_COUNT'
+            ? `Voit lisÃ¤tÃ¤ enintÃ¤Ã¤n ${MAX_POPUP_IMAGES} kuvaa`
+            : 'Kuvien lÃ¤hetys epÃ¤onnistui'
+      response.status(400).json({ error: message })
+      return
+    }
+
+    next(error)
+  })
+}
 
 const getAdminEmailSet = async (emails: string[]) => {
   const adminUsers = await client
@@ -64,6 +108,138 @@ const readUserUpdate = (body: Record<string, unknown> | null | undefined) => {
   if (!EMAIL_PATTERN.test(email)) return { error: 'Invalid email' } as const
 
   return { name, email }
+}
+
+const getBase64PayloadByteLength = (value: string): number => {
+  const commaIndex = value.indexOf(',')
+  const base64 = (commaIndex >= 0 ? value.slice(commaIndex + 1) : value).trim()
+  if (!base64) return 0
+
+  const padding = base64.endsWith('==') ? 2 : base64.endsWith('=') ? 1 : 0
+  return Math.max(0, Math.floor((base64.length * 3) / 4) - padding)
+}
+
+const getImageMimeTypeFromName = (name: string): string => {
+  const extension = name.split('.').pop()?.toLowerCase()
+  switch (extension) {
+    case 'avif':
+      return 'image/avif'
+    case 'gif':
+      return 'image/gif'
+    case 'heic':
+      return 'image/heic'
+    case 'heif':
+      return 'image/heif'
+    case 'jpg':
+    case 'jpeg':
+      return 'image/jpeg'
+    case 'png':
+      return 'image/png'
+    case 'svg':
+      return 'image/svg+xml'
+    case 'webp':
+      return 'image/webp'
+    default:
+      return ''
+  }
+}
+
+const normalizePopupImages = (value: unknown) => {
+  if (value === undefined) return { images: undefined } as const
+  if (value === null) return { images: [] } as const
+  if (!Array.isArray(value)) return { error: 'Images must be an array' } as const
+  if (value.length > MAX_POPUP_IMAGES) {
+    return { error: `Voit lisÃ¤tÃ¤ enintÃ¤Ã¤n ${MAX_POPUP_IMAGES} kuvaa` } as const
+  }
+
+  let totalBytes = 0
+  const images: PopupMessageImage[] = []
+  for (const item of value) {
+    if (!item || typeof item !== 'object') {
+      return { error: 'Image payload is invalid' } as const
+    }
+    const record = item as Record<string, unknown>
+    const data = typeof record.data === 'string' ? record.data.trim() : ''
+    const name = typeof record.name === 'string' ? record.name.trim() : ''
+    const rawType = typeof record.type === 'string' ? record.type.trim() : ''
+    const type = rawType || getImageMimeTypeFromName(name)
+
+    if (!data || !name) {
+      return { error: 'Image payload is invalid' } as const
+    }
+    if (!type.startsWith('image/') || (!rawType && !IMAGE_EXTENSION_PATTERN.test(name))) {
+      return { error: 'Vain kuvatiedostot ovat sallittuja' } as const
+    }
+
+    const byteLength = getBase64PayloadByteLength(data)
+    if (byteLength > MAX_POPUP_IMAGE_BYTES) {
+      return { error: 'YksittÃ¤inen kuva saa olla enintÃ¤Ã¤n 5 Mt' } as const
+    }
+    totalBytes += byteLength
+    if (totalBytes > MAX_POPUP_IMAGES_TOTAL_BYTES) {
+      return { error: 'Kuvien yhteiskoko saa olla enintÃ¤Ã¤n 10 Mt' } as const
+    }
+
+    images.push({
+      data,
+      name: name.slice(0, 200),
+      type: type.slice(0, 100)
+    })
+  }
+
+  return { images } as const
+}
+
+const normalizePopupImageFiles = (files: Express.Multer.File[] | undefined) => {
+  const uploadedFiles = files ?? []
+  if (uploadedFiles.length > MAX_POPUP_IMAGES) {
+    return { error: `Voit lisÃ¤tÃ¤ enintÃ¤Ã¤n ${MAX_POPUP_IMAGES} kuvaa` } as const
+  }
+
+  let totalBytes = 0
+  const images: PopupMessageImage[] = []
+  for (const file of uploadedFiles) {
+    const type = file.mimetype || getImageMimeTypeFromName(file.originalname)
+    if (!type.startsWith('image/')) {
+      return { error: 'Vain kuvatiedostot ovat sallittuja' } as const
+    }
+    if (file.size > MAX_POPUP_IMAGE_BYTES) {
+      return { error: 'YksittÃ¤inen kuva saa olla enintÃ¤Ã¤n 5 Mt' } as const
+    }
+    totalBytes += file.size
+    if (totalBytes > MAX_POPUP_IMAGES_TOTAL_BYTES) {
+      return { error: 'Kuvien yhteiskoko saa olla enintÃ¤Ã¤n 10 Mt' } as const
+    }
+
+    images.push({
+      data: `data:${type};base64,${file.buffer.toString('base64')}`,
+      name: file.originalname.slice(0, 200),
+      type: type.slice(0, 100)
+    })
+  }
+
+  return { images } as const
+}
+
+const serializePopupImages = (images: unknown): PopupMessageImage[] => {
+  if (!Array.isArray(images)) return []
+
+  return images
+    .filter((image): image is PopupMessageImage => {
+      if (!image || typeof image !== 'object') return false
+      const record = image as Record<string, unknown>
+      return (
+        typeof record.data === 'string' &&
+        typeof record.name === 'string' &&
+        typeof record.type === 'string' &&
+        record.type.startsWith('image/')
+      )
+    })
+    .map(image => ({
+      data: image.data,
+      name: image.name,
+      type: image.type
+    }))
 }
 
 const updateProfile = async (
@@ -274,7 +450,26 @@ adminRouter.post('/songs', json({ limit: '100mb' }), async (request, response) =
     response.status(201).json({ song })
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to create song'
-    response.status(400).json({ error: message })
+    response
+      .status(error instanceof AdminSongError ? error.statusCode : 400)
+      .json({ error: message })
+  }
+})
+
+adminRouter.patch('/songs/order', json({ limit: '1mb' }), async (request, response) => {
+  try {
+    const songIds = request.body?.songIds
+    if (!Array.isArray(songIds) || !songIds.every(id => typeof id === 'string')) {
+      return response.status(400).json({ error: 'songIds must be an array of strings' })
+    }
+
+    const songs = await adminSongsService.updateSongOrder(songIds)
+    response.json({ songs })
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Failed to update song order'
+    response
+      .status(error instanceof AdminSongError ? error.statusCode : 400)
+      .json({ error: message })
   }
 })
 
@@ -316,6 +511,7 @@ adminRouter.get('/popup-messages', async (_request, response) => {
       id: message._id.toString(),
       title: message.title,
       content: message.content,
+      images: serializePopupImages(message.images),
       postedAt: new Date(message.postedAt).toISOString(),
       isDraft: Boolean(message.isDraft),
       visibleToTeachers: message.visibleToTeachers !== false,
@@ -400,7 +596,10 @@ const readBooleanField = (
   value: unknown,
   fallback: boolean
 ): boolean => {
-  return typeof value === 'boolean' ? value : fallback
+  if (typeof value === 'boolean') return value
+  if (value === 'true') return true
+  if (value === 'false') return false
+  return fallback
 }
 
 const normalizeVisibility = (requestBody: PopupMessageRequestBody | null | undefined) => {
@@ -430,18 +629,28 @@ const readVisibilityUpdate = (requestBody: PopupMessageRequestBody | null | unde
     return null
   }
 
-  if (hasVisibleToTeachers && typeof body['visibleToTeachers'] !== 'boolean') {
+  if (
+    hasVisibleToTeachers &&
+    typeof body['visibleToTeachers'] !== 'boolean' &&
+    body['visibleToTeachers'] !== 'true' &&
+    body['visibleToTeachers'] !== 'false'
+  ) {
     return null
   }
-  if (hasVisibleToStudents && typeof body['visibleToStudents'] !== 'boolean') {
+  if (
+    hasVisibleToStudents &&
+    typeof body['visibleToStudents'] !== 'boolean' &&
+    body['visibleToStudents'] !== 'true' &&
+    body['visibleToStudents'] !== 'false'
+  ) {
     return null
   }
 
   const visibleToTeachers = hasVisibleToTeachers
-    ? (body['visibleToTeachers'] as boolean)
+    ? readBooleanField(body['visibleToTeachers'], true)
     : undefined
   const visibleToStudents = hasVisibleToStudents
-    ? (body['visibleToStudents'] as boolean)
+    ? readBooleanField(body['visibleToStudents'], true)
     : undefined
   if (visibleToTeachers === undefined && visibleToStudents === undefined) {
     return null
@@ -457,14 +666,27 @@ const readVisibilityUpdate = (requestBody: PopupMessageRequestBody | null | unde
   }
 }
 
-adminRouter.post('/popup-messages', async (request, response) => {
+const readExistingPopupImages = (value: unknown) => {
+  if (value === undefined) return { images: [] } as const
+  if (typeof value !== 'string') return { error: 'Existing images are invalid' } as const
+  if (!value.trim()) return { images: [] } as const
+
+  try {
+    return normalizePopupImages(JSON.parse(value))
+  } catch {
+    return { error: 'Existing images are invalid' } as const
+  }
+}
+
+adminRouter.post('/popup-messages', parsePopupImageUpload, async (request, response) => {
   const title =
     typeof request.body?.title === 'string' ? request.body.title.trim() : ''
   const content =
     typeof request.body?.content === 'string' ? request.body.content.trim() : ''
-  const isDraft = request.body?.isDraft === true
+  const isDraft = request.body?.isDraft === true || request.body?.isDraft === 'true'
   const visibility = normalizeVisibility(request.body as PopupMessageRequestBody)
   const visibilityWindow = normalizeVisibilityWindow(request.body as PopupMessageRequestBody)
+  const fileImageResult = normalizePopupImageFiles(request.files as Express.Multer.File[] | undefined)
 
   if (!title) {
     return response.status(400).json({ error: 'Title is required' })
@@ -478,10 +700,26 @@ adminRouter.post('/popup-messages', async (request, response) => {
   if (!visibilityWindow) {
     return response.status(400).json({ error: 'Visibility period is invalid' })
   }
+  if ('error' in fileImageResult) {
+    return response.status(400).json({ error: fileImageResult.error })
+  }
+  const bodyImageResult =
+    fileImageResult.images.length === 0
+      ? normalizePopupImages(request.body?.images)
+      : { images: undefined } as const
+  if ('error' in bodyImageResult) {
+    return response.status(400).json({ error: bodyImageResult.error })
+  }
+  const fileImages = fileImageResult.images ?? []
+  const popupImages =
+    fileImages.length > 0
+      ? fileImages
+      : bodyImageResult.images ?? []
 
   const doc = await PopupMessage.create({
     title,
     content,
+    images: popupImages,
     postedAt: new Date(),
     isDraft,
     ...visibility,
@@ -494,6 +732,7 @@ adminRouter.post('/popup-messages', async (request, response) => {
       id: doc.id,
       title: doc.title,
       content: doc.content,
+      images: serializePopupImages(doc.images),
       postedAt: doc.postedAt.toISOString(),
       isDraft: doc.isDraft,
       visibleToTeachers: doc.visibleToTeachers,
@@ -505,7 +744,7 @@ adminRouter.post('/popup-messages', async (request, response) => {
   })
 })
 
-adminRouter.patch('/popup-messages/:messageId', async (request, response) => {
+adminRouter.patch('/popup-messages/:messageId', parsePopupImageUpload, async (request, response) => {
   const doc = await PopupMessage.findById(request.params.messageId)
 
   if (!doc) {
@@ -514,7 +753,19 @@ adminRouter.patch('/popup-messages/:messageId', async (request, response) => {
 
   const hasTitle = typeof request.body?.title === 'string'
   const hasContent = typeof request.body?.content === 'string'
-  const hasIsDraft = typeof request.body?.isDraft === 'boolean'
+  const hasIsDraft =
+    typeof request.body?.isDraft === 'boolean' ||
+    request.body?.isDraft === 'true' ||
+    request.body?.isDraft === 'false'
+  const existingImageResult = Object.prototype.hasOwnProperty.call(
+    request.body ?? {},
+    'existingImages'
+  )
+    ? readExistingPopupImages(request.body?.existingImages)
+    : Object.prototype.hasOwnProperty.call(request.body ?? {}, 'images')
+      ? normalizePopupImages(request.body?.images)
+    : undefined
+  const fileImageResult = normalizePopupImageFiles(request.files as Express.Multer.File[] | undefined)
 
   const hasVisibleToTeachers = Object.prototype.hasOwnProperty.call(
     request.body ?? {},
@@ -548,6 +799,19 @@ adminRouter.patch('/popup-messages/:messageId', async (request, response) => {
   if ((hasVisibleFrom || hasVisibleUntil) && !visibilityWindow) {
     return response.status(400).json({ error: 'Visibility period is invalid' })
   }
+  if (existingImageResult && 'error' in existingImageResult) {
+    return response.status(400).json({ error: existingImageResult.error })
+  }
+  if ('error' in fileImageResult) {
+    return response.status(400).json({ error: fileImageResult.error })
+  }
+  const existingImages: PopupMessageImage[] =
+    existingImageResult && 'images' in existingImageResult
+      ? [...(existingImageResult.images ?? [])]
+      : []
+  if (existingImages.length + fileImageResult.images.length > MAX_POPUP_IMAGES) {
+    return response.status(400).json({ error: `Voit lisÃ¤tÃ¤ enintÃ¤Ã¤n ${MAX_POPUP_IMAGES} kuvaa` })
+  }
   if (hasTitle) {
     const title = request.body.title.trim()
     if (!title) {
@@ -566,10 +830,14 @@ adminRouter.patch('/popup-messages/:messageId', async (request, response) => {
 
   if (hasIsDraft) {
     const wasDraft = doc.isDraft
-    doc.isDraft = request.body.isDraft
+    doc.isDraft = readBooleanField(request.body.isDraft, doc.isDraft)
     if (wasDraft && !doc.isDraft) {
       doc.postedAt = new Date()
     }
+  }
+
+  if (existingImageResult) {
+    doc.set('images', [...existingImages, ...fileImageResult.images])
   }
 
   if (visibility) {
@@ -604,6 +872,7 @@ adminRouter.patch('/popup-messages/:messageId', async (request, response) => {
       id: doc.id,
       title: doc.title,
       content: doc.content,
+      images: serializePopupImages(doc.images),
       postedAt: doc.postedAt.toISOString(),
       isDraft: doc.isDraft,
       visibleToTeachers: doc.visibleToTeachers,

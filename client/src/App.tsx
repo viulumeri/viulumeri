@@ -28,7 +28,6 @@ import type { AppSessionUser } from '../../shared/types'
 import { NotificationProvider } from './contexts/NotificationProvider'
 import { NotificationBanner } from './components/NotificationBanner'
 import { StartupAnnouncementsPopup } from './components/StartupAnnouncementsPopup'
-import { isAdminRegularUserViewEnabled } from './utils/adminRegularUserView'
 import './index.css'
 import { InstallPromptPopup } from './components/InstallPromptPopup.tsx'
 
@@ -37,8 +36,6 @@ const App = () => {
   const userType = (session?.user as AppSessionUser | undefined)?.userType
   const role = (session?.user as AppSessionUser | undefined)?.role
   const userId = (session?.user as { id?: string } | undefined)?.id
-  const isAdminRegularUserView =
-    role === 'admin' && isAdminRegularUserViewEnabled()
 
   return (
     
@@ -176,7 +173,7 @@ const App = () => {
           )}
 
           {/* Student-only */}
-          {(userType === 'student' || isAdminRegularUserView) && (
+          {userType === 'student' && (
             <>
               <Route
                 path="/student/homework"
@@ -288,12 +285,12 @@ const App = () => {
     ) : (
           <Navigate
             to={
-              userType === 'teacher'
-                ? '/teacher/students'
-                : userType === 'student'
-                  ? '/student/homework'
-                  : userType === 'admin'
-                    ? '/admin'
+              role === 'admin'
+                ? '/admin'
+                : userType === 'teacher'
+                  ? '/teacher/students'
+                  : userType === 'student'
+                    ? '/student/homework'
                     : '/login'
             }
             
@@ -310,12 +307,12 @@ const App = () => {
           element={
             <Navigate
               to={
-                userType === 'teacher'
-                  ? '/teacher/students'
-                  : userType === 'student'
-                    ? '/student/homework'
-                    : userType === 'admin'
-                      ? '/admin'
+                role === 'admin'
+                  ? '/admin'
+                  : userType === 'teacher'
+                    ? '/teacher/students'
+                    : userType === 'student'
+                      ? '/student/homework'
                       : '/login'
               }
               replace

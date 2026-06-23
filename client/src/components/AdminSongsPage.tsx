@@ -1,17 +1,18 @@
-import { Fragment, useEffect, useMemo, useRef, useState } from 'react'
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import {
   Check,
   ChevronLeft,
   ChevronRight,
   FileAudio,
+  GripVertical,
   ImagePlus,
+  ListOrdered,
   Music,
   Music2,
   Pencil,
   Plus,
   RotateCcw,
-  ScanSearch,
   Minus,
   Trash2
 } from 'lucide-react'
@@ -19,7 +20,8 @@ import {
   useAdminSongs,
   useCreateAdminSong,
   useDeleteAdminSong,
-  useUpdateAdminSong
+  useUpdateAdminSong,
+  useUpdateAdminSongOrder
 } from '../hooks/useAdmin'
 import type {
   AdminSongFilePayload,
@@ -38,7 +40,7 @@ type TrackField = {
 }
 
 type FormMode = 'create' | 'edit'
-type SongSortMode = 'name' | 'updatedAt'
+type SongSortMode = 'saved' | 'name' | 'updatedAt'
 
 type FormState = {
   name: string
@@ -119,7 +121,7 @@ const TrackStatus = ({
   available: boolean
 }) => (
   <div
-    className={`flex items-center gap-1.5 ${
+    className={`flex min-w-0 items-center gap-1.5 ${
       available ? 'text-emerald-300' : 'text-neutral-500'
     }`}
   >
@@ -136,7 +138,7 @@ const TrackStatus = ({
         <Minus className="h-3 w-3" strokeWidth={2} />
       )}
     </span>
-    <span>{label}</span>
+    <span className="truncate">{label}</span>
   </div>
 )
 
@@ -156,9 +158,9 @@ const VisibilitySwitch = ({
   onToggle: () => void
   disabled?: boolean
 }) => (
-  <div className="flex items-center gap-2 text-sm text-gray-200">
+  <div className="flex items-center gap-1.5 text-xs text-gray-200 sm:gap-2 sm:text-sm">
     <span
-      className={`rounded px-2 py-1 text-xs ${
+      className={`rounded px-1.5 py-0.5 text-[10px] sm:px-2 sm:py-1 sm:text-xs ${
         isHidden
           ? 'bg-amber-800 text-amber-100'
           : 'bg-emerald-800 text-emerald-100'
@@ -172,14 +174,14 @@ const VisibilitySwitch = ({
       aria-checked={!isHidden}
       aria-label={`Aseta kappale ${isHidden ? 'julkiseksi' : 'piilotetuksi'}`}
       disabled={disabled}
-      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
+      className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors disabled:cursor-not-allowed disabled:opacity-50 sm:h-6 sm:w-11 ${
         isHidden ? 'bg-amber-600' : 'bg-emerald-600'
       }`}
       onClick={onToggle}
     >
       <span
-        className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${
-          isHidden ? 'translate-x-1' : 'translate-x-5'
+        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform sm:h-5 sm:w-5 ${
+          isHidden ? 'translate-x-1' : 'translate-x-4 sm:translate-x-5'
         }`}
       />
     </button>
@@ -232,24 +234,29 @@ export const AdminSongsPage = () => {
   const { data, isLoading, isFetching, error } = useAdminSongs()
   const { showSuccess, showError } = useNotification()
   const [searchInput, setSearchInput] = useState('')
+  const restoredPageState = (location.state as { adminSongsPage?: unknown } | null)?.adminSongsPage
   const restoredPage =
-    typeof (location.state as { adminSongsPage?: unknown } | null)?.adminSongsPage === 'number'
+    typeof restoredPageState === 'number'
       ? Math.max(
         0,
-        Math.floor((location.state as { adminSongsPage: number }).adminSongsPage)
+        Math.floor(restoredPageState)
       )
       : 0
   const [page, setPage] = useState(restoredPage)
   const [mode, setMode] = useState<FormMode | null>(null)
   const [sortMode, setSortMode] = useState<SongSortMode>(() => {
     const saved = window.localStorage.getItem(SONG_SORT_STORAGE_KEY)
-    return saved === 'updatedAt' ? 'updatedAt' : 'name'
+    return saved === 'name' || saved === 'updatedAt' ? saved : 'saved'
   })
   const previousSearchInput = useRef(searchInput)
   const previousSortMode = useRef(sortMode)
   const [editingSong, setEditingSong] = useState<AdminSongItem | null>(null)
   const [form, setForm] = useState<FormState>(emptyFormState)
   const [fileInputKey, setFileInputKey] = useState(0)
+  const [orderMode, setOrderMode] = useState(false)
+  const [orderedSongs, setOrderedSongs] = useState<AdminSongItem[]>([])
+  const [draggingSongId, setDraggingSongId] = useState<string | null>(null)
+  const orderModeStartOrderRef = useRef<string[]>([])
 
   const createSong = useCreateAdminSong({
     onSuccess: () => {
@@ -279,6 +286,13 @@ export const AdminSongsPage = () => {
     onError: error => showError(`Kappaleen poistaminen epäonnistui: ${error.message}`)
   })
 
+  const updateSongOrder = useUpdateAdminSongOrder({
+    onSuccess: data => {
+      setOrderedSongs(data.songs)
+    },
+    onError: error => showError(`Järjestyksen tallennus epäonnistui: ${error.message}`)
+  })
+
   const songs = useMemo(() => {
     const items = [...(data?.songs ?? [])]
     if (sortMode === 'updatedAt') {
@@ -288,7 +302,11 @@ export const AdminSongsPage = () => {
       )
     }
 
-    return items.sort((left, right) => left.title.localeCompare(right.title, 'fi'))
+    if (sortMode === 'name') {
+      return items.sort((left, right) => left.title.localeCompare(right.title, 'fi'))
+    }
+
+    return items
   }, [data, sortMode])
   const searchResults = useMemo(() => {
     const normalized = searchInput.trim().toLowerCase()
@@ -338,7 +356,136 @@ export const AdminSongsPage = () => {
     window.localStorage.setItem(SONG_SORT_STORAGE_KEY, sortMode)
   }, [sortMode])
 
+  useEffect(() => {
+    if (typeof restoredPageState !== 'number') return
+
+    navigate(`${location.pathname}${location.search}${location.hash}`, {
+      replace: true,
+      state: null
+    })
+  }, [location.hash, location.pathname, location.search, navigate, restoredPageState])
+
   const resetFiles = () => setFileInputKey(current => current + 1)
+
+  const openOrderMode = () => {
+    const initialSongs = data?.songs ?? []
+    setOrderMode(true)
+    setOrderedSongs(initialSongs)
+    orderModeStartOrderRef.current = initialSongs.map(song => song.id)
+    setSearchInput('')
+    setPage(0)
+  }
+
+  const closeOrderMode = () => {
+    const currentOrder = orderedSongs.map(song => song.id)
+    const startOrder = orderModeStartOrderRef.current
+    const orderChanged =
+      currentOrder.length !== startOrder.length ||
+      currentOrder.some((id, index) => id !== startOrder[index])
+
+    if (orderChanged) {
+      updateSongOrder.mutate(currentOrder)
+    }
+
+    setOrderMode(false)
+    setDraggingSongId(null)
+    orderModeStartOrderRef.current = []
+  }
+
+  const moveOrderedSongToIndex = useCallback((songId: string, targetIndex: number) => {
+    setOrderedSongs(current => {
+      const fromIndex = current.findIndex(song => song.id === songId)
+      if (fromIndex < 0) return current
+
+      const next = [...current]
+      const [moved] = next.splice(fromIndex, 1)
+      const clampedIndex = Math.max(0, Math.min(targetIndex, next.length))
+      const adjustedIndex = clampedIndex > fromIndex ? clampedIndex : clampedIndex
+      if (fromIndex === adjustedIndex) return current
+
+      next.splice(adjustedIndex, 0, moved)
+      return next
+    })
+  }, [])
+
+  const moveDraggedSongToPointer = useCallback((songId: string, clientY: number) => {
+    const rows = Array.from(
+      document.querySelectorAll<HTMLElement>('[data-order-song-id]')
+    )
+    const targetIndex = rows.reduce((nextIndex, row) => {
+      const rowSongId = row.dataset.orderSongId
+      if (!rowSongId || rowSongId === songId) return nextIndex
+
+      const rect = row.getBoundingClientRect()
+      const midpoint = rect.top + rect.height / 2
+      return clientY > midpoint ? nextIndex + 1 : nextIndex
+    }, 0)
+
+    moveOrderedSongToIndex(songId, targetIndex)
+  }, [moveOrderedSongToIndex])
+
+  const finishOrderDrag = useCallback(() => {
+    setDraggingSongId(null)
+  }, [])
+
+  useEffect(() => {
+    if (!draggingSongId) return
+
+    const onPointerMove = (event: PointerEvent) => {
+      event.preventDefault()
+      moveDraggedSongToPointer(draggingSongId, event.clientY)
+
+      const edgeSize = 96
+      const maxSpeed = 18
+      const viewportHeight = window.innerHeight
+      let scrollBy = 0
+
+      if (event.clientY < edgeSize) {
+        scrollBy = -Math.ceil(maxSpeed * ((edgeSize - event.clientY) / edgeSize))
+      } else if (event.clientY > viewportHeight - edgeSize) {
+        scrollBy = Math.ceil(
+          maxSpeed * ((event.clientY - (viewportHeight - edgeSize)) / edgeSize)
+        )
+      }
+
+      if (scrollBy !== 0) {
+        const scrollContainer = document.querySelector<HTMLElement>(
+          '[data-admin-scroll-container="true"]'
+        )
+        const songsSection = document.querySelector<HTMLElement>(
+          '[data-section-id="songs"]'
+        )
+
+        if (scrollContainer && songsSection) {
+          const minScrollTop = songsSection.offsetTop
+          const maxScrollTop = Math.max(
+            minScrollTop,
+            songsSection.offsetTop + songsSection.offsetHeight - scrollContainer.clientHeight
+          )
+          const nextScrollTop = Math.max(
+            minScrollTop,
+            Math.min(maxScrollTop, scrollContainer.scrollTop + scrollBy)
+          )
+
+          scrollContainer.scrollTop = nextScrollTop
+        }
+      }
+    }
+    const onPointerEnd = () => finishOrderDrag()
+    const onWheel = (event: WheelEvent) => event.preventDefault()
+
+    window.addEventListener('pointermove', onPointerMove, { passive: false })
+    window.addEventListener('pointerup', onPointerEnd)
+    window.addEventListener('pointercancel', onPointerEnd)
+    window.addEventListener('wheel', onWheel, { passive: false })
+
+    return () => {
+      window.removeEventListener('pointermove', onPointerMove)
+      window.removeEventListener('pointerup', onPointerEnd)
+      window.removeEventListener('pointercancel', onPointerEnd)
+      window.removeEventListener('wheel', onWheel)
+    }
+  }, [draggingSongId, finishOrderDrag, moveDraggedSongToPointer])
 
   const closeForm = () => {
     setMode(null)
@@ -423,28 +570,115 @@ export const AdminSongsPage = () => {
   }
 
   return (
-    <div className="space-y-4 p-5 pb-24">
-      <div className="mx-auto w-full max-w-4xl space-y-4">
+    <div className="admin-page">
+      <div className="space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <h1 className="flex items-center gap-3">
-            <Music className="h-8 w-8" />
+          <h1 className="admin-page-title">
+            <Music className="admin-page-title-icon" />
             Kappaleet
           </h1>
-          {!mode && (
-            <button
-              type="button"
-              onClick={openCreateForm}
-              className="button-basic inline-flex items-center justify-center gap-2"
-            >
-              <Plus className="h-5 w-5" />
-              Lisää kappale
-            </button>
+          {!mode && !orderMode && (
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={openOrderMode}
+                className="button-basic inline-flex items-center justify-center gap-2"
+              >
+                <ListOrdered className="h-4 w-4 sm:h-5 sm:w-5" />
+                Järjestys
+              </button>
+              <button
+                type="button"
+                onClick={openCreateForm}
+                className="button-basic inline-flex items-center justify-center gap-2"
+              >
+                <Plus className="h-4 w-4 sm:h-5 sm:w-5" />
+                Lisää kappale
+              </button>
+            </div>
           )}
         </div>
 
-        {mode ? (
-          <form onSubmit={onSubmit} className="space-y-6 rounded-lg bg-neutral-900 p-6">
-            <div className="flex items-center justify-between gap-4">
+        {orderMode ? (
+          <div className="space-y-4">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <h2 className="flex items-center gap-2 text-lg font-semibold">
+                <ListOrdered className="h-5 w-5 text-neutral-300" />
+                Kappaleiden järjestys
+              </h2>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={closeOrderMode}
+                  className="button-basic"
+                >
+                  Takaisin
+                </button>
+                {updateSongOrder.isPending && (
+                  <span className="inline-flex items-center px-2 text-sm text-neutral-300">
+                    Tallennetaan...
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {shouldShowLoading ? (
+              <div className="rounded-lg border border-neutral-700 bg-neutral-800 px-4 py-5 text-sm text-neutral-300">
+                Ladataan kappaleita...
+              </div>
+            ) : shouldShowError ? (
+              <div className="rounded-lg border border-neutral-700 bg-neutral-800 px-4 py-5 text-sm text-rose-300">
+                Kappaleiden lataus epäonnistui
+              </div>
+            ) : (
+              <ul
+                className="flex flex-col gap-1 px-4 pt-2"
+                onPointerUp={finishOrderDrag}
+                onPointerCancel={finishOrderDrag}
+                onLostPointerCapture={finishOrderDrag}
+              >
+                {orderedSongs.map(song => (
+                  <li
+                    key={song.id}
+                    data-order-song-id={song.id}
+                    className={`rounded-lg transition ${
+                      draggingSongId === song.id ? 'bg-white/10' : ''
+                    }`}
+                  >
+                    <div className="flex items-center gap-4 rounded-lg p-3">
+                      <button
+                        type="button"
+                        className={`touch-none rounded-full p-2 text-neutral-300 hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-500 ${
+                          draggingSongId === song.id ? 'cursor-grabbing' : 'cursor-grab'
+                        }`}
+                        aria-label={`Siirrä kappaletta ${song.title}`}
+                        onPointerDown={event => {
+                          event.preventDefault()
+                          setDraggingSongId(song.id)
+                        }}
+                      >
+                        <GripVertical className="h-5 w-5" />
+                      </button>
+                      <img
+                        src={getAdminSongImageUrl(song)}
+                        alt={song.title}
+                        className="h-14 w-14 rounded-full object-cover"
+                        loading="lazy"
+                        decoding="async"
+                        onError={handleSongImageError}
+                      />
+                      <div className="flex min-w-0 flex-1 items-center">
+                        <h3 className="min-w-0 flex-1 truncate">{song.title}</h3>
+                      </div>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        ) : mode ? (
+          <form onSubmit={onSubmit} className="admin-card space-y-4 sm:space-y-6">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
               <h2 className="flex items-center gap-2 text-lg font-semibold">
                 <Music2 className="h-5 w-5 text-neutral-300" />
                 {mode === 'edit' ? 'Muokkaa kappaletta' : 'Lisää kappale'}
@@ -452,7 +686,7 @@ export const AdminSongsPage = () => {
               <button
                 type="button"
                 onClick={closeForm}
-                className="button-basic"
+                className="button-basic self-start sm:self-auto"
               >
                 Takaisin
               </button>
@@ -513,7 +747,7 @@ export const AdminSongsPage = () => {
                 Impro-kappale
               </label>
 
-              <div className="mt-5 flex items-center justify-between gap-3">
+              <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
                 <span className="text-sm font-medium text-neutral-200">Näkyvyys</span>
                 <VisibilitySwitch
                   isHidden={form.isHidden}
@@ -562,11 +796,11 @@ export const AdminSongsPage = () => {
                           onChange={event =>
                             updateFile(field.id, event.target.files?.[0] ?? null)
                           }
-                          className="mt-2 block w-full rounded-md border border-neutral-600 bg-neutral-700 px-3 py-2 text-sm text-gray-100 file:mr-3 file:rounded-md file:border-0 file:bg-neutral-600 file:px-3 file:py-1.5 file:text-gray-100 hover:file:bg-neutral-500 focus:border-transparent focus:ring-2 focus:ring-blue-500"
+                          className="mt-2 block w-full min-w-0 rounded-md border border-neutral-600 bg-neutral-700 px-2 py-1.5 text-xs text-gray-100 file:mr-2 file:rounded-md file:border-0 file:bg-neutral-600 file:px-2 file:py-1 file:text-xs file:text-gray-100 hover:file:bg-neutral-500 focus:border-transparent focus:ring-2 focus:ring-blue-500 sm:px-3 sm:py-2 sm:text-sm sm:file:mr-3 sm:file:px-3 sm:file:py-1.5 sm:file:text-sm"
                         />
                       </label>
                       {file && (
-                        <span className="mt-2 block truncate text-xs text-neutral-400">{file.name}</span>
+                        <span className="mt-2 hidden truncate text-xs text-neutral-400 sm:block">{file.name}</span>
                       )}
                       {field.deleteKey && hasExisting && (
                         <label className="mt-2 flex items-center gap-2 text-sm text-gray-300">
@@ -611,10 +845,10 @@ export const AdminSongsPage = () => {
                   type="file"
                   accept="image/*"
                   onChange={event => updateFile('image', event.target.files?.[0] ?? null)}
-                  className="mt-2 block w-full rounded-md border border-neutral-600 bg-neutral-700 px-3 py-2 text-sm text-gray-100 file:mr-3 file:rounded-md file:border-0 file:bg-neutral-600 file:px-3 file:py-1.5 file:text-gray-100 hover:file:bg-neutral-500 focus:border-transparent focus:ring-2 focus:ring-blue-500"
+                  className="mt-2 block w-full min-w-0 rounded-md border border-neutral-600 bg-neutral-700 px-2 py-1.5 text-xs text-gray-100 file:mr-2 file:rounded-md file:border-0 file:bg-neutral-600 file:px-2 file:py-1 file:text-xs file:text-gray-100 hover:file:bg-neutral-500 focus:border-transparent focus:ring-2 focus:ring-blue-500 sm:px-3 sm:py-2 sm:text-sm sm:file:mr-3 sm:file:px-3 sm:file:py-1.5 sm:file:text-sm"
                 />
                 {form.image && (
-                  <span className="mt-2 block truncate text-xs text-neutral-400">{form.image.name}</span>
+                  <span className="mt-2 hidden truncate text-xs text-neutral-400 sm:block">{form.image.name}</span>
                 )}
               </label>
               {mode === 'edit' && editingSong?.hasImage && (
@@ -648,7 +882,7 @@ export const AdminSongsPage = () => {
                 }}
                 className="button-basic inline-flex items-center justify-center gap-2"
               >
-                <RotateCcw className="h-5 w-5" />
+                <RotateCcw className="h-4 w-4 sm:h-5 sm:w-5" />
                 Tyhjennä
               </button>
               <button
@@ -656,7 +890,7 @@ export const AdminSongsPage = () => {
                 disabled={!canSave}
                 className="button-basic inline-flex items-center justify-center gap-2 disabled:cursor-not-allowed disabled:opacity-50"
               >
-                <Plus className="h-5 w-5" />
+                <Plus className="h-4 w-4 sm:h-5 sm:w-5" />
                 {isSubmitting ? 'Tallennetaan...' : 'Tallenna'}
               </button>
             </div>
@@ -681,12 +915,6 @@ export const AdminSongsPage = () => {
                     value={searchInput}
                   />
                 </div>
-                <button
-                  type="submit"
-                  className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-base bg-brand text-white shadow-xs hover:bg-brand-strong focus:outline-none focus:ring-4 focus:ring-brand-medium"
-                >
-                  <ScanSearch size={22} strokeWidth={1.5} />
-                </button>
               </form>
 
               <label className="flex items-center gap-2 text-sm text-neutral-300">
@@ -696,14 +924,15 @@ export const AdminSongsPage = () => {
                   onChange={event => setSortMode(event.target.value as SongSortMode)}
                   className="rounded-md border border-neutral-600 bg-neutral-700 px-3 py-2 text-sm text-gray-100 focus:border-transparent focus:ring-2 focus:ring-blue-500"
                 >
+                  <option value="saved">Tallennettu</option>
                   <option value="name">Nimi</option>
                   <option value="updatedAt">Viimeksi muokattu</option>
                 </select>
               </label>
             </div>
 
-            <div className="rounded-lg border border-neutral-700 bg-neutral-800">
-              <div className="grid grid-cols-[2.5rem_minmax(0,2fr)_minmax(10rem,1fr)_6rem] gap-4 px-4 py-3 text-sm font-semibold text-neutral-400">
+            <div className="overflow-hidden rounded-lg border border-neutral-700 bg-neutral-800">
+              <div className="hidden grid-cols-[2.5rem_minmax(0,2fr)_minmax(10rem,1fr)_6rem] gap-4 px-4 py-3 text-sm font-semibold text-neutral-400 md:grid">
                 <div aria-hidden="true"></div>
                 <div>Nimi</div>
                 <div>Tiedostot</div>
@@ -722,11 +951,11 @@ export const AdminSongsPage = () => {
                 <div className="divide-y divide-neutral-700">
                   {paginatedSongs.map(song => (
                     <Fragment key={song.id}>
-                      <div className="relative grid w-full grid-cols-[2.5rem_minmax(0,2fr)_minmax(10rem,1fr)_6rem] gap-4 px-4 py-3">
+                      <div className="relative grid w-full grid-cols-[2.25rem_minmax(0,1fr)_auto] gap-3 px-3 py-3 md:grid-cols-[2.5rem_minmax(0,2fr)_minmax(10rem,1fr)_6rem] md:gap-4 md:px-4 md:pb-12">
                         <button
                           type="button"
                           onClick={() => openSongPlayer(song.id)}
-                          className="group h-10 w-10 cursor-pointer overflow-hidden rounded-full ring-offset-2 ring-offset-neutral-800 transition hover:scale-105 hover:ring-2 hover:ring-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-400"
+                          className="group h-9 w-9 cursor-pointer overflow-hidden rounded-full ring-offset-2 ring-offset-neutral-800 transition hover:scale-105 hover:ring-2 hover:ring-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-400 md:h-10 md:w-10"
                           aria-label={`Avaa kappale ${song.title}`}
                           title="Avaa soitin"
                         >
@@ -739,12 +968,12 @@ export const AdminSongsPage = () => {
                             onError={handleSongImageError}
                           />
                         </button>
-                        <div>
-                          <div className="flex items-center gap-2">
+                        <div className="min-w-0">
+                          <div className="flex min-w-0 flex-wrap items-center gap-1.5 sm:gap-2">
                             <button
                               type="button"
                               onClick={() => openSongPlayer(song.id)}
-                              className="cursor-pointer text-left font-semibold text-neutral-100 underline-offset-4 hover:text-sky-300 hover:underline focus:outline-none focus:text-sky-300 focus:underline"
+                              className="min-w-0 max-w-full cursor-pointer truncate text-left text-sm font-semibold text-neutral-100 underline-offset-4 hover:text-sky-300 hover:underline focus:outline-none focus:text-sky-300 focus:underline md:text-base"
                             >
                               {song.title}
                             </button>
@@ -763,9 +992,9 @@ export const AdminSongsPage = () => {
                               </span>
                             )}
                           </div>
-                          <div className="text-xs text-neutral-400">{song.id}</div>
+                          <div className="truncate text-[11px] text-neutral-400 md:text-xs">{song.id}</div>
                         </div>
-                        <div className="flex flex-col gap-1 text-xs">
+                        <div className="col-span-3 grid grid-cols-2 gap-x-3 gap-y-1 text-[11px] md:col-span-1 md:flex md:flex-col md:gap-1 md:text-xs">
                           <TrackStatus
                             label="Instrumentaali"
                             available={song.hasInstrumentalTrack}
@@ -783,11 +1012,11 @@ export const AdminSongsPage = () => {
                             available={song.hasSlowMelodyTrack}
                           />
                         </div>
-                        <div className="flex flex-wrap items-start justify-end gap-2">
+                        <div className="col-span-3 flex flex-nowrap items-start justify-end gap-2 md:col-span-1 md:flex-wrap">
                           <button
                             type="button"
                             onClick={() => openEditForm(song)}
-                            className="button-basic inline-flex h-10 w-10 items-center justify-center px-0 py-0"
+                            className="button-basic inline-flex h-10 w-10 min-w-10 items-center justify-center rounded-full !px-0 !py-0"
                             aria-label="Muokkaa kappaletta"
                             title="Muokkaa kappaletta"
                           >
@@ -796,14 +1025,14 @@ export const AdminSongsPage = () => {
                           <button
                             type="button"
                             onClick={() => onDeleteSong(song)}
-                            className="button-basic inline-flex h-10 w-10 items-center justify-center px-0 py-0"
+                            className="button-basic inline-flex h-10 w-10 min-w-10 items-center justify-center rounded-full !px-0 !py-0"
                             aria-label="Poista kappale"
                             title="Poista kappale"
                           >
                             <Trash2 className="h-4 w-4" />
                           </button>
                         </div>
-                        <div className="absolute bottom-2 right-4">
+                        <div className="col-span-3 flex justify-end md:absolute md:bottom-2 md:right-4 md:col-span-1">
                           <VisibilitySwitch
                             isHidden={song.isHidden}
                             onToggle={() => onToggleVisibility(song)}

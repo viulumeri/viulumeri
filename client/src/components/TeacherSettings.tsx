@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useTeacherStudents, useDeleteStudent } from '../hooks/useStudents'
-import { Users, Trash2 } from 'lucide-react'
+import { Trash2 } from 'lucide-react'
 import { useNotification } from '../hooks/useNotification'
 
 export const TeacherSettings = () => {
@@ -39,15 +39,11 @@ export const TeacherSettings = () => {
 
   return (
     <div className="bg-neutral-800 rounded-lg p-6">
-      <h3 className="flex items-center gap-3 mb-4">
-        <Users className="w-6 h-6" />
-        Oppilaiden hallinta
-      </h3>
       {students.length === 0 ? (
-        <p className="text-gray-400">Sinulla ei ole vielä oppilaita.</p>
+        <p className="text-gray-400 italic">Sinulla ei ole vielä oppilaita.</p>
       ) : (
         <div>
-          <p className="text-gray-300 mb-4">Oppilaat ({students.length}):</p>
+          <p className="text-gray-300 mb-4 font-semibold">Oppilaat ({students.length}):</p>
           <div className="space-y-3">
             {students.map(student => (
               <div key={student.id} className="flex items-center justify-between bg-neutral-700 rounded-lg p-4">

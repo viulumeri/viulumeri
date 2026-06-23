@@ -11,7 +11,6 @@ import {
   Pencil,
   Plus,
   RotateCcw,
-  ScanSearch,
   Minus,
   Trash2
 } from 'lucide-react'
@@ -119,7 +118,7 @@ const TrackStatus = ({
   available: boolean
 }) => (
   <div
-    className={`flex items-center gap-1.5 ${
+    className={`flex min-w-0 items-center gap-1.5 ${
       available ? 'text-emerald-300' : 'text-neutral-500'
     }`}
   >
@@ -136,7 +135,7 @@ const TrackStatus = ({
         <Minus className="h-3 w-3" strokeWidth={2} />
       )}
     </span>
-    <span>{label}</span>
+    <span className="truncate">{label}</span>
   </div>
 )
 
@@ -156,9 +155,9 @@ const VisibilitySwitch = ({
   onToggle: () => void
   disabled?: boolean
 }) => (
-  <div className="flex items-center gap-2 text-sm text-gray-200">
+  <div className="flex items-center gap-1.5 text-xs text-gray-200 sm:gap-2 sm:text-sm">
     <span
-      className={`rounded px-2 py-1 text-xs ${
+      className={`rounded px-1.5 py-0.5 text-[10px] sm:px-2 sm:py-1 sm:text-xs ${
         isHidden
           ? 'bg-amber-800 text-amber-100'
           : 'bg-emerald-800 text-emerald-100'
@@ -172,14 +171,14 @@ const VisibilitySwitch = ({
       aria-checked={!isHidden}
       aria-label={`Aseta kappale ${isHidden ? 'julkiseksi' : 'piilotetuksi'}`}
       disabled={disabled}
-      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
+      className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors disabled:cursor-not-allowed disabled:opacity-50 sm:h-6 sm:w-11 ${
         isHidden ? 'bg-amber-600' : 'bg-emerald-600'
       }`}
       onClick={onToggle}
     >
       <span
-        className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${
-          isHidden ? 'translate-x-1' : 'translate-x-5'
+        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform sm:h-5 sm:w-5 ${
+          isHidden ? 'translate-x-1' : 'translate-x-4 sm:translate-x-5'
         }`}
       />
     </button>
@@ -423,11 +422,11 @@ export const AdminSongsPage = () => {
   }
 
   return (
-    <div className="space-y-4 p-5 pb-24">
-      <div className="mx-auto w-full max-w-4xl space-y-4">
+    <div className="admin-page">
+      <div className="space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <h1 className="flex items-center gap-3">
-            <Music className="h-8 w-8" />
+          <h1 className="admin-page-title">
+            <Music className="admin-page-title-icon" />
             Kappaleet
           </h1>
           {!mode && (
@@ -436,15 +435,15 @@ export const AdminSongsPage = () => {
               onClick={openCreateForm}
               className="button-basic inline-flex items-center justify-center gap-2"
             >
-              <Plus className="h-5 w-5" />
+              <Plus className="h-4 w-4 sm:h-5 sm:w-5" />
               Lisää kappale
             </button>
           )}
         </div>
 
         {mode ? (
-          <form onSubmit={onSubmit} className="space-y-6 rounded-lg bg-neutral-900 p-6">
-            <div className="flex items-center justify-between gap-4">
+          <form onSubmit={onSubmit} className="admin-card space-y-4 sm:space-y-6">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
               <h2 className="flex items-center gap-2 text-lg font-semibold">
                 <Music2 className="h-5 w-5 text-neutral-300" />
                 {mode === 'edit' ? 'Muokkaa kappaletta' : 'Lisää kappale'}
@@ -452,7 +451,7 @@ export const AdminSongsPage = () => {
               <button
                 type="button"
                 onClick={closeForm}
-                className="button-basic"
+                className="button-basic self-start sm:self-auto"
               >
                 Takaisin
               </button>
@@ -513,7 +512,7 @@ export const AdminSongsPage = () => {
                 Impro-kappale
               </label>
 
-              <div className="mt-5 flex items-center justify-between gap-3">
+              <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
                 <span className="text-sm font-medium text-neutral-200">Näkyvyys</span>
                 <VisibilitySwitch
                   isHidden={form.isHidden}
@@ -562,11 +561,11 @@ export const AdminSongsPage = () => {
                           onChange={event =>
                             updateFile(field.id, event.target.files?.[0] ?? null)
                           }
-                          className="mt-2 block w-full rounded-md border border-neutral-600 bg-neutral-700 px-3 py-2 text-sm text-gray-100 file:mr-3 file:rounded-md file:border-0 file:bg-neutral-600 file:px-3 file:py-1.5 file:text-gray-100 hover:file:bg-neutral-500 focus:border-transparent focus:ring-2 focus:ring-blue-500"
+                          className="mt-2 block w-full min-w-0 rounded-md border border-neutral-600 bg-neutral-700 px-2 py-1.5 text-xs text-gray-100 file:mr-2 file:rounded-md file:border-0 file:bg-neutral-600 file:px-2 file:py-1 file:text-xs file:text-gray-100 hover:file:bg-neutral-500 focus:border-transparent focus:ring-2 focus:ring-blue-500 sm:px-3 sm:py-2 sm:text-sm sm:file:mr-3 sm:file:px-3 sm:file:py-1.5 sm:file:text-sm"
                         />
                       </label>
                       {file && (
-                        <span className="mt-2 block truncate text-xs text-neutral-400">{file.name}</span>
+                        <span className="mt-2 hidden truncate text-xs text-neutral-400 sm:block">{file.name}</span>
                       )}
                       {field.deleteKey && hasExisting && (
                         <label className="mt-2 flex items-center gap-2 text-sm text-gray-300">
@@ -611,10 +610,10 @@ export const AdminSongsPage = () => {
                   type="file"
                   accept="image/*"
                   onChange={event => updateFile('image', event.target.files?.[0] ?? null)}
-                  className="mt-2 block w-full rounded-md border border-neutral-600 bg-neutral-700 px-3 py-2 text-sm text-gray-100 file:mr-3 file:rounded-md file:border-0 file:bg-neutral-600 file:px-3 file:py-1.5 file:text-gray-100 hover:file:bg-neutral-500 focus:border-transparent focus:ring-2 focus:ring-blue-500"
+                  className="mt-2 block w-full min-w-0 rounded-md border border-neutral-600 bg-neutral-700 px-2 py-1.5 text-xs text-gray-100 file:mr-2 file:rounded-md file:border-0 file:bg-neutral-600 file:px-2 file:py-1 file:text-xs file:text-gray-100 hover:file:bg-neutral-500 focus:border-transparent focus:ring-2 focus:ring-blue-500 sm:px-3 sm:py-2 sm:text-sm sm:file:mr-3 sm:file:px-3 sm:file:py-1.5 sm:file:text-sm"
                 />
                 {form.image && (
-                  <span className="mt-2 block truncate text-xs text-neutral-400">{form.image.name}</span>
+                  <span className="mt-2 hidden truncate text-xs text-neutral-400 sm:block">{form.image.name}</span>
                 )}
               </label>
               {mode === 'edit' && editingSong?.hasImage && (
@@ -648,7 +647,7 @@ export const AdminSongsPage = () => {
                 }}
                 className="button-basic inline-flex items-center justify-center gap-2"
               >
-                <RotateCcw className="h-5 w-5" />
+                <RotateCcw className="h-4 w-4 sm:h-5 sm:w-5" />
                 Tyhjennä
               </button>
               <button
@@ -656,7 +655,7 @@ export const AdminSongsPage = () => {
                 disabled={!canSave}
                 className="button-basic inline-flex items-center justify-center gap-2 disabled:cursor-not-allowed disabled:opacity-50"
               >
-                <Plus className="h-5 w-5" />
+                <Plus className="h-4 w-4 sm:h-5 sm:w-5" />
                 {isSubmitting ? 'Tallennetaan...' : 'Tallenna'}
               </button>
             </div>
@@ -681,12 +680,6 @@ export const AdminSongsPage = () => {
                     value={searchInput}
                   />
                 </div>
-                <button
-                  type="submit"
-                  className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-base bg-brand text-white shadow-xs hover:bg-brand-strong focus:outline-none focus:ring-4 focus:ring-brand-medium"
-                >
-                  <ScanSearch size={22} strokeWidth={1.5} />
-                </button>
               </form>
 
               <label className="flex items-center gap-2 text-sm text-neutral-300">
@@ -702,8 +695,8 @@ export const AdminSongsPage = () => {
               </label>
             </div>
 
-            <div className="rounded-lg border border-neutral-700 bg-neutral-800">
-              <div className="grid grid-cols-[2.5rem_minmax(0,2fr)_minmax(10rem,1fr)_6rem] gap-4 px-4 py-3 text-sm font-semibold text-neutral-400">
+            <div className="overflow-hidden rounded-lg border border-neutral-700 bg-neutral-800">
+              <div className="hidden grid-cols-[2.5rem_minmax(0,2fr)_minmax(10rem,1fr)_6rem] gap-4 px-4 py-3 text-sm font-semibold text-neutral-400 md:grid">
                 <div aria-hidden="true"></div>
                 <div>Nimi</div>
                 <div>Tiedostot</div>
@@ -722,11 +715,11 @@ export const AdminSongsPage = () => {
                 <div className="divide-y divide-neutral-700">
                   {paginatedSongs.map(song => (
                     <Fragment key={song.id}>
-                      <div className="relative grid w-full grid-cols-[2.5rem_minmax(0,2fr)_minmax(10rem,1fr)_6rem] gap-4 px-4 py-3">
+                      <div className="relative grid w-full grid-cols-[2.25rem_minmax(0,1fr)_auto] gap-3 px-3 py-3 md:grid-cols-[2.5rem_minmax(0,2fr)_minmax(10rem,1fr)_6rem] md:gap-4 md:px-4 md:pb-12">
                         <button
                           type="button"
                           onClick={() => openSongPlayer(song.id)}
-                          className="group h-10 w-10 cursor-pointer overflow-hidden rounded-full ring-offset-2 ring-offset-neutral-800 transition hover:scale-105 hover:ring-2 hover:ring-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-400"
+                          className="group h-9 w-9 cursor-pointer overflow-hidden rounded-full ring-offset-2 ring-offset-neutral-800 transition hover:scale-105 hover:ring-2 hover:ring-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-400 md:h-10 md:w-10"
                           aria-label={`Avaa kappale ${song.title}`}
                           title="Avaa soitin"
                         >
@@ -739,12 +732,12 @@ export const AdminSongsPage = () => {
                             onError={handleSongImageError}
                           />
                         </button>
-                        <div>
-                          <div className="flex items-center gap-2">
+                        <div className="min-w-0">
+                          <div className="flex min-w-0 flex-wrap items-center gap-1.5 sm:gap-2">
                             <button
                               type="button"
                               onClick={() => openSongPlayer(song.id)}
-                              className="cursor-pointer text-left font-semibold text-neutral-100 underline-offset-4 hover:text-sky-300 hover:underline focus:outline-none focus:text-sky-300 focus:underline"
+                              className="min-w-0 max-w-full cursor-pointer truncate text-left text-sm font-semibold text-neutral-100 underline-offset-4 hover:text-sky-300 hover:underline focus:outline-none focus:text-sky-300 focus:underline md:text-base"
                             >
                               {song.title}
                             </button>
@@ -763,9 +756,9 @@ export const AdminSongsPage = () => {
                               </span>
                             )}
                           </div>
-                          <div className="text-xs text-neutral-400">{song.id}</div>
+                          <div className="truncate text-[11px] text-neutral-400 md:text-xs">{song.id}</div>
                         </div>
-                        <div className="flex flex-col gap-1 text-xs">
+                        <div className="col-span-3 grid grid-cols-2 gap-x-3 gap-y-1 text-[11px] md:col-span-1 md:flex md:flex-col md:gap-1 md:text-xs">
                           <TrackStatus
                             label="Instrumentaali"
                             available={song.hasInstrumentalTrack}
@@ -783,11 +776,11 @@ export const AdminSongsPage = () => {
                             available={song.hasSlowMelodyTrack}
                           />
                         </div>
-                        <div className="flex flex-wrap items-start justify-end gap-2">
+                        <div className="col-span-3 flex flex-nowrap items-start justify-end gap-2 md:col-span-1 md:flex-wrap">
                           <button
                             type="button"
                             onClick={() => openEditForm(song)}
-                            className="button-basic inline-flex h-10 w-10 items-center justify-center px-0 py-0"
+                            className="button-basic inline-flex h-10 w-10 min-w-10 items-center justify-center rounded-full !px-0 !py-0"
                             aria-label="Muokkaa kappaletta"
                             title="Muokkaa kappaletta"
                           >
@@ -796,14 +789,14 @@ export const AdminSongsPage = () => {
                           <button
                             type="button"
                             onClick={() => onDeleteSong(song)}
-                            className="button-basic inline-flex h-10 w-10 items-center justify-center px-0 py-0"
+                            className="button-basic inline-flex h-10 w-10 min-w-10 items-center justify-center rounded-full !px-0 !py-0"
                             aria-label="Poista kappale"
                             title="Poista kappale"
                           >
                             <Trash2 className="h-4 w-4" />
                           </button>
                         </div>
-                        <div className="absolute bottom-2 right-4">
+                        <div className="col-span-3 flex justify-end md:absolute md:bottom-2 md:right-4 md:col-span-1">
                           <VisibilitySwitch
                             isHidden={song.isHidden}
                             onToggle={() => onToggleVisibility(song)}

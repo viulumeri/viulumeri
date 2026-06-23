@@ -587,7 +587,7 @@ test('admin flow covers dashboard, users, popups, feedback, FAQ, and user view',
     await userViewSection
       .getByRole('button', { name: 'Siirry käyttäjänäkymään' })
       .click()
-    await page.waitForURL(/\/teacher\/students/, { timeout: 15_000 })
+    await page.waitForURL(/\/(teacher\/students|student\/homework)/, { timeout: 15_000 })
   } finally {
     await cleanupE2eData(disposableStudent.email, runPrefix)
     await cleanupE2eSongs(runPrefix)

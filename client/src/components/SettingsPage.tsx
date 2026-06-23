@@ -306,7 +306,7 @@ export const SettingsPage = () => {
                           return (
                             <img
                               key={index}
-                              src={`${import.meta.env.VITE_SERVER_URL || 'http://localhost:3001'}${block.imageUrl}`}
+                              src={block.imageUrl}
                               alt=""
                               className="rounded-xl border border-neutral-600 max-w-full"
                             />

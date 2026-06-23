@@ -9,8 +9,7 @@ export const AdminFaqPage = () => {
   const [editBlocks, setEditBlocks] = useState<DraftFaqBlock[]>([])
   const [question, setQuestion] = useState('')
   const [faqs, setFaqs] = useState<FAQ[]>([])
-  const [createFaqOpen, setCreateFaqOpen] = useState(false)
-  const [browseFaqOpen, setBrowseFaqOpen] = useState(false)
+  const [showAllFaqs, setShowAllFaqs] = useState(false)
   const [openFaqId, setOpenFaqId] = useState<string | null>(null)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editQuestion, setEditQuestion] = useState('')
@@ -237,6 +236,10 @@ const startEditFaq = (faq: FAQ) => {
         new Date(b.createdAt ?? 0).getTime()
     )
 
+    const displayedFaqs = showAllFaqs
+  ? visibleFaqs
+  : visibleFaqs.slice(0, 5)
+
   return (
     <div className="space-y-4 p-5 pb-24">
       <h1 className="flex items-center gap-3">
@@ -244,40 +247,14 @@ const startEditFaq = (faq: FAQ) => {
         Usein kysytyt kysymykset
       </h1>
 
-     <div className="mt-8 bg-neutral-900 rounded-lg p-4 space-y-4">
+        <div className="mt-8 bg-neutral-900 rounded-lg p-4 space-y-4">
 
 
             <h3 className="flex items-center gap-3">
-        <FileQuestionMark className="w-8 h-8" />
-        Usein kysyttyjen kysymysten hallinta
-      </h3>
-            <div className="bg-neutral-900 rounded-lg p-3 mb-4">
-
-            <button
-              type="button"
-              onClick={() => setCreateFaqOpen(!createFaqOpen)}
-              className="w-full flex items-center justify-between gap-3
-              bg-neutral-800 hover:bg-neutral-700 border border-neutral-700
-              rounded-md px-4 py-3 text-left transition-colors px-4 py-3 min-h-[58px]"
-            >
-             <span className="flex items-center gap-3 font-semibold">
-            <CirclePlus className="w-6 h-6 shrink-0" />
+          <CirclePlus className="w-6 h-6 text-gray-300 shrink-0" />
             Lisää uusi kysymys
-            </span>
-
-             <span
-              className={`
-                flex items-center justify-center
-                text-gray-300 text-lg font-bold
-                transition-transform duration-200
-                ${createFaqOpen ? 'rotate-180' : ''}
-              `}
-            >
-              ▼
-            </span>
-            </button>
-
-              {createFaqOpen && (
+            </h3>
+            <div className="bg-neutral-900 rounded-lg p-3 mb-4 -mt-2">
               <div className="space-y-2 mt-3 pl-3 border-l border-neutral-700">
                 <p className="font-semibold text-gray-200">
                       Kysymys:
@@ -590,38 +567,23 @@ const startEditFaq = (faq: FAQ) => {
                     </div>
                     </div>
                   </div>
-                            )}
               </div>
 
-              <div className="bg-neutral-900 rounded-lg p-3">
-                <button
-                  type="button"
-                  onClick={() => setBrowseFaqOpen(!browseFaqOpen)}
-                  className="w-full flex items-center justify-between gap-3
-                  bg-neutral-800 hover:bg-neutral-700 border border-neutral-700
-                  rounded-md px-4 py-3 text-left transition-colors px-4 py-3 min-h-[58px]"
-                >
-                    <span className="flex items-center gap-3 font-semibold">
-                    <Pen className="w-6 h-6 shrink-0" />
-                      Selaa ja muokkaa kysymyksiä
-                      </span>
+             <div className="bg-neutral-900 rounded-lg p-3">
+  <h3 className="flex items-center gap-3 mb-4">
+    <Pen className="w-6 h-6 text-gray-300 shrink-0" />
+    Selaa ja muokkaa kysymyksiä
+  </h3>
 
-                  <span className={`transition-transform duration-200 ${
-                    browseFaqOpen ? 'rotate-180' : ''
-                  }`}>
-                    ▼
-                  </span>
-                </button>
-
-                {browseFaqOpen && (
-                <div className="space-y-3 mt-3 pl-3 border-l border-neutral-700">
+  <div className="space-y-3 pl-3 border-l border-neutral-700">
 
                 {visibleFaqs.length === 0 ? (
                 <div className="ml-4 bg-neutral-800 border border-neutral-700 rounded-xl px-4 py-6 text-center text-gray-400 italic">
                   Ei näytettäviä kysymyksiä
                 </div>
               ) : (
-                visibleFaqs.map((faq) => (
+                  <>
+                {displayedFaqs.map((faq) => (
                 <div key={faq._id}>
                   <button
                   type="button"
@@ -1020,10 +982,24 @@ const startEditFaq = (faq: FAQ) => {
                 </div>
               )}
             </div>
-            ))
+                        ))}
+
+            {visibleFaqs.length > 5 && (
+              <div className="flex justify-center pt-4">
+                <button
+                  type="button"
+                  onClick={() => setShowAllFaqs(!showAllFaqs)}
+                  className="text-sm text-gray-300 hover:text-white transition-colors"
+                >
+                  {showAllFaqs
+                    ? 'Näytä vähemmän'
+                    : `Näytä kaikki (${visibleFaqs.length})`}
+                </button>
+              </div>
+            )}
+          </>
         )}
         </div>
-            )}
     </div>
   </div>
     </div>

@@ -21,7 +21,7 @@ interface DropdownSearchbarProps {
   selectedResultKey?: string | null
 }
 
-const RESULTS_PER_PAGE = 5
+const RESULTS_PER_PAGE = 10
 
 export const DropdownSearchbar = ({
   onSearchInputChange,

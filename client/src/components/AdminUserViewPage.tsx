@@ -27,23 +27,23 @@ export const AdminUserViewPage = () => {
   }
 
   return (
-    <div className="space-y-4 p-5 pb-24">
-      <h1 className="flex items-center gap-3">
-        <UserRound className="w-8 h-8" />
+    <div className="admin-page">
+      <h1 className="admin-page-title">
+        <UserRound className="admin-page-title-icon" />
         Käyttäjänäkymä
       </h1>
 
-      <div className="bg-neutral-900 rounded-lg p-6 space-y-5">
+      <div className="admin-card space-y-5">
         <p className="text-gray-300">
           Siirry tavalliseen käyttäjänäkymään (läksyt, kappaleet ja asetukset)
           tai kirjaudu ulos.
         </p>
 
-        <div className="flex flex-wrap gap-3">
+        <div className="flex flex-col items-start gap-3 sm:flex-row sm:flex-wrap">
           <button
             type="button"
             onClick={handleEnterRegularUserView}
-            className="button-basic"
+            className="button-basic max-w-full text-center"
           >
             Siirry käyttäjänäkymään
           </button>
@@ -52,7 +52,7 @@ export const AdminUserViewPage = () => {
             type="button"
             onClick={() => logout.mutate()}
             disabled={logout.isPending}
-            className="inline-flex justify-center items-center gap-2 bg-neutral-100 text-black rounded-full px-6 py-2 text-xl disabled:opacity-50 disabled:cursor-not-allowed"
+            className="button-basic inline-flex max-w-full items-center justify-center gap-2 disabled:cursor-not-allowed disabled:opacity-50"
           >
             <LogOut className="w-5 h-5" />
             {logout.isPending ? 'Kirjaudutaan ulos...' : 'Kirjaudu ulos'}

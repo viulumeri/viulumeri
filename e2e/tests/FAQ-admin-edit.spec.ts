@@ -67,7 +67,6 @@ test.describe('Admin FAQ page', () => {
   })
 
   test('admin can open create FAQ form and add text blocks', async ({ page }) => {
-    await page.getByRole('button', { name: /lisää uusi kysymys/i }).click()
 
     await page.getByPlaceholder('Kirjoita kysymys').fill('Miten palvelu toimii?')
 
@@ -83,7 +82,6 @@ test.describe('Admin FAQ page', () => {
   })
 
   test('admin can add and remove answer sections', async ({ page }) => {
-    await page.getByRole('button', { name: /lisää uusi kysymys/i }).click()
 
     await page.getByRole('button', { name: /lisää tekstiosio/i }).click()
     await page.getByRole('button', { name: /lisää kuvaosio/i }).click()
@@ -98,7 +96,6 @@ test.describe('Admin FAQ page', () => {
   })
 
   test('admin can reorder FAQ blocks', async ({ page }) => {
-    await page.getByRole('button', { name: /lisää uusi kysymys/i }).click()
 
     await page.getByRole('button', { name: /lisää tekstiosio/i }).click()
     await page.getByRole('button', { name: /lisää tekstiosio/i }).click()
@@ -114,16 +111,13 @@ test.describe('Admin FAQ page', () => {
     await expect(blocks.nth(1)).toHaveValue('Ensimmäinen osio')
   })
 
-test('admin can open FAQ browse section', async ({ page }) => {
-  await page.getByRole('button', { name: /selaa ja muokkaa kysymyksiä/i }).click()
-
+test('admin can see FAQ browse section', async ({ page }) => {
   await expect(
-    page.getByRole('button', { name: /selaa ja muokkaa kysymyksiä/i })
+    page.getByRole('heading', { name: /selaa ja muokkaa kysymyksiä/i })
   ).toBeVisible()
 })
 
   test('admin can cancel creating FAQ', async ({ page }) => {
-    await page.getByRole('button', { name: /lisää uusi kysymys/i }).click()
 
     await page.getByPlaceholder('Kirjoita kysymys').fill('Peruttava kysymys')
     await page.getByRole('button', { name: /lisää tekstiosio/i }).click()

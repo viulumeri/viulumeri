@@ -40,7 +40,7 @@ type TrackField = {
 }
 
 type FormMode = 'create' | 'edit'
-type SongSortMode = 'name' | 'updatedAt'
+type SongSortMode = 'saved' | 'name' | 'updatedAt'
 
 type FormState = {
   name: string
@@ -234,18 +234,19 @@ export const AdminSongsPage = () => {
   const { data, isLoading, isFetching, error } = useAdminSongs()
   const { showSuccess, showError } = useNotification()
   const [searchInput, setSearchInput] = useState('')
+  const restoredPageState = (location.state as { adminSongsPage?: unknown } | null)?.adminSongsPage
   const restoredPage =
-    typeof (location.state as { adminSongsPage?: unknown } | null)?.adminSongsPage === 'number'
+    typeof restoredPageState === 'number'
       ? Math.max(
         0,
-        Math.floor((location.state as { adminSongsPage: number }).adminSongsPage)
+        Math.floor(restoredPageState)
       )
       : 0
   const [page, setPage] = useState(restoredPage)
   const [mode, setMode] = useState<FormMode | null>(null)
   const [sortMode, setSortMode] = useState<SongSortMode>(() => {
     const saved = window.localStorage.getItem(SONG_SORT_STORAGE_KEY)
-    return saved === 'updatedAt' ? 'updatedAt' : 'name'
+    return saved === 'name' || saved === 'updatedAt' ? saved : 'saved'
   })
   const previousSearchInput = useRef(searchInput)
   const previousSortMode = useRef(sortMode)
@@ -254,8 +255,8 @@ export const AdminSongsPage = () => {
   const [fileInputKey, setFileInputKey] = useState(0)
   const [orderMode, setOrderMode] = useState(false)
   const [orderedSongs, setOrderedSongs] = useState<AdminSongItem[]>([])
-  const [orderDirty, setOrderDirty] = useState(false)
   const [draggingSongId, setDraggingSongId] = useState<string | null>(null)
+  const orderModeStartOrderRef = useRef<string[]>([])
 
   const createSong = useCreateAdminSong({
     onSuccess: () => {
@@ -288,8 +289,6 @@ export const AdminSongsPage = () => {
   const updateSongOrder = useUpdateAdminSongOrder({
     onSuccess: data => {
       setOrderedSongs(data.songs)
-      setOrderDirty(false)
-      showSuccess('Kappaleiden järjestys tallennettu')
     },
     onError: error => showError(`Järjestyksen tallennus epäonnistui: ${error.message}`)
   })
@@ -303,7 +302,11 @@ export const AdminSongsPage = () => {
       )
     }
 
-    return items.sort((left, right) => left.title.localeCompare(right.title, 'fi'))
+    if (sortMode === 'name') {
+      return items.sort((left, right) => left.title.localeCompare(right.title, 'fi'))
+    }
+
+    return items
   }, [data, sortMode])
   const searchResults = useMemo(() => {
     const normalized = searchInput.trim().toLowerCase()
@@ -354,24 +357,39 @@ export const AdminSongsPage = () => {
   }, [sortMode])
 
   useEffect(() => {
-    if (!orderMode || orderDirty) return
-    setOrderedSongs(data?.songs ?? [])
-  }, [data, orderDirty, orderMode])
+    if (typeof restoredPageState !== 'number') return
+
+    navigate(`${location.pathname}${location.search}${location.hash}`, {
+      replace: true,
+      state: null
+    })
+  }, [location.hash, location.pathname, location.search, navigate, restoredPageState])
 
   const resetFiles = () => setFileInputKey(current => current + 1)
 
   const openOrderMode = () => {
+    const initialSongs = data?.songs ?? []
     setOrderMode(true)
-    setOrderedSongs(data?.songs ?? [])
-    setOrderDirty(false)
+    setOrderedSongs(initialSongs)
+    orderModeStartOrderRef.current = initialSongs.map(song => song.id)
     setSearchInput('')
     setPage(0)
   }
 
   const closeOrderMode = () => {
+    const currentOrder = orderedSongs.map(song => song.id)
+    const startOrder = orderModeStartOrderRef.current
+    const orderChanged =
+      currentOrder.length !== startOrder.length ||
+      currentOrder.some((id, index) => id !== startOrder[index])
+
+    if (orderChanged) {
+      updateSongOrder.mutate(currentOrder)
+    }
+
     setOrderMode(false)
     setDraggingSongId(null)
-    setOrderDirty(false)
+    orderModeStartOrderRef.current = []
   }
 
   const moveOrderedSongToIndex = useCallback((songId: string, targetIndex: number) => {
@@ -386,7 +404,6 @@ export const AdminSongsPage = () => {
       if (fromIndex === adjustedIndex) return current
 
       next.splice(adjustedIndex, 0, moved)
-      setOrderDirty(true)
       return next
     })
   }, [])
@@ -407,9 +424,9 @@ export const AdminSongsPage = () => {
     moveOrderedSongToIndex(songId, targetIndex)
   }, [moveOrderedSongToIndex])
 
-  const onOrderPointerEnd = () => {
+  const finishOrderDrag = useCallback(() => {
     setDraggingSongId(null)
-  }
+  }, [])
 
   useEffect(() => {
     if (!draggingSongId) return
@@ -454,7 +471,7 @@ export const AdminSongsPage = () => {
         }
       }
     }
-    const onPointerEnd = () => setDraggingSongId(null)
+    const onPointerEnd = () => finishOrderDrag()
     const onWheel = (event: WheelEvent) => event.preventDefault()
 
     window.addEventListener('pointermove', onPointerMove, { passive: false })
@@ -468,11 +485,7 @@ export const AdminSongsPage = () => {
       window.removeEventListener('pointercancel', onPointerEnd)
       window.removeEventListener('wheel', onWheel)
     }
-  }, [draggingSongId, moveDraggedSongToPointer])
-
-  const saveSongOrder = () => {
-    updateSongOrder.mutate(orderedSongs.map(song => song.id))
-  }
+  }, [draggingSongId, finishOrderDrag, moveDraggedSongToPointer])
 
   const closeForm = () => {
     setMode(null)
@@ -601,14 +614,11 @@ export const AdminSongsPage = () => {
                 >
                   Takaisin
                 </button>
-                <button
-                  type="button"
-                  onClick={saveSongOrder}
-                  disabled={!orderDirty || updateSongOrder.isPending}
-                  className="button-basic disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  {updateSongOrder.isPending ? 'Tallennetaan...' : 'Tallenna'}
-                </button>
+                {updateSongOrder.isPending && (
+                  <span className="inline-flex items-center px-2 text-sm text-neutral-300">
+                    Tallennetaan...
+                  </span>
+                )}
               </div>
             </div>
 
@@ -623,9 +633,9 @@ export const AdminSongsPage = () => {
             ) : (
               <ul
                 className="flex flex-col gap-1 px-4 pt-2"
-                onPointerUp={onOrderPointerEnd}
-                onPointerCancel={onOrderPointerEnd}
-                onLostPointerCapture={onOrderPointerEnd}
+                onPointerUp={finishOrderDrag}
+                onPointerCancel={finishOrderDrag}
+                onLostPointerCapture={finishOrderDrag}
               >
                 {orderedSongs.map(song => (
                   <li
@@ -914,6 +924,7 @@ export const AdminSongsPage = () => {
                   onChange={event => setSortMode(event.target.value as SongSortMode)}
                   className="rounded-md border border-neutral-600 bg-neutral-700 px-3 py-2 text-sm text-gray-100 focus:border-transparent focus:ring-2 focus:ring-blue-500"
                 >
+                  <option value="saved">Tallennettu</option>
                   <option value="name">Nimi</option>
                   <option value="updatedAt">Viimeksi muokattu</option>
                 </select>

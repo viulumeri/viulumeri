@@ -378,6 +378,9 @@ test('admin flow covers dashboard, users, popups, feedback, FAQ, and user view',
     await expect(
       songsSection.getByRole('button', { name: new RegExp(`Siirr.*${updatedSongTitle}`) })
     ).toBeVisible()
+    await expect(
+      songsSection.getByRole('button', { name: 'Tallenna', exact: true })
+    ).not.toBeVisible()
     await songsSection.getByRole('button', { name: 'Takaisin' }).click()
     await songsSection.locator('input[placeholder="Etsi kappaleita..."]').fill(updatedSongTitle)
     songTitleButton = songsSection.getByRole('button', {

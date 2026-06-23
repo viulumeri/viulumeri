@@ -104,19 +104,61 @@ export const useDeleteAdminSong = (
   })
 }
 
+type AdminSongListResponse = { songs: AdminSongItem[] }
+type AdminSongOrderMutationContext = {
+  previousAdminSongs?: AdminSongListResponse
+}
+
 export const useUpdateAdminSongOrder = (
-  options?: UseMutationOptions<{ songs: AdminSongItem[] }, Error, string[]>
+  options?: UseMutationOptions<
+    AdminSongListResponse,
+    Error,
+    string[],
+    AdminSongOrderMutationContext
+  >
 ) => {
   const queryClient = useQueryClient()
 
   return useMutation({
     mutationFn: adminService.updateAdminSongOrder,
     ...options,
-    onSuccess: (data, ...args) => {
+    onMutate: async songIds => {
+      await queryClient.cancelQueries({ queryKey: ['admin', 'songs'] })
+
+      const previousAdminSongs = queryClient.getQueryData<AdminSongListResponse>([
+        'admin',
+        'songs'
+      ])
+
+      if (previousAdminSongs) {
+        const songsById = new Map(previousAdminSongs.songs.map(song => [song.id, song]))
+        const orderedSongIds = new Set(songIds)
+        const orderedSongs = songIds
+          .map(songId => songsById.get(songId))
+          .filter((song): song is AdminSongItem => Boolean(song))
+        const remainingSongs = previousAdminSongs.songs.filter(song => !orderedSongIds.has(song.id))
+
+        queryClient.setQueryData(['admin', 'songs'], {
+          songs: [...orderedSongs, ...remainingSongs]
+        })
+      }
+
+      return { previousAdminSongs }
+    },
+    onError: (error, variables, context, mutationContext) => {
+      if (context?.previousAdminSongs) {
+        queryClient.setQueryData(['admin', 'songs'], context.previousAdminSongs)
+      }
+
+      options?.onError?.(error, variables, context, mutationContext)
+    },
+    onSuccess: (data, variables, context, mutationContext) => {
       queryClient.setQueryData(['admin', 'songs'], data)
-      queryClient.invalidateQueries({ queryKey: ['admin', 'songs'] })
       queryClient.invalidateQueries({ queryKey: ['songs'] })
-      options?.onSuccess?.(data, ...args)
+      options?.onSuccess?.(data, variables, context, mutationContext)
+    },
+    onSettled: (data, error, variables, context, mutationContext) => {
+      options?.onSettled?.(data, error, variables, context, mutationContext)
     }
   })
 }

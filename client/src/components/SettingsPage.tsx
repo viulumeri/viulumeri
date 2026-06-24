@@ -2,8 +2,6 @@ import { useEffect, useState } from 'react'
 import { useSession } from '../auth-client'
 import { useDeleteUser, useChangePassword, useLogout } from '../hooks/useAuth'
 import { useSubmitFeedback } from '../hooks/useFeedback'
-import type { FeedbackCategory } from '../../../shared/types'
-import { categoryLabel } from '../utils/feedbackLabels'
 import { useField } from '../hooks/useField'
 import type { AppSessionUser } from '../../../shared/types'
 import { StudentSettings } from './StudentSettings'
@@ -43,7 +41,6 @@ export const SettingsPage = () => {
 
   const [feedbackTitle, setFeedbackTitle] = useState('')
   const [feedbackMessage, setFeedbackMessage] = useState('')
-  const [feedbackCategory, setFeedbackCategory] = useState<FeedbackCategory>('bug')
   const [feedbackWebsite, setFeedbackWebsite] = useState('')
 
   const [faqs, setFaqs] = useState<FAQ[]>([])
@@ -81,7 +78,6 @@ export const SettingsPage = () => {
       showSuccess('Kiitos palautteesta!')
       setFeedbackTitle('')
       setFeedbackMessage('')
-      setFeedbackCategory('bug')
       setFeedbackWebsite('')
       setFeedbackOpen(false)
     },
@@ -180,7 +176,7 @@ export const SettingsPage = () => {
 
     submitFeedback.mutate({
       title: trimmedTitle,
-      category: feedbackCategory,
+      category: 'other',
       message: trimmedMessage,
       website: feedbackWebsite
     })
@@ -448,22 +444,6 @@ export const SettingsPage = () => {
                   className="w-full bg-neutral-700 border border-neutral-600 rounded-md px-3 py-2 text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   placeholder="Esim. 'Musiikkisoitin ei toimi'"
                 />
-              </div>
-
-              <div>
-                <label htmlFor="feedback-category" className="block text-sm font-medium text-gray-300 mb-1">
-                  Kategoria:
-                </label>
-                <select
-                  id="feedback-category"
-                  value={feedbackCategory}
-                  onChange={event => setFeedbackCategory(event.target.value as FeedbackCategory)}
-                  className="w-full bg-neutral-700 border border-neutral-600 rounded-md px-3 py-2 text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  <option value="bug">{categoryLabel.bug}</option>
-                  <option value="feature">{categoryLabel.feature}</option>
-                  <option value="other">{categoryLabel.other}</option>
-                </select>
               </div>
 
               <div className="hidden" aria-hidden="true">

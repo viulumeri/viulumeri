@@ -6,6 +6,7 @@ import app from '../app'
 import Teacher from '../models/teacher'
 import Student from '../models/student'
 import Homework from '../models/homework'
+import Feedback from '../models/feedback'
 import { client } from '../db'
 import { Faq } from '../models/FAQ'
 
@@ -339,6 +340,80 @@ describe('PATCH /api/admin/students/:studentId', () => {
 
     assert.strictEqual(response.status, 400)
     assert.strictEqual(response.body.error, 'Name is required')
+  })
+})
+
+describe('POST /api/feedback', () => {
+  it('defaults missing or stale user category values to other', async () => {
+    const { sessionCookie, user } = await TestHelper.createAuthenticatedStudent(api)
+
+    const response = await api
+      .post('/api/feedback')
+      .set('Cookie', sessionCookie)
+      .send({
+        title: 'Category fallback',
+        category: '',
+        message: 'Feedback from a client without category selection'
+      })
+
+    assert.strictEqual(response.status, 201)
+    assert.strictEqual(response.body.ok, true)
+
+    const feedback = await Feedback.findOne({
+      userId: user.id,
+      title: 'Category fallback'
+    })
+    assert.ok(feedback)
+    assert.strictEqual(feedback.category, 'other')
+  })
+})
+
+describe('PATCH /api/admin/feedbacks/:feedbackId', () => {
+  it('allows an admin to update feedback category', async () => {
+    const { sessionCookie } = await TestHelper.createAuthenticatedAdmin(api)
+    const { user } = await TestHelper.createAuthenticatedStudent(api)
+    const feedback = await Feedback.create({
+      userId: user.id,
+      userType: 'student',
+      title: 'Category update',
+      category: 'other',
+      message: 'Needs admin categorization'
+    })
+
+    const response = await api
+      .patch(`/api/admin/feedbacks/${feedback.id}`)
+      .set('Cookie', sessionCookie)
+      .send({ category: 'feature' })
+
+    assert.strictEqual(response.status, 200)
+    assert.strictEqual(response.body.feedback.category, 'feature')
+    assert.strictEqual(response.body.feedback.isRead, false)
+
+    const updatedFeedback = await Feedback.findById(feedback.id)
+    assert.strictEqual(updatedFeedback!.category, 'feature')
+  })
+
+  it('rejects invalid feedback category', async () => {
+    const { sessionCookie } = await TestHelper.createAuthenticatedAdmin(api)
+    const { user } = await TestHelper.createAuthenticatedStudent(api)
+    const feedback = await Feedback.create({
+      userId: user.id,
+      userType: 'student',
+      title: 'Invalid category update',
+      category: 'other',
+      message: 'This category should stay unchanged'
+    })
+
+    const response = await api
+      .patch(`/api/admin/feedbacks/${feedback.id}`)
+      .set('Cookie', sessionCookie)
+      .send({ category: 'invalid' })
+
+    assert.strictEqual(response.status, 400)
+    assert.strictEqual(response.body.error, 'Invalid category')
+
+    const unchangedFeedback = await Feedback.findById(feedback.id)
+    assert.strictEqual(unchangedFeedback!.category, 'other')
   })
 })
 

@@ -98,7 +98,7 @@ export type FeedbackCategory = 'bug' | 'feature' | 'other'
 
 export interface SubmitFeedbackBody {
   title: string
-  category: FeedbackCategory
+  category?: FeedbackCategory
   message: string
   // Honeypot spam trap: the UI will keep this hidden.
   // Server should reject if this is non-empty.

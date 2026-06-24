@@ -1,15 +1,12 @@
 import { useState } from 'react'
 import { useSubmitFeedback } from '../hooks/useFeedback'
-import type { FeedbackCategory } from '../../../shared/types'
 import { useNotification } from '../hooks/useNotification'
-import { categoryLabel } from '../utils/feedbackLabels'
 import { PageContainer } from './PageContainer'
 import { ArrowLeft } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 export const FeedbackPage = () => {
   const [title, setTitle] = useState('')
   const [message, setMessage] = useState('')
-  const [category, setCategory] = useState<FeedbackCategory>('bug')
   const [website, setWebsite] = useState('')
   const { showError, showSuccess } = useNotification()
   const navigate = useNavigate()
@@ -19,7 +16,6 @@ export const FeedbackPage = () => {
       showSuccess('Kiitos palautteesta!')
       setTitle('')
       setMessage('')
-      setCategory('bug')
       setWebsite('')
     },
     onError: error => {
@@ -59,7 +55,7 @@ export const FeedbackPage = () => {
 
     submitFeedback.mutate({
       title: trimmedTitle,
-      category,
+      category: 'other',
       message: trimmedMessage,
       website
     })
@@ -95,25 +91,6 @@ export const FeedbackPage = () => {
               className="w-full bg-neutral-700 border border-neutral-600 rounded-md px-3 py-2 text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               placeholder="Esim. 'Musiikkisoitin ei toimi'"
             />
-          </div>
-
-          <div>
-            <label
-              htmlFor="feedback-category"
-              className="block text-sm font-medium text-gray-300 mb-1"
-            >
-              Kategoria:
-            </label>
-            <select
-              id="feedback-category"
-              value={category}
-              onChange={event => setCategory(event.target.value as FeedbackCategory)}
-              className="w-full bg-neutral-700 border border-neutral-600 rounded-md px-3 py-2 text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              <option value="bug">{categoryLabel.bug}</option>
-              <option value="feature">{categoryLabel.feature}</option>
-              <option value="other">{categoryLabel.other}</option>
-            </select>
           </div>
 
           {/* Honeypot spam trap*/}

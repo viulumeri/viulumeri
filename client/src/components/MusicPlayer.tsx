@@ -336,7 +336,7 @@ const startPlayback = async () => {
     <div className="min-h-screen flex flex-col">
       <button
         onClick={handleBack}
-        className="absolute left-6 top-4 z-10 rounded-full bg-black/35 p-1 backdrop-blur-sm transition hover:bg-black/50"
+        className="fixed left-6 top-4 z-10 rounded-full bg-black/35 p-1 backdrop-blur-sm transition hover:bg-black/50"
         aria-label="Palaa takaisin"
       >
         <ArrowLeft className="w-8 h-8 text-white" />

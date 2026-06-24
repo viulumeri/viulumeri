@@ -49,7 +49,7 @@ export const InstallPromptPopup = ({ userId, onClose, platform }: Props) => {
     onClose?.()
   }
 
-  if (isStandalone || (dismissed && !onClose) || (!userId && !onClose)) return null
+  if ((isStandalone && !onClose) || (dismissed && !onClose) || (!userId && !onClose)) return null
 
   return (
   <div

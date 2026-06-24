@@ -8,7 +8,8 @@ const feedbackSchema = new mongoose.Schema(
     category: {
       type: String,
       required: true,
-      enum: ['bug', 'feature', 'other']
+      enum: ['bug', 'feature', 'other'],
+      default: 'other'
     },
     isRead: { type: Boolean, required: true, default: false, index: true },
     message: { type: String, required: true, minlength: 5, maxlength: 4000 },

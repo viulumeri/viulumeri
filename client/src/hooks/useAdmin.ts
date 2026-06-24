@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient, type UseQueryOptions, type UseMutationOptions } from '@tanstack/react-query'
 import {
   adminService,
+  type AdminFeedbackItem,
   type AdminSongItem,
   type AdminSongSavePayload,
   type GetAdminFeedbacksResponse,
@@ -189,13 +190,37 @@ export const useAdminFeedbacks = (
   })
 
 export const useUpdateAdminFeedbackReadStatus = (
-  options?: UseMutationOptions<{ feedback: { id: string; isRead: boolean } }, Error, { id: string; isRead: boolean }>
+  options?: UseMutationOptions<
+    { feedback: { id: string; isRead: boolean; category: AdminFeedbackItem['category'] } },
+    Error,
+    { id: string; isRead: boolean }
+  >
 ) => {
   const queryClient = useQueryClient()
 
   return useMutation({
     mutationFn: ({ id, isRead }) =>
       adminService.updateAdminFeedbackReadStatus(id, isRead),
+    ...options,
+    onSuccess: (...args) => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'feedbacks'] })
+      options?.onSuccess?.(...args)
+    }
+  })
+}
+
+export const useUpdateAdminFeedbackCategory = (
+  options?: UseMutationOptions<
+    { feedback: { id: string; isRead: boolean; category: AdminFeedbackItem['category'] } },
+    Error,
+    { id: string; category: AdminFeedbackItem['category'] }
+  >
+) => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ id, category }) =>
+      adminService.updateAdminFeedbackCategory(id, category),
     ...options,
     onSuccess: (...args) => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'feedbacks'] })

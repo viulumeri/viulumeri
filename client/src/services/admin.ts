@@ -1,5 +1,5 @@
 import axios from 'axios'
-import type { AdminFeedbackItem, GetAdminFeedbacksResponse, SongMetadata } from '../../../shared/types'
+import type { AdminFeedbackItem, FeedbackCategory, GetAdminFeedbacksResponse, SongMetadata } from '../../../shared/types'
 
 interface SummaryResponse {
   teacherCount: number
@@ -349,10 +349,22 @@ export const adminService = {
   updateAdminFeedbackReadStatus: async (
     id: string,
     isRead: boolean
-  ): Promise<{ feedback: { id: string; isRead: boolean } }> => {
+  ): Promise<{ feedback: { id: string; isRead: boolean; category: FeedbackCategory } }> => {
     const response = await axios.patch(
       `/api/admin/feedbacks/${id}`,
       { isRead },
+      { withCredentials: true }
+    )
+    return response.data
+  },
+
+  updateAdminFeedbackCategory: async (
+    id: string,
+    category: FeedbackCategory
+  ): Promise<{ feedback: { id: string; isRead: boolean; category: FeedbackCategory } }> => {
+    const response = await axios.patch(
+      `/api/admin/feedbacks/${id}`,
+      { category },
       { withCredentials: true }
     )
     return response.data

@@ -11,6 +11,7 @@ import PopupMessage from '../models/popupMessage'
 import Feedback from '../models/feedback'
 import { getAdminFeedbacks } from '../services/admin'
 import { adminSongsService, AdminSongError } from '../services/adminSongs'
+import type { FeedbackCategory } from '../../../shared/types'
 
 type BetterAuthAdminApi = {
   removeUser: (args: {
@@ -49,6 +50,8 @@ const MAX_POPUP_IMAGES = 6
 const MAX_POPUP_IMAGE_BYTES = 5 * 1024 * 1024
 const MAX_POPUP_IMAGES_TOTAL_BYTES = 10 * 1024 * 1024
 const IMAGE_EXTENSION_PATTERN = /\.(avif|gif|heic|heif|jpe?g|png|webp|svg)$/i
+const isValidFeedbackCategory = (value: unknown): value is FeedbackCategory =>
+  value === 'bug' || value === 'feature' || value === 'other'
 const popupImageUpload = multer({
   storage: multer.memoryStorage(),
   limits: {
@@ -906,8 +909,18 @@ adminRouter.get('/feedbacks', async (_request, response) => {
 
 adminRouter.patch('/feedbacks/:feedbackId', async (request, response) => {
   const isRead = request.body?.isRead
-  if (typeof isRead !== 'boolean') {
+  const category = request.body?.category
+  const hasIsRead = Object.prototype.hasOwnProperty.call(request.body ?? {}, 'isRead')
+  const hasCategory = Object.prototype.hasOwnProperty.call(request.body ?? {}, 'category')
+
+  if (!hasIsRead && !hasCategory) {
+    return response.status(400).json({ error: 'No feedback updates provided' })
+  }
+  if (hasIsRead && typeof isRead !== 'boolean') {
     return response.status(400).json({ error: 'isRead must be boolean' })
+  }
+  if (hasCategory && !isValidFeedbackCategory(category)) {
+    return response.status(400).json({ error: 'Invalid category' })
   }
 
   const feedback = await Feedback.findById(request.params.feedbackId)
@@ -915,13 +928,19 @@ adminRouter.patch('/feedbacks/:feedbackId', async (request, response) => {
     return response.status(404).json({ error: 'Feedback not found' })
   }
 
-  feedback.isRead = isRead
+  if (hasIsRead) {
+    feedback.isRead = isRead
+  }
+  if (hasCategory) {
+    feedback.category = category
+  }
   await feedback.save()
 
   response.json({
     feedback: {
       id: String(feedback._id),
-      isRead: feedback.isRead === true
+      isRead: feedback.isRead === true,
+      category: feedback.category
     }
   })
 })

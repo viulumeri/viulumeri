@@ -22,7 +22,7 @@ export const feedbackService = {
             throw new Error('Palautteen pitää olla 5–4000 merkkiä.')
           }
           if (serverError === 'Invalid category') {
-            throw new Error('Valitse kelvollinen kategoria.')
+            throw new Error('Yritä hetken päästä uudelleen.')
           }
           if (serverError === 'Invalid submission') {
             throw new Error('Lähetys hylättiin (spam-suoja).')

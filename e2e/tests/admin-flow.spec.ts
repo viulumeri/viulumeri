@@ -504,6 +504,16 @@ test('admin flow covers dashboard, users, popups, feedback, FAQ, and user view',
     await expect(feedbackCard).toContainText(feedbackMessage)
     await expect(feedbackCard).toContainText(STUDENT.email)
 
+    const feedbackCategoryResponsePromise = page.waitForResponse(response => {
+      return (
+        response.url().includes('/api/admin/feedbacks/') &&
+        response.request().method() === 'PATCH'
+      )
+    })
+    await feedbackCard.getByLabel('Kategoria').selectOption('feature')
+    const feedbackCategoryResponse = await feedbackCategoryResponsePromise
+    expect(feedbackCategoryResponse.ok()).toBe(true)
+
     const feedbackReadResponsePromise = page.waitForResponse(response => {
       return (
         response.url().includes('/api/admin/feedbacks/') &&

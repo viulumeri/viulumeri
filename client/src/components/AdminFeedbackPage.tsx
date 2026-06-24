@@ -18,7 +18,7 @@ export const AdminFeedbackPage = () => {
   const deleteFeedback = useDeleteAdminFeedback()
   const [page, setPage] = useState(0)
   const [openFeedbackIds, setOpenFeedbackIds] = useState<Set<string>>(() => new Set())
-  const feedbacks = data?.feedbacks ?? []
+  const feedbacks = useMemo(() => data?.feedbacks ?? [], [data?.feedbacks])
   const totalPages = Math.max(Math.ceil(feedbacks.length / RESULTS_PER_PAGE), 1)
   const paginatedFeedbacks = useMemo(
     () => feedbacks.slice(page * RESULTS_PER_PAGE, (page + 1) * RESULTS_PER_PAGE),

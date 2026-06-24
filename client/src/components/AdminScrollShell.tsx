@@ -273,7 +273,8 @@ export const AdminScrollShell = ({ initialSectionId }: Props) => {
 
       <div
         ref={containerRef}
-        className="h-screen overflow-y-auto snap-y snap-mandatory scrollbar-hide pl-10 sm:pl-18"
+        data-admin-scroll-container="true"
+        className="h-screen overflow-y-auto snap-y snap-mandatory scrollbar-hide pl-14 sm:pl-18"
       >
         {sections.map(section => {
           const isActive = section.id === activeId

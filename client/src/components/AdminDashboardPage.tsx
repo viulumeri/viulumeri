@@ -5,11 +5,6 @@ import { adminService } from '../services/admin'
 import type { AdminPopupMessage } from '../services/admin'
 import { ADMIN_POPUPS_UPDATED_EVENT } from '../utils/adminPopupEvents'
 
-const formatDelta = (value: number) => {
-  if (value > 0) return `+${value}`
-  return `${value}`
-}
-
 const popupAudienceLabel = (message: AdminPopupMessage) => {
   const visibleToTeachers = message.visibleToTeachers !== false
   const visibleToStudents = message.visibleToStudents !== false
@@ -24,8 +19,6 @@ export const AdminDashboardPage = () => {
   const { data: summary } = useAdminSummary({ refetchInterval: 30000 })
   const { data: feedbackData } = useAdminFeedbacks({ refetchInterval: 30000 })
   const [messages, setMessages] = useState<AdminPopupMessage[]>([])
-  const [baselineTeacherCount, setBaselineTeacherCount] = useState<number | null>(null)
-  const [baselineStudentCount, setBaselineStudentCount] = useState<number | null>(null)
 
   const fetchMessages = useCallback(async () => {
     const response = await adminService.getAdminPopupMessages()
@@ -49,20 +42,8 @@ export const AdminDashboardPage = () => {
     }
   }, [fetchMessages])
 
-  useEffect(() => {
-    if (!summary) return
-    if (baselineTeacherCount === null) {
-      setBaselineTeacherCount(summary.teacherCount)
-    }
-    if (baselineStudentCount === null) {
-      setBaselineStudentCount(summary.studentCount)
-    }
-  }, [summary, baselineTeacherCount, baselineStudentCount])
-
   const teacherCount = summary?.teacherCount ?? 0
   const studentCount = summary?.studentCount ?? 0
-  const teacherDelta = baselineTeacherCount === null ? 0 : teacherCount - baselineTeacherCount
-  const studentDelta = baselineStudentCount === null ? 0 : studentCount - baselineStudentCount
   const unreadFeedbackCount = (feedbackData?.feedbacks ?? []).filter(item => !item.isRead).length
   const activePopups = messages.filter(
     message =>
@@ -71,43 +52,41 @@ export const AdminDashboardPage = () => {
   )
 
   return (
-    <div className="space-y-3 p-4 pb-6">
-      <h1 className="flex items-center gap-3">
-        <Banana className="text-yellow-500 w-8 h-8" />
+    <div className="admin-page">
+      <h1 className="admin-page-title">
+        <Banana className="admin-page-title-icon text-yellow-500" />
         Ylläpitopaneeli
       </h1>
 
-      <div className="grid grid-cols-3 gap-2">
-        <div className="bg-neutral-900 rounded-lg p-3">
-          <h3 className="flex items-center justify-center gap-2 h-10 leading-tight text-center text-sm md:text-base">
-            <MessageSquare className="w-5 h-5" />
-            <span className="ml-1">Lukemattomat</span>
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <div className="rounded-lg bg-neutral-900 p-4">
+          <h3 className="flex min-h-10 items-center justify-center gap-2 text-center text-base leading-tight">
+            <MessageSquare className="h-5 w-5 shrink-0" />
+            <span>Lukemattomat</span>
           </h3>
-          <p className="text-2xl md:text-3xl font-bold mt-1 text-center">{unreadFeedbackCount}</p>
+          <p className="mt-1 text-center text-2xl font-bold md:text-3xl">{unreadFeedbackCount}</p>
         </div>
 
-        <div className="bg-neutral-900 rounded-lg p-3">
-          <h3 className="flex items-center justify-center gap-2 h-10 leading-tight text-center text-sm md:text-base">
-            <Users className="w-5 h-5" />
+        <div className="rounded-lg bg-neutral-900 p-4">
+          <h3 className="flex min-h-10 items-center justify-center gap-2 text-center text-base leading-tight">
+            <Users className="h-5 w-5 shrink-0" />
             Opettajat
           </h3>
-          <p className="text-2xl md:text-3xl font-bold mt-1 text-center">{teacherCount}</p>
-          <p className="text-xs text-gray-400 mt-1 text-center">Muutos: {formatDelta(teacherDelta)}</p>
+          <p className="mt-1 text-center text-2xl font-bold md:text-3xl">{teacherCount}</p>
         </div>
 
-        <div className="bg-neutral-900 rounded-lg p-3">
-          <h3 className="flex items-center justify-center gap-2 h-10 leading-tight text-center text-sm md:text-base">
-            <Users className="w-5 h-5" />
+        <div className="rounded-lg bg-neutral-900 p-4">
+          <h3 className="flex min-h-10 items-center justify-center gap-2 text-center text-base leading-tight">
+            <Users className="h-5 w-5 shrink-0" />
             Oppilaat
           </h3>
-          <p className="text-2xl md:text-3xl font-bold mt-1 text-center">{studentCount}</p>
-          <p className="text-xs text-gray-400 mt-1 text-center">Muutos: {formatDelta(studentDelta)}</p>
+          <p className="mt-1 text-center text-2xl font-bold md:text-3xl">{studentCount}</p>
         </div>
       </div>
 
-      <div className="bg-neutral-900 rounded-lg p-4">
-        <h3 className="flex items-center gap-2 mb-3 leading-none">
-          <Bell className="w-5 h-5 shrink-0" />
+      <div className="admin-card">
+        <h3 className="admin-card-title">
+          <Bell className="h-5 w-5 shrink-0" />
           <span>Aktiiviset pop-upit</span>
         </h3>
 

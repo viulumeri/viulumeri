@@ -372,6 +372,24 @@ test('admin flow covers dashboard, users, popups, feedback, FAQ, and user view',
     songRow = songTitleButton.locator('xpath=ancestor::div[contains(@class, "grid")][1]')
     await expect(songRow).toContainText('Hidas instr.')
 
+    await songsSection.getByRole('button', { name: 'Järjestys' }).click()
+    await expect(songsSection).toContainText('Kappaleiden järjestys')
+    await expect(songsSection.getByText(updatedSongTitle)).toBeVisible()
+    await expect(
+      songsSection.getByRole('button', { name: new RegExp(`Siirr.*${updatedSongTitle}`) })
+    ).toBeVisible()
+    await expect(
+      songsSection.getByRole('button', { name: 'Tallenna', exact: true })
+    ).not.toBeVisible()
+    await songsSection.getByRole('button', { name: 'Takaisin' }).click()
+    await songsSection.locator('input[placeholder="Etsi kappaleita..."]').fill(updatedSongTitle)
+    songTitleButton = songsSection.getByRole('button', {
+      name: updatedSongTitle,
+      exact: true
+    })
+    await expect(songTitleButton).toBeVisible({ timeout: 15_000 })
+    songRow = songTitleButton.locator('xpath=ancestor::div[contains(@class, "grid")][1]')
+
     const deleteSongResponsePromise = page.waitForResponse(response => {
       return (
         response.url().includes('/api/admin/songs/') &&
@@ -481,6 +499,8 @@ test('admin flow covers dashboard, users, popups, feedback, FAQ, and user view',
     const feedbackSection = page.locator('[data-section-id="feedback"]')
     const feedbackCard = feedbackSection.locator('li').filter({ hasText: feedbackTitle })
     await expect(feedbackCard).toBeVisible({ timeout: 15_000 })
+    await expect(feedbackCard).toContainText('Lukematta')
+    await feedbackCard.getByRole('button', { name: new RegExp(feedbackTitle) }).click()
     await expect(feedbackCard).toContainText(feedbackMessage)
     await expect(feedbackCard).toContainText(STUDENT.email)
 
@@ -503,7 +523,7 @@ test('admin flow covers dashboard, users, popups, feedback, FAQ, and user view',
 
     page.once('dialog', dialog => dialog.accept())
 
-    await feedbackCard.getByRole('button', { name: 'Poista' }).click()
+    await feedbackCard.getByRole('button', { name: 'Poista palaute' }).click()
 
     const deleteFeedbackResponse = await deleteFeedbackResponsePromise
     expect(deleteFeedbackResponse.ok()).toBe(true)
@@ -585,7 +605,7 @@ test('admin flow covers dashboard, users, popups, feedback, FAQ, and user view',
     await userViewSection
       .getByRole('button', { name: 'Siirry käyttäjänäkymään' })
       .click()
-    await page.waitForURL(/\/student\/homework/, { timeout: 15_000 })
+    await page.waitForURL(/\/(teacher\/students|student\/homework)/, { timeout: 15_000 })
   } finally {
     await cleanupE2eData(disposableStudent.email, runPrefix)
     await cleanupE2eSongs(runPrefix)

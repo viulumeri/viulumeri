@@ -3,6 +3,7 @@ import path from 'path'
 import logger from '../utils/logger'
 import type { Song, SongListItem, SongMetadata } from '../../../shared/types'
 import { isImproSong } from '../utils/songMetadata'
+import { readSongOrder, sortBySongOrder } from './songOrder'
 
 const DELETED_SONGS_FILE = '.deleted-songs.json'
 
@@ -80,7 +81,8 @@ class MusicService {
 
       throw wrapped
     }
-    return songs
+    const songOrder = await readSongOrder(musicDir)
+    return sortBySongOrder(songs, songOrder)
   }
 
   private async processSongFolder(

@@ -46,7 +46,7 @@ export const Signup = () => {
     }
 
     if (!passwordMeetsRequirements) {
-      showError(`Salasanan täytyy olla 8-128 merkkiä pitkä.`)
+      showError(`Salasanan täytyy olla vähintään 8 merkkiä pitkä`)
       return
     }
 
@@ -111,12 +111,14 @@ export const Signup = () => {
           <p
             id="password-requirements"
             className={`mt-1 text-sm ${
-              password.value && !passwordMeetsRequirements
+              passwordMeetsRequirements
+                ? 'text-emerald-400'
+                : password.value
                 ? 'text-amber-300'
                 : 'text-gray-300'
             }`}
           >
-            Salasanan täytyy olla 8-128 merkkiä pitkä.
+            Salasanan täytyy olla vähintään 8 merkkiä pitkä
           </p>
         </div>
 

@@ -97,6 +97,53 @@ describe('adminSongsService createSong', () => {
   })
 })
 
+describe('adminSongsService song order', () => {
+  it('defaults to filename order and persists a custom user-facing order', async () => {
+    const zeta = await adminSongsService.createSong({
+      name: 'Zeta Song',
+      instrumentalTrack: asUpload('zeta backing')
+    })
+    const alpha = await adminSongsService.createSong({
+      name: 'Alpha Song',
+      instrumentalTrack: asUpload('alpha backing')
+    })
+    const middle = await adminSongsService.createSong({
+      name: 'Middle Song',
+      instrumentalTrack: asUpload('middle backing')
+    })
+
+    const defaultOrder = (await adminSongsService.listSongs()).map(song => song.id)
+    assert.deepStrictEqual(defaultOrder, [alpha.id, middle.id, zeta.id])
+
+    await assert.rejects(
+      adminSongsService.updateSongOrder([alpha.id, 'missing-song']),
+      /Song order contains unknown songs/
+    )
+
+    const customOrder = [zeta.id, alpha.id, middle.id]
+    const updated = await adminSongsService.updateSongOrder(customOrder)
+    assert.deepStrictEqual(updated.map(song => song.id), customOrder)
+    assert.deepStrictEqual(
+      musicService.getAllSongs().map(song => song.id),
+      customOrder
+    )
+
+    const savedOrder = JSON.parse(
+      await fs.readFile(path.join(testMusicDir, '.song-order.json'), 'utf8')
+    ) as string[]
+    assert.deepStrictEqual(savedOrder, customOrder)
+
+    const appended = await adminSongsService.createSong({
+      name: 'Appended Song',
+      instrumentalTrack: asUpload('appended backing')
+    })
+    assert.deepStrictEqual(
+      (await adminSongsService.listSongs()).map(song => song.id),
+      [...customOrder, appended.id]
+    )
+  })
+})
+
 describe('adminSongsService updateSong', () => {
   it('updates metadata, replaces optional tracks, and can remove optional files', async () => {
     const song = await adminSongsService.createSong({

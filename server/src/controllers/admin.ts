@@ -450,7 +450,26 @@ adminRouter.post('/songs', json({ limit: '100mb' }), async (request, response) =
     response.status(201).json({ song })
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to create song'
-    response.status(400).json({ error: message })
+    response
+      .status(error instanceof AdminSongError ? error.statusCode : 400)
+      .json({ error: message })
+  }
+})
+
+adminRouter.patch('/songs/order', json({ limit: '1mb' }), async (request, response) => {
+  try {
+    const songIds = request.body?.songIds
+    if (!Array.isArray(songIds) || !songIds.every(id => typeof id === 'string')) {
+      return response.status(400).json({ error: 'songIds must be an array of strings' })
+    }
+
+    const songs = await adminSongsService.updateSongOrder(songIds)
+    response.json({ songs })
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Failed to update song order'
+    response
+      .status(error instanceof AdminSongError ? error.statusCode : 400)
+      .json({ error: message })
   }
 })
 

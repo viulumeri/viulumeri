@@ -17,7 +17,7 @@
     font-size: 26px;
   }
   h3 {
-    font-family: 'EB Garamond, serif';
+    font-family: 'EB Garamond', serif;
     font-weight: 500;
     font-size: 22px;
   }
@@ -32,10 +32,25 @@
 
 @layer components {
   .button-basic {
-    @apply bg-neutral-100 text-black rounded-full px-6 py-2 text-xl;
+    @apply bg-neutral-100 text-black rounded-full px-4 py-1.5 text-base sm:px-6 sm:py-2 sm:text-xl;
   }
   .back-button-basic {
-    @apply bg-neutral-800 text-gray-200 rounded-full px-3 py-2 text-xl;
+    @apply bg-neutral-800 text-gray-200 rounded-full px-3 py-1.5 text-base sm:py-2 sm:text-xl;
+  }
+  .admin-page {
+    @apply mx-auto w-full max-w-4xl space-y-4 p-3 pb-24 sm:p-5;
+  }
+  .admin-page-title {
+    @apply flex items-center gap-2 text-2xl sm:gap-3 sm:text-3xl;
+  }
+  .admin-page-title-icon {
+    @apply h-7 w-7 shrink-0 sm:h-8 sm:w-8;
+  }
+  .admin-card {
+    @apply rounded-lg bg-neutral-900 p-4 sm:p-6;
+  }
+  .admin-card-title {
+    @apply mb-4 flex items-center gap-2 text-xl font-semibold sm:text-[22px];
   }
   .scrollbar-hide {
     -ms-overflow-style: none;

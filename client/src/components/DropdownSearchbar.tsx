@@ -21,7 +21,7 @@ interface DropdownSearchbarProps {
   selectedResultKey?: string | null
 }
 
-const RESULTS_PER_PAGE = 5
+const RESULTS_PER_PAGE = 10
 
 export const DropdownSearchbar = ({
   onSearchInputChange,
@@ -58,8 +58,8 @@ export const DropdownSearchbar = ({
   }
 
   return (
-    <div className="mx-auto max-w-4xl space-y-3">
-      <form className="flex items-center max-w-lg mx-auto space-x-2" onSubmit={onSubmit}>
+    <div className="space-y-3">
+      <form className="flex max-w-lg items-center space-x-2" onSubmit={onSubmit}>
         <label className="sr-only">Etsi käyttäjiä</label>
         <div className="relative w-full">
           <div className="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">

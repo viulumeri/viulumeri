@@ -24,6 +24,9 @@ import { faqService, type FAQ } from '../services/faq'
 import { renderWithLinks } from "../utils/renderLinks"
 import { PageContainer } from './PageContainer'
 import { InstallPromptPopup } from './InstallPromptPopup'
+import BaselineAndroidIcon from '@iconify-react/ic/baseline-android'
+import BaselineAppleIcon from '@iconify-react/ic/baseline-apple'
+import IosIcon from '@iconify-react/simple-icons/ios'
 
 export const SettingsPage = () => {
   const { data: session, isPending } = useSession()
@@ -392,12 +395,20 @@ export const SettingsPage = () => {
         </button>
 
         {instructionsOpen && (
-          <div className="flex gap-3 justify-center bg-neutral-700 border border-neutral-600 rounded-lg mx-4 mt-4 p-4">
-            <button className="back-button-basic hover:bg-neutral-500" onClick={() => setShowInstall('android')}>
-              Android
+          <div className="flex justify-center gap-4 mx-4 mt-4 px-4 py-3 bg-neutral-700 border border-neutral-600 rounded-lg">
+            <button
+              className="flex items-center gap-2 px-4 py-3 rounded-lg border border-neutral-500 hover:bg-neutral-600 hover:border-neutral-400 text-white transition-colors"
+              onClick={() => setShowInstall('android')}
+              data-testid="install-android"
+            >
+              <BaselineAndroidIcon className="w-8 h-8" /> Android
             </button>
-            <button className="button-basic bg-neutral-200 hover:bg-neutral-500" onClick={() => setShowInstall('ios')}>
-              iOS
+            <button
+              className="flex items-center gap-2 px-4 py-3 rounded-lg border border-neutral-500 hover:bg-neutral-600 hover:border-neutral-400 text-white transition-colors"
+              onClick={() => setShowInstall('ios')}
+              data-testid="install-ios"
+            >
+              <BaselineAppleIcon className="w-8 h-8" /> <IosIcon className="w-8 h-8" />
             </button>
           </div>
         )}

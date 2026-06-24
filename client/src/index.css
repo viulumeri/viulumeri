@@ -74,3 +74,34 @@
     opacity: 1;
   }
 }
+
+.banana-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.falling-banana {
+  position: absolute;
+  top: -4rem;
+  font-size: 3rem;
+  animation: banana-fall 1.8s ease-in forwards;
+}
+
+@keyframes banana-fall {
+  0% {
+    transform: translateY(-4rem) rotate(0deg);
+    opacity: 0;
+  }
+
+  10% {
+    opacity: 1;
+  }
+
+  100% {
+    transform: translateY(calc(100vh + 6rem)) rotate(var(--banana-rotation));
+    opacity: 0;
+  }
+}

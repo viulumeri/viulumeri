@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useState } from 'react'
-import { Banana, MessageSquare, Users, Bell } from 'lucide-react'
+import { MessageSquare, Users, Bell } from 'lucide-react'
 import { useAdminSummary, useAdminFeedbacks } from '../hooks/useAdmin'
 import { adminService } from '../services/admin'
 import type { AdminPopupMessage } from '../services/admin'
 import { ADMIN_POPUPS_UPDATED_EVENT } from '../utils/adminPopupEvents'
+import { BananaButton } from './BananaButton'
 
 const popupAudienceLabel = (message: AdminPopupMessage) => {
   const visibleToTeachers = message.visibleToTeachers !== false
@@ -54,7 +55,7 @@ export const AdminDashboardPage = () => {
   return (
     <div className="admin-page">
       <h1 className="admin-page-title">
-        <Banana className="admin-page-title-icon text-yellow-500" />
+        <BananaButton />
         Ylläpitopaneeli
       </h1>
 

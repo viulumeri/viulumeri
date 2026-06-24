@@ -10,7 +10,7 @@
   "scripts": {
     "healthcheck": "npm run healthcheck --workspace=client && npm run healthcheck --workspace=server",
     "check:all": "bash scripts/check-all.sh",
-    "dev": "bash scripts/dev.sh",
+    "start": "bash scripts/dev.sh",
     "dev:reset": "docker compose -f docker-compose.dev.yml down -v",
     "help": "bash scripts/help.sh"
   },

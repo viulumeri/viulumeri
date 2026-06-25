@@ -79,7 +79,7 @@ test('teacher flow', async ({ page }) => {
     await expect(page.getByAltText('Valitse install')).toBeVisible()
 
     // Dismiss the prompt and verify it doesn't reappear
-    await page.getByRole('button', { name: 'OK' }).click()
+    await page.getByRole('button', { name: 'Sulje asennusohje' }).click()
     await expect(page.getByText('Sovelluksen asennus')).toBeHidden()
     await page.reload()
     await expect(page.getByText('Sovelluksen asennus')).toBeHidden()

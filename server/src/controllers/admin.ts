@@ -907,6 +907,15 @@ adminRouter.get('/feedbacks', async (_request, response) => {
   response.json({ feedbacks })
 })
 
+adminRouter.patch('/feedbacks/read', async (_request, response) => {
+  const result = await Feedback.updateMany(
+    { isRead: { $ne: true } },
+    { $set: { isRead: true } }
+  )
+
+  response.json({ modifiedCount: result.modifiedCount })
+})
+
 adminRouter.patch('/feedbacks/:feedbackId', async (request, response) => {
   const isRead = request.body?.isRead
   const category = request.body?.category
@@ -943,6 +952,11 @@ adminRouter.patch('/feedbacks/:feedbackId', async (request, response) => {
       category: feedback.category
     }
   })
+})
+
+adminRouter.delete('/feedbacks/read', async (_request, response) => {
+  await Feedback.deleteMany({ isRead: true })
+  response.status(204).send()
 })
 
 adminRouter.delete('/feedbacks/:feedbackId', async (request, response) => {

@@ -1,10 +1,15 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useAdminFeedbacks, useDeleteAdminFeedback } from '../hooks/useAdmin'
+import {
+  useAdminFeedbacks,
+  useDeleteAdminFeedback,
+  useDeleteReadAdminFeedbacks,
+  useMarkAllAdminFeedbacksRead
+} from '../hooks/useAdmin'
 import { useUpdateAdminFeedbackReadStatus } from '../hooks/useAdmin'
 import { useUpdateAdminFeedbackCategory } from '../hooks/useAdmin'
 import type { AdminFeedbackItem } from '../services/admin'
 import { categoryLabel } from '../utils/feedbackLabels'
-import { ChevronDown, ChevronLeft, ChevronRight, MessageSquare, Trash2 } from 'lucide-react'
+import { CheckCheck, ChevronDown, ChevronLeft, ChevronRight, MessageSquare, Trash2 } from 'lucide-react'
 
 const RESULTS_PER_PAGE = 5
 
@@ -24,9 +29,13 @@ export const AdminFeedbackPage = () => {
   const updateReadStatus = useUpdateAdminFeedbackReadStatus()
   const updateCategory = useUpdateAdminFeedbackCategory()
   const deleteFeedback = useDeleteAdminFeedback()
+  const markAllRead = useMarkAllAdminFeedbacksRead()
+  const deleteReadFeedbacks = useDeleteReadAdminFeedbacks()
   const [page, setPage] = useState(0)
   const [openFeedbackIds, setOpenFeedbackIds] = useState<Set<string>>(() => new Set())
   const feedbacks = useMemo(() => data?.feedbacks ?? [], [data?.feedbacks])
+  const unreadCount = useMemo(() => feedbacks.filter(item => !item.isRead).length, [feedbacks])
+  const readCount = feedbacks.length - unreadCount
   const totalPages = Math.max(Math.ceil(feedbacks.length / RESULTS_PER_PAGE), 1)
   const paginatedFeedbacks = useMemo(
     () => feedbacks.slice(page * RESULTS_PER_PAGE, (page + 1) * RESULTS_PER_PAGE),
@@ -61,10 +70,51 @@ export const AdminFeedbackPage = () => {
 
   return (
     <div className="admin-page">
-      <h1 className="admin-page-title">
-        <MessageSquare className="admin-page-title-icon" />
-        Palautteet
-      </h1>
+      <div className="space-y-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h1 className="admin-page-title">
+            <MessageSquare className="admin-page-title-icon" />
+            Palautteet
+          </h1>
+
+          <div className="flex flex-wrap gap-2 sm:ml-2">
+            <button
+              type="button"
+              onClick={() => {
+                markAllRead.mutate()
+              }}
+              disabled={unreadCount === 0 || markAllRead.isPending}
+              className="button-basic inline-flex items-center justify-center gap-2"
+            >
+              <CheckCheck className="h-4 w-4" aria-hidden="true" />
+              Lue kaikki
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                if (window.confirm('Haluatko varmasti poistaa kaikki luetut palautteet?')) {
+                  setOpenFeedbackIds(current => {
+                    const next = new Set(current)
+                    feedbacks.forEach(item => {
+                      if (item.isRead) {
+                        next.delete(item.id)
+                      }
+                    })
+                    return next
+                  })
+                  deleteReadFeedbacks.mutate()
+                }
+              }}
+              disabled={readCount === 0 || deleteReadFeedbacks.isPending}
+              className="button-basic inline-flex items-center justify-center gap-2"
+            >
+              <Trash2 className="h-4 w-4" aria-hidden="true" />
+              Poista luetut
+            </button>
+          </div>
+        </div>
+      </div>
 
       <div className="overflow-hidden rounded-lg border border-neutral-700 bg-neutral-900">
         {isLoading ? (

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Banana, Bell, MessageSquare, UserRound, FileQuestionMark, Search, Music } from 'lucide-react'
 import { AdminPanel } from './AdminPanel'
-import { PopupAdminPage } from './PopupAdminPage'
+import { AdminPopupPage } from './AdminPopupPage'
 import { AdminFeedbackPage } from './AdminFeedbackPage'
 import { AdminUserViewPage } from './AdminUserViewPage'
 import { AdminFaqPage } from './AdminFaqPage'
@@ -43,7 +43,7 @@ export const AdminScrollShell = ({ initialSectionId }: Props) => {
         id: 'popup',
         label: 'Pop-up',
         icon: Bell,
-        render: () => <PopupAdminPage />
+        render: () => <AdminPopupPage />
       },
       {
         id: 'songs',

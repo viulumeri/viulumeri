@@ -58,7 +58,7 @@ export const InstallPromptPopup = ({ userId, onClose, platform }: Props) => {
     aria-label="Asenna sovellus"
   >
     <div className="pointer-events-auto w-full max-w-2xl rounded-2xl border border-neutral-700 bg-neutral-800 text-neutral-100 shadow-2xl shadow-black/40">
-      <div className="p-6 flex flex-col max-h-[85vh]">
+      <div className="p-6 flex flex-col max-h-[82dvh]">
 
         <h1 className="text-center">Tervetuloa Viulumereen</h1>
         <h2 className="mt-5">Sovelluksen asennus</h2>
@@ -66,7 +66,7 @@ export const InstallPromptPopup = ({ userId, onClose, platform }: Props) => {
           Voit asentaa sovelluksen laitteellesi ja käyttää sitä kuin tavallista sovellusta
         </p>
 
-        <div className="mt-4 space-y-3 text-neutral-100/90 overflow-y-auto flex-1">
+        <div className="mt-4 overflow-y-auto min-h-0 flex-1">
 
           {showAndroid && (
             <div className="space-y-3">
@@ -106,13 +106,16 @@ export const InstallPromptPopup = ({ userId, onClose, platform }: Props) => {
           )}
 
         </div>
-
-        <p className="mt-5 text-sm text-neutral-400 text-center">
-          Nämä ohjeet löytyvät myös asetuksista
-        </p>
-        <button type="button" className="button-basic mx-auto mt-4" onClick={onOk}>
-          OK
-        </button>
+        
+        <div className="shrink-0 pt-4">
+          <p className="mt-5 text-sm text-neutral-400 text-center">
+            Nämä ohjeet löytyvät myös asetuksista
+          </p>
+          
+          <button type="button" className="button-basic mx-auto mt-4 flex justify-center" onClick={onOk}>
+            OK
+          </button>
+        </div>
 
       </div>
     </div>

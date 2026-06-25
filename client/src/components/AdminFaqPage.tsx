@@ -199,6 +199,7 @@ export const AdminFaqPage = () => {
   const [openFaqId, setOpenFaqId] = useState<string | null>(null)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editQuestion, setEditQuestion] = useState('')
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc')
 
   const { showSuccess, showError } = useNotification()
 
@@ -282,11 +283,12 @@ export const AdminFaqPage = () => {
 
   const visibleFaqs = faqs
   .filter(faq => faq.question.trim())
-  .sort(
-    (a, b) =>
-      new Date(a.createdAt ?? 0).getTime() -
-      new Date(b.createdAt ?? 0).getTime()
-  )
+  .sort((a, b) => {
+    const aDate = new Date(a.updatedAt ?? a.createdAt ?? 0).getTime()
+    const bDate = new Date(b.updatedAt ?? b.createdAt ?? 0).getTime()
+
+    return sortDirection === 'asc' ? aDate - bDate : bDate - aDate
+  })
 
   const filteredFaqs = visibleFaqs.filter(faq =>
   faq.question.toLowerCase().includes(search.toLowerCase())
@@ -343,13 +345,13 @@ const displayedFaqs = showAllFaqs
 
               <BlockEditor blocks={blocks} onChange={setBlocks} />
 
-              <div className="mt-8 border-t border-neutral-700 pt-5">
-                <div className="mt-1 flex flex-col justify-center gap-3 sm:flex-row">
+              <div className="mt-8 border-t border-neutral-600 pt-5">
+                <div className="mt-1 flex flex-col gap-3 sm:flex-row sm:justify-end">
                   <button
                     type="button"
                     onClick={handleCreateFaq}
-                    className="inline-flex h-[52px] w-full items-center justify-center rounded-full bg-neutral-100
-                     px-6 text-xl font-semibold text-black transition-colors hover:bg-neutral-300 sm:w-auto sm:min-w-[180px]"
+                    className="inline-flex h-11.5 w-full items-center justify-center rounded-full bg-neutral-100
+                     px-6 text-base font-semibold text-black transition-colors hover:bg-neutral-300 sm:w-auto sm:min-w-[180px]"
                   >
                     Lisää kysymys
                   </button>
@@ -359,8 +361,8 @@ const displayedFaqs = showAllFaqs
                       setQuestion('')
                       setBlocks([])
                     }}
-                    className="inline-flex h-[52px] w-full items-center justify-center rounded-full bg-red-600 px-5
-                    text-xl font-semibold text-white transition-colors hover:bg-red-700 sm:w-auto sm:min-w-[160px]"
+                    className="inline-flex h-11.5 w-full items-center justify-center rounded-full bg-red-600 px-5
+                    text-base font-semibold text-white transition-colors hover:bg-red-700 sm:w-auto sm:min-w-[160px]"
                   >
                     Peruuta
                   </button>
@@ -369,19 +371,34 @@ const displayedFaqs = showAllFaqs
             </div>
         </div>
 
+
  <div className="rounded-lg bg-neutral-900 mt-9">
   <h3 className="flex items-center gap-3 font-semibold">
     <Pen className="h-6 w-6 shrink-0" />
     Selaa ja muokkaa kysymyksiä
   </h3>
 
+  <div className="mt-6 flex flex-col gap-3 sm:flex-row">
   <input
     type="text"
     placeholder="Hae kysymystä..."
     value={search}
     onChange={e => setSearch(e.target.value)}
-    className="mt-6.5 w-full rounded-xl border border-neutral-600 bg-neutral-700 px-4 py-3 text-gray-100 placeholder:text-gray-400"
+    className="flex-1 rounded-xl border border-neutral-600 bg-neutral-700 px-4 py-3 text-gray-100 placeholder:text-gray-400"
   />
+
+  <button
+    type="button"
+    onClick={() =>
+      setSortDirection(current => (current === 'asc' ? 'desc' : 'asc'))
+    }
+    className="rounded-xl border border-neutral-600 bg-neutral-800 px-4 py-3 text-sm font-medium text-gray-200 transition-colors hover:bg-neutral-700"
+  >
+    {sortDirection === 'asc'
+  ? '↑ Vanhimmat'
+  : '↓ Uusimmat'}
+  </button>
+</div>
 
   <div className="mt-3 space-y-3 border-l border-neutral-700 pl-3">
     {visibleFaqs.length === 0 ? (
@@ -390,20 +407,34 @@ const displayedFaqs = showAllFaqs
       </div>
     ) : (
       <>
-        {displayedFaqs.map(faq => (
-          <div key={faq._id}>
-            <button
+                    {displayedFaqs.map(faq => (
+                      <div key={faq._id}>
+                        <button
               type="button"
               onClick={() =>
                 setOpenFaqId(openFaqId === faq._id ? null : faq._id ?? null)
               }
-              className="flex w-full items-center justify-between gap-3 rounded-xl border border-neutral-600 bg-neutral-800 px-3 py-3 text-left shadow-sm transition-colors hover:bg-neutral-600 sm:px-4"
+              className="flex w-full items-center justify-between gap-3 rounded-xl border border-neutral-600 bg-neutral-800
+              px-3 py-3 text-left shadow-sm transition-colors hover:bg-neutral-600 sm:px-4"
             >
-              <span className="min-w-0 break-words font-semibold">
-                {faq.question}
-              </span>
+              <div className="flex min-w-0 flex-1 items-center justify-between gap-4">
+            <span className="min-w-0 break-words font-semibold">
+              {faq.question}
+            </span>
+
+            <span className="shrink-0 text-sm font-medium text-gray-300">
+              {faq.updatedAt &&
+              faq.createdAt &&
+              faq.updatedAt !== faq.createdAt
+                ? `Päivitetty ${new Date(faq.updatedAt).toLocaleDateString('fi-FI')}`
+                : faq.createdAt
+                  ? `Lisätty ${new Date(faq.createdAt).toLocaleDateString('fi-FI')}`
+                  : ''}
+            </span>
+            </div>
+
               <span
-                className={`transition-transform duration-200 ${
+                className={`shrink-0 transition-transform duration-200 ${
                   openFaqId === faq._id ? 'rotate-180' : ''
                 }`}
               >
@@ -500,36 +531,21 @@ const displayedFaqs = showAllFaqs
                       })}
                     </div>
 
-                    <div className="space-y-2">
-                      <div className="flex flex-wrap gap-3">
-                        <button
-                          type="button"
-                          onClick={() => startEditFaq(faq)}
-                        >
-                          Muokkaa
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => faq._id && handleDeleteFaq(faq._id)}
-                        >
-                          Poista
-                        </button>
-                      </div>
+                  <div className="flex flex-wrap gap-3">
+                  <button
+                    type="button"
+                    onClick={() => startEditFaq(faq)}
+                  >
+                    Muokkaa
+                  </button>
 
-                      <p className="text-sm text-gray-400">
-                        {faq.updatedAt &&
-                        faq.createdAt &&
-                        faq.updatedAt !== faq.createdAt
-                          ? `Päivitetty: ${new Date(
-                              faq.updatedAt
-                            ).toLocaleDateString('fi-FI')}`
-                          : faq.createdAt
-                            ? `Lisätty: ${new Date(
-                                faq.createdAt
-                              ).toLocaleDateString('fi-FI')}`
-                            : 'ei tiedossa'}
-                      </p>
-                    </div>
+                  <button
+                    type="button"
+                    onClick={() => faq._id && handleDeleteFaq(faq._id)}
+                  >
+                    Poista
+                  </button>
+                </div>
                   </>
                 )}
               </div>
@@ -537,7 +553,7 @@ const displayedFaqs = showAllFaqs
           </div>
         ))}
 
-        {visibleFaqs.length > 5 && (
+        {filteredFaqs.length > 5 && (
           <div className="flex justify-center pt-4">
             <button
               type="button"
@@ -546,7 +562,7 @@ const displayedFaqs = showAllFaqs
             >
               {showAllFaqs
                 ? 'Näytä vähemmän'
-                : `Näytä kaikki (${visibleFaqs.length})`}
+                : `Näytä kaikki (${filteredFaqs.length})`}
             </button>
           </div>
         )}

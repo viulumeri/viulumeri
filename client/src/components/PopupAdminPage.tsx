@@ -551,7 +551,7 @@ export const PopupAdminPage = () => {
                   : 'bg-emerald-800 text-emerald-100'
               }`}
             >
-              {isDraft ? 'Luonnos' : 'Julkaistu'}
+              Julkaistu
             </span>
             <button
               type="button"
@@ -834,7 +834,7 @@ export const PopupAdminPage = () => {
                                 : 'bg-emerald-800 text-emerald-100'
                             }`}
                           >
-                            {editIsDraft ? 'Luonnos' : 'Julkaistu'}
+                            Julkaistu
                           </span>
                           <button
                             type="button"
@@ -895,7 +895,7 @@ export const PopupAdminPage = () => {
                                 : 'bg-emerald-800 text-emerald-100'
                             }`}
                           >
-                            {message.isDraft ? 'Luonnos' : 'Julkaistu'}
+                            {message.isDraft ? 'Luonnos' : 'Julkinen'}
                           </span>
                           <span className="text-xs px-2 py-1 rounded bg-neutral-700 text-neutral-100">
                             {audienceLabel(message)}
@@ -965,7 +965,7 @@ export const PopupAdminPage = () => {
                                 : 'bg-emerald-800 text-emerald-100'
                             }`}
                           >
-                            {message.isDraft ? 'Luonnos' : 'Julkaistu'}
+                            Julkaistu
                           </span>
                           <button
                             type="button"

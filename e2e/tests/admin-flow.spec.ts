@@ -372,6 +372,24 @@ test('admin flow covers dashboard, users, popups, feedback, FAQ, and user view',
     songRow = songTitleButton.locator('xpath=ancestor::div[contains(@class, "grid")][1]')
     await expect(songRow).toContainText('Hidas instr.')
 
+    await songsSection.getByRole('button', { name: 'Järjestys' }).click()
+    await expect(songsSection).toContainText('Kappaleiden järjestys')
+    await expect(songsSection.getByText(updatedSongTitle)).toBeVisible()
+    await expect(
+      songsSection.getByRole('button', { name: new RegExp(`Siirr.*${updatedSongTitle}`) })
+    ).toBeVisible()
+    await expect(
+      songsSection.getByRole('button', { name: 'Tallenna', exact: true })
+    ).not.toBeVisible()
+    await songsSection.getByRole('button', { name: 'Takaisin' }).click()
+    await songsSection.locator('input[placeholder="Etsi kappaleita..."]').fill(updatedSongTitle)
+    songTitleButton = songsSection.getByRole('button', {
+      name: updatedSongTitle,
+      exact: true
+    })
+    await expect(songTitleButton).toBeVisible({ timeout: 15_000 })
+    songRow = songTitleButton.locator('xpath=ancestor::div[contains(@class, "grid")][1]')
+
     const deleteSongResponsePromise = page.waitForResponse(response => {
       return (
         response.url().includes('/api/admin/songs/') &&
@@ -486,6 +504,16 @@ test('admin flow covers dashboard, users, popups, feedback, FAQ, and user view',
     await expect(feedbackCard).toContainText(feedbackMessage)
     await expect(feedbackCard).toContainText(STUDENT.email)
 
+    const feedbackCategoryResponsePromise = page.waitForResponse(response => {
+      return (
+        response.url().includes('/api/admin/feedbacks/') &&
+        response.request().method() === 'PATCH'
+      )
+    })
+    await feedbackCard.getByLabel('Kategoria').selectOption('feature')
+    const feedbackCategoryResponse = await feedbackCategoryResponsePromise
+    expect(feedbackCategoryResponse.ok()).toBe(true)
+
     const feedbackReadResponsePromise = page.waitForResponse(response => {
       return (
         response.url().includes('/api/admin/feedbacks/') &&
@@ -515,12 +543,12 @@ test('admin flow covers dashboard, users, popups, feedback, FAQ, and user view',
     })
 
     await page.goto('/admin/faq')
-    const faqSection = page.locator('[data-section-id="faq"]')
-  await faqSection.getByRole('button').filter({ hasText: 'Lisää uusi kysymys' }).click()
-  await faqSection.locator('input[placeholder="Kirjoita kysymys"]').fill(faqQuestion)
+const faqSection = page.locator('[data-section-id="faq"]')
 
-  await faqSection.getByRole('button', { name: 'Lisää tekstiosio' }).click()
-  await faqSection
+await faqSection.locator('input[placeholder="Kirjoita kysymys"]').fill(faqQuestion)
+
+await faqSection.getByRole('button', { name: 'Lisää tekstiosio' }).click()
+await faqSection
   .locator('textarea[placeholder="Kirjoita tekstiosion sisältö"]')
   .fill(faqAnswer)
 
@@ -534,7 +562,6 @@ test('admin flow covers dashboard, users, popups, feedback, FAQ, and user view',
     const createFaqResponse = await createFaqResponsePromise
     expect(createFaqResponse.ok()).toBe(true)
 
-    await faqSection.getByRole('button').filter({ hasText: 'Selaa ja muokkaa' }).click()
     await faqSection.getByRole('button', { name: faqQuestion }).click()
     await expect(faqSection).toContainText(faqAnswer)
     await faqSection.getByRole('button', { name: 'Muokkaa', exact: true }).click()
@@ -565,21 +592,28 @@ test('admin flow covers dashboard, users, popups, feedback, FAQ, and user view',
     await expect(page.getByText(faqAnswer)).not.toBeAttached()
 
     await page.goto('/admin/faq')
-    await faqSection.getByRole('button').filter({ hasText: 'Selaa ja muokkaa' }).click()
-    await faqSection.getByRole('button', { name: updatedFaqQuestion }).click()
 
-    const deleteFaqResponsePromise = page.waitForResponse(response => {
-      return (
-        response.url().includes('/api/admin/faq/') &&
-        response.request().method() === 'DELETE'
-      )
-    })
-    await faqSection.getByRole('button', { name: 'Poista' }).click()
-    const deleteFaqResponse = await deleteFaqResponsePromise
-    expect(deleteFaqResponse.ok()).toBe(true)
-    await expect(faqSection.getByText(updatedFaqQuestion)).not.toBeVisible({
-      timeout: 15_000
-    })
+const updatedFaqSection = page.locator('[data-section-id="faq"]')
+
+await updatedFaqSection.getByRole('button', { name: updatedFaqQuestion }).click()
+
+const deleteFaqResponsePromise = page.waitForResponse(response => {
+  return (
+    response.url().includes('/api/admin/faq/') &&
+    response.request().method() === 'DELETE'
+  )
+})
+
+await updatedFaqSection.getByRole('button', { name: 'Poista' }).click()
+
+const deleteFaqResponse = await deleteFaqResponsePromise
+expect(deleteFaqResponse.ok()).toBe(true)
+
+await expect(
+  updatedFaqSection.getByText(updatedFaqQuestion)
+).not.toBeVisible({
+  timeout: 15_000
+})
 
     await page.goto('/admin/user-view')
     const userViewSection = page.locator('[data-section-id="user-view"]')

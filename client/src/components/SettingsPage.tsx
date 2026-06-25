@@ -2,28 +2,29 @@ import { useEffect, useState } from 'react'
 import { useSession } from '../auth-client'
 import { useDeleteUser, useChangePassword, useLogout } from '../hooks/useAuth'
 import { useSubmitFeedback } from '../hooks/useFeedback'
-import type { FeedbackCategory } from '../../../shared/types'
-import { categoryLabel } from '../utils/feedbackLabels'
 import { useField } from '../hooks/useField'
 import type { AppSessionUser } from '../../../shared/types'
 import { StudentSettings } from './StudentSettings'
 import { TeacherSettings } from './TeacherSettings'
-import { 
-  User, 
-  Key, 
-  Settings, 
-  LogOut, 
-  Trash2, 
-  FileQuestionMark, 
-  MessageCircle, 
-  Download, 
-  ShieldCheck 
+import {
+  User,
+  Key,
+  Settings,
+  LogOut,
+  Trash2,
+  FileQuestionMark,
+  MessageCircle,
+  Download,
+  ShieldCheck
 } from 'lucide-react'
 import { useNotification } from '../hooks/useNotification'
 import { faqService, type FAQ } from '../services/faq'
 import { renderWithLinks } from "../utils/renderLinks"
 import { PageContainer } from './PageContainer'
 import { InstallPromptPopup } from './InstallPromptPopup'
+import BaselineAndroidIcon from '@iconify-react/ic/baseline-android'
+import BaselineAppleIcon from '@iconify-react/ic/baseline-apple'
+import IosIcon from '@iconify-react/simple-icons/ios'
 
 export const SettingsPage = () => {
   const { data: session, isPending } = useSession()
@@ -40,7 +41,6 @@ export const SettingsPage = () => {
 
   const [feedbackTitle, setFeedbackTitle] = useState('')
   const [feedbackMessage, setFeedbackMessage] = useState('')
-  const [feedbackCategory, setFeedbackCategory] = useState<FeedbackCategory>('bug')
   const [feedbackWebsite, setFeedbackWebsite] = useState('')
 
   const [faqs, setFaqs] = useState<FAQ[]>([])
@@ -78,7 +78,6 @@ export const SettingsPage = () => {
       showSuccess('Kiitos palautteesta!')
       setFeedbackTitle('')
       setFeedbackMessage('')
-      setFeedbackCategory('bug')
       setFeedbackWebsite('')
       setFeedbackOpen(false)
     },
@@ -177,7 +176,7 @@ export const SettingsPage = () => {
 
     submitFeedback.mutate({
       title: trimmedTitle,
-      category: feedbackCategory,
+      category: 'other',
       message: trimmedMessage,
       website: feedbackWebsite
     })
@@ -341,23 +340,25 @@ export const SettingsPage = () => {
                   {openFaqId === faq._id && (
                     <div className="mt-3 bg-neutral-700 border border-neutral-600 rounded-xl px-4 py-3 text-gray-200 leading-relaxed">
                       {(faq.blocks ?? []).map((block, index) => {
-                        if (block.type === 'text') {
-                          return (
-                            <div key={index}>
-                              {renderWithLinks(block.content ?? '')}
-                            </div>
-                          )
-                        }
+                          if (block.type === 'text') {
+                            return (
+                              <div key={index}>
+                                {renderWithLinks(block.content ?? '')}
+                              </div>
+                            )
+                          }
 
-                        return (
-                          <img
-                            key={index}
-                            src={`${import.meta.env.VITE_SERVER_URL || 'http://localhost:3001'}${block.imageUrl}`}
-                            alt=""
-                            className="rounded-xl border border-neutral-600 max-w-full"
-                          />
-                        )
-                      })}
+                          if (!block.imageUrl) return null
+
+                          return (
+                            <img
+                              key={index}
+                              src={block.imageUrl}
+                              alt=""
+                              className="rounded-xl border border-neutral-600 max-w-full"
+                            />
+                          )
+                        })}
                       <p className="mt-3 text-sm text-gray-400">
                         {faq.updatedAt && faq.createdAt && faq.updatedAt !== faq.createdAt
                           ? `Päivitetty: ${new Date(faq.updatedAt).toLocaleDateString('fi-FI')}`
@@ -392,12 +393,20 @@ export const SettingsPage = () => {
         </button>
 
         {instructionsOpen && (
-          <div className="flex gap-3 justify-center bg-neutral-700 border border-neutral-600 rounded-lg mx-4 mt-4 p-4">
-            <button className="back-button-basic hover:bg-neutral-500" onClick={() => setShowInstall('android')}>
-              Android
+          <div className="flex justify-center gap-4 mx-4 mt-4 px-4 py-3 bg-neutral-700 border border-neutral-600 rounded-lg">
+            <button
+              className="flex items-center gap-2 px-4 py-3 rounded-lg border border-neutral-500 hover:bg-neutral-600 hover:border-neutral-400 text-white transition-colors"
+              onClick={() => setShowInstall('android')}
+              data-testid="install-android"
+            >
+              <BaselineAndroidIcon className="w-8 h-8" /> Android
             </button>
-            <button className="button-basic bg-neutral-200 hover:bg-neutral-500" onClick={() => setShowInstall('ios')}>
-              iOS
+            <button
+              className="flex items-center gap-2 px-4 py-3 rounded-lg border border-neutral-500 hover:bg-neutral-600 hover:border-neutral-400 text-white transition-colors"
+              onClick={() => setShowInstall('ios')}
+              data-testid="install-ios"
+            >
+              <BaselineAppleIcon className="w-8 h-8" /> <IosIcon className="w-8 h-8" />
             </button>
           </div>
         )}
@@ -437,22 +446,6 @@ export const SettingsPage = () => {
                   className="w-full bg-neutral-700 border border-neutral-600 rounded-md px-3 py-2 text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   placeholder="Esim. 'Musiikkisoitin ei toimi'"
                 />
-              </div>
-
-              <div>
-                <label htmlFor="feedback-category" className="block text-sm font-medium text-gray-300 mb-1">
-                  Kategoria:
-                </label>
-                <select
-                  id="feedback-category"
-                  value={feedbackCategory}
-                  onChange={event => setFeedbackCategory(event.target.value as FeedbackCategory)}
-                  className="w-full bg-neutral-700 border border-neutral-600 rounded-md px-3 py-2 text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  <option value="bug">{categoryLabel.bug}</option>
-                  <option value="feature">{categoryLabel.feature}</option>
-                  <option value="other">{categoryLabel.other}</option>
-                </select>
               </div>
 
               <div className="hidden" aria-hidden="true">

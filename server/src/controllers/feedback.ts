@@ -22,10 +22,7 @@ router.post('/', async (req, res) => {
     return
   }
 
-  if (!isValidCategory(body.category)) {
-    res.status(400).json({ error: 'Invalid category' })
-    return
-  }
+  const category = isValidCategory(body.category) ? body.category : 'other'
 
   const title = typeof body.title === 'string' ? body.title.trim() : ''
   if (!title || title.length > 200) {
@@ -66,7 +63,7 @@ router.post('/', async (req, res) => {
     userId,
     userType,
     title,
-    category: body.category,
+    category,
     message,
     ip,
     userAgent: req.get('user-agent')

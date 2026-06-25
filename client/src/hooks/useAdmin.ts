@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient, type UseQueryOptions, type UseMutationOptions } from '@tanstack/react-query'
 import {
   adminService,
+  type AdminFeedbackItem,
   type AdminSongItem,
   type AdminSongSavePayload,
   type GetAdminFeedbacksResponse,
@@ -104,6 +105,65 @@ export const useDeleteAdminSong = (
   })
 }
 
+type AdminSongListResponse = { songs: AdminSongItem[] }
+type AdminSongOrderMutationContext = {
+  previousAdminSongs?: AdminSongListResponse
+}
+
+export const useUpdateAdminSongOrder = (
+  options?: UseMutationOptions<
+    AdminSongListResponse,
+    Error,
+    string[],
+    AdminSongOrderMutationContext
+  >
+) => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: adminService.updateAdminSongOrder,
+    ...options,
+    onMutate: async songIds => {
+      await queryClient.cancelQueries({ queryKey: ['admin', 'songs'] })
+
+      const previousAdminSongs = queryClient.getQueryData<AdminSongListResponse>([
+        'admin',
+        'songs'
+      ])
+
+      if (previousAdminSongs) {
+        const songsById = new Map(previousAdminSongs.songs.map(song => [song.id, song]))
+        const orderedSongIds = new Set(songIds)
+        const orderedSongs = songIds
+          .map(songId => songsById.get(songId))
+          .filter((song): song is AdminSongItem => Boolean(song))
+        const remainingSongs = previousAdminSongs.songs.filter(song => !orderedSongIds.has(song.id))
+
+        queryClient.setQueryData(['admin', 'songs'], {
+          songs: [...orderedSongs, ...remainingSongs]
+        })
+      }
+
+      return { previousAdminSongs }
+    },
+    onError: (error, variables, context, mutationContext) => {
+      if (context?.previousAdminSongs) {
+        queryClient.setQueryData(['admin', 'songs'], context.previousAdminSongs)
+      }
+
+      options?.onError?.(error, variables, context, mutationContext)
+    },
+    onSuccess: (data, variables, context, mutationContext) => {
+      queryClient.setQueryData(['admin', 'songs'], data)
+      queryClient.invalidateQueries({ queryKey: ['songs'] })
+      options?.onSuccess?.(data, variables, context, mutationContext)
+    },
+    onSettled: (data, error, variables, context, mutationContext) => {
+      options?.onSettled?.(data, error, variables, context, mutationContext)
+    }
+  })
+}
+
 export const useDeleteAdminTeacher = (
   options?: UseMutationOptions<void, Error, string>
 ) => {
@@ -130,13 +190,37 @@ export const useAdminFeedbacks = (
   })
 
 export const useUpdateAdminFeedbackReadStatus = (
-  options?: UseMutationOptions<{ feedback: { id: string; isRead: boolean } }, Error, { id: string; isRead: boolean }>
+  options?: UseMutationOptions<
+    { feedback: { id: string; isRead: boolean; category: AdminFeedbackItem['category'] } },
+    Error,
+    { id: string; isRead: boolean }
+  >
 ) => {
   const queryClient = useQueryClient()
 
   return useMutation({
     mutationFn: ({ id, isRead }) =>
       adminService.updateAdminFeedbackReadStatus(id, isRead),
+    ...options,
+    onSuccess: (...args) => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'feedbacks'] })
+      options?.onSuccess?.(...args)
+    }
+  })
+}
+
+export const useUpdateAdminFeedbackCategory = (
+  options?: UseMutationOptions<
+    { feedback: { id: string; isRead: boolean; category: AdminFeedbackItem['category'] } },
+    Error,
+    { id: string; category: AdminFeedbackItem['category'] }
+  >
+) => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ id, category }) =>
+      adminService.updateAdminFeedbackCategory(id, category),
     ...options,
     onSuccess: (...args) => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'feedbacks'] })

@@ -10,7 +10,7 @@
   "scripts": {
     "healthcheck": "npm run healthcheck --workspace=client && npm run healthcheck --workspace=server",
     "check:all": "bash scripts/check-all.sh",
-    "dev": "bash scripts/dev.sh",
+    "start": "bash scripts/dev.sh",
     "dev:reset": "docker compose -f docker-compose.dev.yml down -v",
     "help": "bash scripts/help.sh"
   },
@@ -33,6 +33,7 @@
   },
   "devDependencies": {
     "@playwright/test": "^1.60.0",
-    "@types/multer": "^2.1.0"
+    "@types/multer": "^2.1.0",
+    "cross-env": "^10.1.0"
   }
 }

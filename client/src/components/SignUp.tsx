@@ -46,7 +46,7 @@ export const Signup = () => {
     }
 
     if (!passwordMeetsRequirements) {
-      showError(`Salasanan täytyy olla 8-128 merkkiä pitkä.`)
+      showError(`Salasanan täytyy olla vähintään 8 merkkiä pitkä`)
       return
     }
 
@@ -111,12 +111,14 @@ export const Signup = () => {
           <p
             id="password-requirements"
             className={`mt-1 text-sm ${
-              password.value && !passwordMeetsRequirements
+              passwordMeetsRequirements
+                ? 'text-emerald-400'
+                : password.value
                 ? 'text-amber-300'
                 : 'text-gray-300'
             }`}
           >
-            Salasanan täytyy olla 8-128 merkkiä pitkä.
+            Salasanan täytyy olla vähintään 8 merkkiä pitkä
           </p>
         </div>
 
@@ -190,7 +192,7 @@ export const Signup = () => {
 
       <button type="button"
         onClick={() => navigate('/login')}
-        className="back-button-basic active:bg-white/10 block mx-auto mt-4"
+        className="font-normal text-gray-100 underline underline-offset-4 transition-all duration-200 hover:text-white hover:underline-offset-6 active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white/70 mx-auto mt-4 block"
       >
         Takaisin
       </button>

@@ -7,8 +7,6 @@ const MONGODB_URI =
   process.env.E2E_MONGODB_URI ||
   'mongodb://admin:password@127.0.0.1:27017/viulumeri?authSource=admin'
 
-type FeedbackCategory = 'bug' | 'feature' | 'other'
-
 const student = (() => {
   const found = SEED_USERS.find(user => user.userType === 'student')
   if (!found) {
@@ -69,27 +67,22 @@ test.describe('FeedbackPage', () => {
 
     const feedbacks: Array<{
       title: string
-      category: FeedbackCategory
       message: string
     }> = [
       {
         title: `E2E Feedback BUG ${runId}`,
-        category: 'bug',
         message: 'E2E: Bugiraportti'
       },
       {
         title: `E2E Feedback FEATURE ${runId}`,
-        category: 'feature',
         message: 'E2E: Toive'
       },
       {
         title: `E2E Feedback OTHER ${runId}`,
-        category: 'other',
         message: 'E2E: Muu palaute'
       },
       {
         title: `E2E Feedback BUG 2 ${runId}`,
-        category: 'bug',
         message: 'E2E: Toinen bugi'
       }
     ]
@@ -103,7 +96,6 @@ test.describe('FeedbackPage', () => {
       })
 
       await page.locator('#feedback-title').fill(feedback.title)
-      await page.locator('#feedback-category').selectOption(feedback.category)
       await page.locator('#feedback-message').fill(feedback.message)
       await page.getByRole('button', { name: /lähetä palaute/i }).click()
 
@@ -143,7 +135,7 @@ test.describe('FeedbackPage', () => {
     for (const expected of feedbacks) {
       const doc = stored.find(d => d.title === expected.title) as any
       expect(doc, `Missing feedback in DB: ${expected.title}`).toBeTruthy()
-      expect(doc.category).toBe(expected.category)
+      expect(doc.category).toBe('other')
       expect(doc.message).toBe(expected.message)
     }
 
@@ -190,7 +182,6 @@ test.describe('FeedbackPage', () => {
     })
 
     await page.locator('#feedback-title').fill(spamTitle)
-    await page.locator('#feedback-category').selectOption('feature')
     await page.locator('#feedback-message').fill('E2E: Tämä on validi viesti, mutta spam-trappi estää.')
     await page.getByRole('button', { name: /lähetä palaute/i }).click()
 

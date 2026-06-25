@@ -11,6 +11,8 @@
     "healthcheck": "tsc --noEmit --project tsconfig.app.json"
   },
   "dependencies": {
+    "@iconify-react/ic": "^1.0.2",
+    "@iconify-react/simple-icons": "^1.0.17",
     "@tailwindcss/vite": "^4.1.12",
     "@tanstack/react-query": "^5.83.0",
     "@tiptap/extension-link": "^3.23.6",

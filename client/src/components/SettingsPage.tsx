@@ -6,16 +6,16 @@ import { useField } from '../hooks/useField'
 import type { AppSessionUser } from '../../../shared/types'
 import { StudentSettings } from './StudentSettings'
 import { TeacherSettings } from './TeacherSettings'
-import { 
-  User, 
-  Key, 
-  Settings, 
-  LogOut, 
-  Trash2, 
-  FileQuestionMark, 
-  MessageCircle, 
-  Download, 
-  ShieldCheck 
+import {
+  User,
+  Key,
+  Settings,
+  LogOut,
+  Trash2,
+  FileQuestionMark,
+  MessageCircle,
+  Download,
+  ShieldCheck
 } from 'lucide-react'
 import { useNotification } from '../hooks/useNotification'
 import { faqService, type FAQ } from '../services/faq'
@@ -340,23 +340,25 @@ export const SettingsPage = () => {
                   {openFaqId === faq._id && (
                     <div className="mt-3 bg-neutral-700 border border-neutral-600 rounded-xl px-4 py-3 text-gray-200 leading-relaxed">
                       {(faq.blocks ?? []).map((block, index) => {
-                        if (block.type === 'text') {
-                          return (
-                            <div key={index}>
-                              {renderWithLinks(block.content ?? '')}
-                            </div>
-                          )
-                        }
+                          if (block.type === 'text') {
+                            return (
+                              <div key={index}>
+                                {renderWithLinks(block.content ?? '')}
+                              </div>
+                            )
+                          }
 
-                        return (
-                          <img
-                            key={index}
-                            src={`${import.meta.env.VITE_SERVER_URL || 'http://localhost:3001'}${block.imageUrl}`}
-                            alt=""
-                            className="rounded-xl border border-neutral-600 max-w-full"
-                          />
-                        )
-                      })}
+                          if (!block.imageUrl) return null
+
+                          return (
+                            <img
+                              key={index}
+                              src={block.imageUrl}
+                              alt=""
+                              className="rounded-xl border border-neutral-600 max-w-full"
+                            />
+                          )
+                        })}
                       <p className="mt-3 text-sm text-gray-400">
                         {faq.updatedAt && faq.createdAt && faq.updatedAt !== faq.createdAt
                           ? `Päivitetty: ${new Date(faq.updatedAt).toLocaleDateString('fi-FI')}`

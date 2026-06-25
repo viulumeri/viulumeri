@@ -34,16 +34,29 @@ async function login(page: Page, email: string, password: string) {
 
 test.describe('Admin FAQ page', () => {
   test.beforeEach(async ({ page }) => {
-    await page.route('**/api/faqs**', async route => {
+    await page.route('**/faqs**', async route => {
       const method = route.request().method()
 
       if (method === 'GET') {
-        return route.fulfill({
-          status: 200,
-          contentType: 'application/json',
-          body: JSON.stringify([])
-        })
+  return route.fulfill({
+    status: 200,
+    contentType: 'application/json',
+    body: JSON.stringify([
+      {
+        _id: 'faq-1',
+        question: 'Miten palvelu toimii?',
+        blocks: [],
+        createdAt: '2025-01-01T10:00:00.000Z'
+      },
+      {
+        _id: 'faq-2',
+        question: 'Miten salasana vaihdetaan?',
+        blocks: [],
+        createdAt: '2025-01-02T10:00:00.000Z'
       }
+    ])
+  })
+}
 
       if (method === 'POST') {
         return route.fulfill({
@@ -62,13 +75,9 @@ test.describe('Admin FAQ page', () => {
 
     await login(page, ADMIN.email, ADMIN.password)
     await page.goto('/admin/faq')
-    console.log('URL:', page.url())
-    await page.screenshot({ path: 'debug-faq-page.png', fullPage: true })
   })
 
   test('admin can open create FAQ form and add text blocks', async ({ page }) => {
-    await page.getByRole('button', { name: /lisää uusi kysymys/i }).click()
-
     await page.getByPlaceholder('Kirjoita kysymys').fill('Miten palvelu toimii?')
 
     await page.getByRole('button', { name: /lisää tekstiosio/i }).click()
@@ -83,7 +92,6 @@ test.describe('Admin FAQ page', () => {
   })
 
   test('admin can add and remove answer sections', async ({ page }) => {
-    await page.getByRole('button', { name: /lisää uusi kysymys/i }).click()
 
     await page.getByRole('button', { name: /lisää tekstiosio/i }).click()
     await page.getByRole('button', { name: /lisää kuvaosio/i }).click()
@@ -98,7 +106,6 @@ test.describe('Admin FAQ page', () => {
   })
 
   test('admin can reorder FAQ blocks', async ({ page }) => {
-    await page.getByRole('button', { name: /lisää uusi kysymys/i }).click()
 
     await page.getByRole('button', { name: /lisää tekstiosio/i }).click()
     await page.getByRole('button', { name: /lisää tekstiosio/i }).click()
@@ -114,16 +121,13 @@ test.describe('Admin FAQ page', () => {
     await expect(blocks.nth(1)).toHaveValue('Ensimmäinen osio')
   })
 
-test('admin can open FAQ browse section', async ({ page }) => {
-  await page.getByRole('button', { name: /selaa ja muokkaa kysymyksiä/i }).click()
-
+test('admin can see FAQ browse section', async ({ page }) => {
   await expect(
-    page.getByRole('button', { name: /selaa ja muokkaa kysymyksiä/i })
+    page.getByRole('heading', { name: /selaa ja muokkaa kysymyksiä/i })
   ).toBeVisible()
 })
 
   test('admin can cancel creating FAQ', async ({ page }) => {
-    await page.getByRole('button', { name: /lisää uusi kysymys/i }).click()
 
     await page.getByPlaceholder('Kirjoita kysymys').fill('Peruttava kysymys')
     await page.getByRole('button', { name: /lisää tekstiosio/i }).click()
@@ -133,4 +137,14 @@ test('admin can open FAQ browse section', async ({ page }) => {
     await expect(page.getByPlaceholder('Kirjoita kysymys')).toHaveValue('')
     await expect(page.getByText('Tekstiosio 1')).not.toBeVisible()
   })
+
+    test('admin can search FAQs', async ({ page }) => {
+  const searchInput = page.getByPlaceholder('Hae kysymystä...')
+
+  await expect(searchInput).toBeVisible()
+
+  await searchInput.fill('salasana')
+
+  await expect(searchInput).toHaveValue('salasana')
+})
 })

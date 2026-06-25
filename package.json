@@ -33,6 +33,7 @@
   },
   "devDependencies": {
     "@playwright/test": "^1.60.0",
-    "@types/multer": "^2.1.0"
+    "@types/multer": "^2.1.0",
+    "cross-env": "^10.1.0"
   }
 }

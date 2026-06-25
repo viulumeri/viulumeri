@@ -52,13 +52,21 @@ export const InstallPromptPopup = ({ userId, onClose, platform }: Props) => {
   if ((isStandalone && !onClose) || (dismissed && !onClose) || (!userId && !onClose)) return null
 
   return (
-  <div
-    className="fixed inset-x-0 top-8 z-50 flex justify-center px-4 pointer-events-none"
-    role="dialog"
-    aria-label="Asenna sovellus"
-  >
-    <div className="pointer-events-auto w-full max-w-2xl rounded-2xl border border-neutral-700 bg-neutral-800 text-neutral-100 shadow-2xl shadow-black/40">
-      <div className="p-6 flex flex-col max-h-[82dvh]">
+    <div
+      className="fixed inset-x-4 isolate z-[10000] flex flex-col rounded-2xl border border-neutral-700 bg-neutral-800 text-neutral-100 shadow-2xl shadow-black/40"
+      style={{
+        top: 'max(1rem, env(safe-area-inset-top, 0px))',
+        maxHeight: 'calc(100dvh - max(1rem, env(safe-area-inset-top, 0px)) - max(7rem, calc(6rem + env(safe-area-inset-bottom, 0px))))',
+        bottom: 'max(7rem, calc(6rem + env(safe-area-inset-bottom, 0px)))',
+        maxWidth: '42rem',
+        marginInline: 'auto',
+      }}
+      role="dialog"
+      aria-label="Asenna sovellus"
+    >
+
+      {/* Scrollable content */}
+      <div className="overflow-y-auto flex-1 p-6 pb-0 min-h-0">
 
         <h1 className="text-center">Tervetuloa Viulumereen</h1>
         <h2 className="mt-5">Sovelluksen asennus</h2>
@@ -66,7 +74,7 @@ export const InstallPromptPopup = ({ userId, onClose, platform }: Props) => {
           Voit asentaa sovelluksen laitteellesi ja käyttää sitä kuin tavallista sovellusta
         </p>
 
-        <div className="mt-4 overflow-y-auto min-h-0 flex-1">
+        <div className="mt-4 space-y-3 text-neutral-100/90">
 
           {showAndroid && (
             <div className="space-y-3">
@@ -88,7 +96,7 @@ export const InstallPromptPopup = ({ userId, onClose, platform }: Props) => {
 
           {showIos && (
             <div className="space-y-3">
-              <p className="font-semibold flex items-center gap-2"> 
+              <p className="font-semibold flex items-center gap-2">
                 <BaselineAppleIcon className="w-8 h-8" />
                 <IosIcon className="w-8 h-8" />
                 <span className="sr-only">iPhone / iPad</span>
@@ -106,19 +114,27 @@ export const InstallPromptPopup = ({ userId, onClose, platform }: Props) => {
           )}
 
         </div>
-        
-        <div className="shrink-0 pt-4">
-          <p className="mt-5 text-sm text-neutral-400 text-center">
-            Nämä ohjeet löytyvät myös asetuksista
-          </p>
-          
-          <button type="button" className="button-basic mx-auto mt-4 flex justify-center" onClick={onOk}>
-            OK
-          </button>
-        </div>
+
+        <p className="mt-6 mb-4 text-sm text-neutral-400 text-center">
+          Nämä ohjeet löytyvät myös asetuksista
+        </p>
 
       </div>
+
+      {/* OK button is outside scroll area and always reachable */}
+      <div className="relative z-10 shrink-0 px-6 py-4 border-t border-neutral-700 flex justify-center bg-neutral-800">
+        <button
+          type="button"
+          className="flex min-h-16 min-w-40 items-center justify-center bg-transparent px-3 py-2 text-black"
+          onClick={onOk}
+          aria-label="Sulje asennusohje"
+        >
+          <span className="button-basic pointer-events-none flex min-h-[3rem] min-w-28 items-center justify-center px-10">
+            OK
+          </span>
+        </button>
+      </div>
+
     </div>
-  </div>
-)
+  )
 }

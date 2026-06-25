@@ -80,7 +80,7 @@ test('student flow', async ({ page }) => {
 
     // Student dismisses install prompt
     if (await page.getByText('Sovelluksen asennus').isVisible()) {
-      await page.getByRole('button', { name: 'OK' }).click()
+      await page.getByRole('button', { name: 'Sulje asennusohje' }).click()
       await expect(page.getByText('Sovelluksen asennus')).toBeHidden()
     }
 

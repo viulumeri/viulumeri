@@ -6,7 +6,7 @@ namespace: viulumeri-production
 images:
 - name: jayzstep/viulumeri
   newName: jayzstep/viulumeri
-  newTag: v1.3.0
+  newTag: v1.3.1
 
 resources:
 - namespace.yaml

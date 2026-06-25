@@ -417,6 +417,75 @@ describe('PATCH /api/admin/feedbacks/:feedbackId', () => {
   })
 })
 
+describe('PATCH /api/admin/feedbacks/read', () => {
+  it('marks all feedbacks as read', async () => {
+    const { sessionCookie } = await TestHelper.createAuthenticatedAdmin(api)
+    const { user } = await TestHelper.createAuthenticatedStudent(api)
+    await Feedback.create([
+      {
+        userId: user.id,
+        userType: 'student',
+        title: 'Unread feedback',
+        category: 'other',
+        message: 'This should be marked read'
+      },
+      {
+        userId: user.id,
+        userType: 'student',
+        title: 'Already read feedback',
+        category: 'feature',
+        isRead: true,
+        message: 'This should stay read'
+      }
+    ])
+
+    const response = await api
+      .patch('/api/admin/feedbacks/read')
+      .set('Cookie', sessionCookie)
+
+    assert.strictEqual(response.status, 200)
+    assert.strictEqual(response.body.modifiedCount, 1)
+
+    const unreadCount = await Feedback.countDocuments({ isRead: false })
+    assert.strictEqual(unreadCount, 0)
+  })
+})
+
+describe('DELETE /api/admin/feedbacks/read', () => {
+  it('deletes read feedbacks and keeps unread feedbacks', async () => {
+    const { sessionCookie } = await TestHelper.createAuthenticatedAdmin(api)
+    const { user } = await TestHelper.createAuthenticatedStudent(api)
+    await Feedback.create([
+      {
+        userId: user.id,
+        userType: 'student',
+        title: 'Read feedback',
+        category: 'other',
+        isRead: true,
+        message: 'This should be deleted'
+      },
+      {
+        userId: user.id,
+        userType: 'student',
+        title: 'Unread feedback',
+        category: 'bug',
+        message: 'This should remain'
+      }
+    ])
+
+    const response = await api
+      .delete('/api/admin/feedbacks/read')
+      .set('Cookie', sessionCookie)
+
+    assert.strictEqual(response.status, 204)
+
+    const remainingFeedbacks = await Feedback.find({}).sort({ title: 1 })
+    assert.strictEqual(remainingFeedbacks.length, 1)
+    assert.strictEqual(remainingFeedbacks[0].title, 'Unread feedback')
+    assert.strictEqual(remainingFeedbacks[0].isRead, false)
+  })
+})
+
 describe('POST /api/auth/admin/impersonate-user', () => {
   it('requires admin access', async () => {
     const { sessionCookie } = await TestHelper.createAuthenticatedTeacher(api)

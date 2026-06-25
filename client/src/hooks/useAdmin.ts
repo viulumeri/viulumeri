@@ -229,6 +229,36 @@ export const useUpdateAdminFeedbackCategory = (
   })
 }
 
+export const useMarkAllAdminFeedbacksRead = (
+  options?: UseMutationOptions<{ modifiedCount: number }, Error, void>
+) => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: adminService.markAllFeedbacksRead,
+    ...options,
+    onSuccess: (...args) => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'feedbacks'] })
+      options?.onSuccess?.(...args)
+    }
+  })
+}
+
+export const useDeleteReadAdminFeedbacks = (
+  options?: UseMutationOptions<void, Error, void>
+) => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: adminService.deleteReadFeedbacks,
+    ...options,
+    onSuccess: (...args) => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'feedbacks'] })
+      options?.onSuccess?.(...args)
+    }
+  })
+}
+
 export const useDeleteAdminStudent = (
   options?: UseMutationOptions<void, Error, string>
 ) => {

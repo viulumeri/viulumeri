@@ -58,7 +58,7 @@ type FormState = {
   deleteImage: boolean
 }
 
-const RESULTS_PER_PAGE = 5
+const RESULTS_PER_PAGE = 10
 const SONG_SORT_STORAGE_KEY = 'admin-song-sort-mode'
 
 const trackFields: TrackField[] = [
@@ -160,7 +160,7 @@ const VisibilitySwitch = ({
 }) => (
   <div className="flex items-center gap-1.5 text-xs text-gray-200 sm:gap-2 sm:text-sm">
     <span
-      className={`rounded px-1.5 py-0.5 text-[10px] sm:px-2 sm:py-1 sm:text-xs ${
+      className={`rounded px-1.5 py-0.5 text-[10px] sm:px-2 sm:py-1 sm:text-xs md:hidden ${
         isHidden
           ? 'bg-amber-800 text-amber-100'
           : 'bg-emerald-800 text-emerald-100'
@@ -932,7 +932,7 @@ export const AdminSongsPage = () => {
             </div>
 
             <div className="overflow-hidden rounded-lg border border-neutral-700 bg-neutral-800">
-              <div className="hidden grid-cols-[2.5rem_minmax(0,2fr)_minmax(10rem,1fr)_6rem] gap-4 px-4 py-3 text-sm font-semibold text-neutral-400 md:grid">
+              <div className="hidden grid-cols-[2.25rem_minmax(0,2fr)_minmax(10rem,1fr)_7.5rem] gap-3 px-4 py-2 text-sm font-semibold text-neutral-400 md:grid">
                 <div aria-hidden="true"></div>
                 <div>Nimi</div>
                 <div>Tiedostot</div>
@@ -951,11 +951,11 @@ export const AdminSongsPage = () => {
                 <div className="divide-y divide-neutral-700">
                   {paginatedSongs.map(song => (
                     <Fragment key={song.id}>
-                      <div className="relative grid w-full grid-cols-[2.25rem_minmax(0,1fr)_auto] gap-3 px-3 py-3 md:grid-cols-[2.5rem_minmax(0,2fr)_minmax(10rem,1fr)_6rem] md:gap-4 md:px-4 md:pb-12">
+                      <div className="grid w-full grid-cols-[2.25rem_minmax(0,1fr)_auto] gap-3 px-3 py-3 md:grid-cols-[2.25rem_minmax(0,2fr)_minmax(10rem,1fr)_7.5rem] md:gap-3 md:px-4 md:py-2">
                         <button
                           type="button"
                           onClick={() => openSongPlayer(song.id)}
-                          className="group h-9 w-9 cursor-pointer overflow-hidden rounded-full ring-offset-2 ring-offset-neutral-800 transition hover:scale-105 hover:ring-2 hover:ring-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-400 md:h-10 md:w-10"
+                          className="group h-9 w-9 cursor-pointer overflow-hidden rounded-full ring-offset-2 ring-offset-neutral-800 transition hover:scale-105 hover:ring-2 hover:ring-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-400 md:h-8 md:w-8"
                           aria-label={`Avaa kappale ${song.title}`}
                           title="Avaa soitin"
                         >
@@ -973,7 +973,7 @@ export const AdminSongsPage = () => {
                             <button
                               type="button"
                               onClick={() => openSongPlayer(song.id)}
-                              className="min-w-0 max-w-full cursor-pointer truncate text-left text-sm font-semibold text-neutral-100 underline-offset-4 hover:text-sky-300 hover:underline focus:outline-none focus:text-sky-300 focus:underline md:text-base"
+                              className="min-w-0 max-w-full cursor-pointer truncate text-left text-sm font-semibold text-neutral-100 underline-offset-4 hover:text-sky-300 hover:underline focus:outline-none focus:text-sky-300 focus:underline"
                             >
                               {song.title}
                             </button>
@@ -992,9 +992,9 @@ export const AdminSongsPage = () => {
                               </span>
                             )}
                           </div>
-                          <div className="truncate text-[11px] text-neutral-400 md:text-xs">{song.id}</div>
+                          <div className="truncate text-[11px] text-neutral-400">{song.id}</div>
                         </div>
-                        <div className="col-span-3 grid grid-cols-2 gap-x-3 gap-y-1 text-[11px] md:col-span-1 md:flex md:flex-col md:gap-1 md:text-xs">
+                        <div className="col-span-3 grid grid-cols-2 gap-x-3 gap-y-1 text-[11px] md:col-span-1 md:gap-x-2 md:text-[11px]">
                           <TrackStatus
                             label="Instrumentaali"
                             available={song.hasInstrumentalTrack}
@@ -1012,27 +1012,25 @@ export const AdminSongsPage = () => {
                             available={song.hasSlowMelodyTrack}
                           />
                         </div>
-                        <div className="col-span-3 flex flex-nowrap items-start justify-end gap-2 md:col-span-1 md:flex-wrap">
+                        <div className="col-span-3 flex flex-wrap items-center justify-end gap-2 md:col-span-1 md:gap-1">
                           <button
                             type="button"
                             onClick={() => openEditForm(song)}
-                            className="button-basic inline-flex h-10 w-10 min-w-10 items-center justify-center rounded-full !px-0 !py-0"
+                            className="button-basic inline-flex h-10 w-10 min-w-10 items-center justify-center rounded-full !px-0 !py-0 md:h-8 md:w-8 md:min-w-8"
                             aria-label="Muokkaa kappaletta"
                             title="Muokkaa kappaletta"
                           >
-                            <Pencil className="h-4 w-4" />
+                            <Pencil className="h-4 w-4 md:h-3.5 md:w-3.5" />
                           </button>
                           <button
                             type="button"
                             onClick={() => onDeleteSong(song)}
-                            className="button-basic inline-flex h-10 w-10 min-w-10 items-center justify-center rounded-full !px-0 !py-0"
+                            className="button-basic inline-flex h-10 w-10 min-w-10 items-center justify-center rounded-full !px-0 !py-0 md:h-8 md:w-8 md:min-w-8"
                             aria-label="Poista kappale"
                             title="Poista kappale"
                           >
-                            <Trash2 className="h-4 w-4" />
+                            <Trash2 className="h-4 w-4 md:h-3.5 md:w-3.5" />
                           </button>
-                        </div>
-                        <div className="col-span-3 flex justify-end md:absolute md:bottom-2 md:right-4 md:col-span-1">
                           <VisibilitySwitch
                             isHidden={song.isHidden}
                             onToggle={() => onToggleVisibility(song)}

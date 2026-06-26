@@ -6,10 +6,12 @@ import type { AppSessionUser } from '../../../shared/types'
 
 export const AppLayout = ({
   children,
-  showNavbar = true
+  showNavbar = true,
+  fullWidth = false
 }: {
   children: React.ReactNode
   showNavbar?: boolean
+  fullWidth?: boolean
 }) => {
   const { data: session } = useSession()
   const role = (session?.user as AppSessionUser | undefined)?.role
@@ -22,7 +24,7 @@ export const AppLayout = ({
 
   return (
     <div className="min-h-screen bg-neutral-900 text-gray-100 flex justify-center">
-      <div className="w-full max-w-4xl flex flex-col flex-grow relative">
+      <div className={`w-full flex flex-col flex-grow relative ${fullWidth ? '' : 'max-w-4xl'}`}>
         {children}
         {session && showNavbar && <Navbar />}
         {(isImpersonating || isAdminRegularUserView) && <ImpersonationBanner />}

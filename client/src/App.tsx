@@ -199,7 +199,7 @@ const App = () => {
               <Route
                 path="/admin"
                 element={
-                  <AppLayout showNavbar={false}>
+                  <AppLayout showNavbar={false} fullWidth>
                     <AdminScrollShell />
                   </AppLayout>
                 }
@@ -207,7 +207,7 @@ const App = () => {
               <Route
                 path="/admin/popup"
                 element={
-                  <AppLayout showNavbar={false}>
+                  <AppLayout showNavbar={false} fullWidth>
                     <AdminScrollShell initialSectionId="popup" />
                   </AppLayout>
                 }
@@ -215,7 +215,7 @@ const App = () => {
               <Route
                 path="/admin/feedback"
                 element={
-                  <AppLayout showNavbar={false}>
+                  <AppLayout showNavbar={false} fullWidth>
                     <AdminScrollShell initialSectionId="feedback" />
                   </AppLayout>
                 }
@@ -223,7 +223,7 @@ const App = () => {
               <Route
                 path="/admin/songs"
                 element={
-                  <AppLayout showNavbar={false}>
+                  <AppLayout showNavbar={false} fullWidth>
                     <AdminScrollShell initialSectionId="songs" />
                   </AppLayout>
                 }
@@ -231,7 +231,7 @@ const App = () => {
               <Route
                 path="/admin/faq"
                 element={
-                  <AppLayout showNavbar={false}>
+                  <AppLayout showNavbar={false} fullWidth>
                     <AdminScrollShell initialSectionId="faq" />
                   </AppLayout>
                 }
@@ -239,7 +239,7 @@ const App = () => {
               <Route
                 path="/admin/user-view"
                 element={
-                  <AppLayout showNavbar={false}>
+                  <AppLayout showNavbar={false} fullWidth>
                     <AdminScrollShell initialSectionId="user-view" />
                   </AppLayout>
                 }

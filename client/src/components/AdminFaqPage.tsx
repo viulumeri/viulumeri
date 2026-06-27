@@ -200,6 +200,7 @@ export const AdminFaqPage = () => {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editQuestion, setEditQuestion] = useState('')
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc')
+  const [deleteFaqId, setDeleteFaqId] = useState<string | null>(null)
 
   const { showSuccess, showError } = useNotification()
 
@@ -451,7 +452,8 @@ const displayedFaqs = showAllFaqs
                         Kysymys:
                       </span>
                       <input
-                        className="w-full rounded-xl border border-neutral-600 bg-neutral-700 px-4 py-3 text-gray-100 placeholder:text-gray-400"
+                        className="w-full rounded-xl border border-neutral-600 bg-neutral-700 px-4
+                        py-3 text-gray-100 placeholder:text-gray-400 mt-1.5"
                         value={editQuestion}
                         onChange={event => setEditQuestion(event.target.value)}
                       />
@@ -467,7 +469,8 @@ const displayedFaqs = showAllFaqs
                           onClick={() =>
                             setEditBlocks(current => [...current, newTextBlock()])
                           }
-                          className="rounded-xl border border-neutral-600 bg-neutral-700 px-5 py-3 text-gray-100 transition-colors hover:bg-neutral-600"
+                          className="rounded-xl border border-neutral-600 bg-neutral-700 px-5 py-3
+                          font-normal text-gray-100 transition-colors hover:bg-neutral-600"
                         >
                           Lisää tekstiosio
                         </button>
@@ -476,7 +479,8 @@ const displayedFaqs = showAllFaqs
                           onClick={() =>
                             setEditBlocks(current => [...current, newImageBlock()])
                           }
-                          className="rounded-xl border border-neutral-600 bg-neutral-700 px-5 py-3 text-gray-100 transition-colors hover:bg-neutral-600"
+                          className="rounded-xl border border-neutral-600 bg-neutral-700 px-5 py-3
+                          font-normal text-gray-100 transition-colors hover:bg-neutral-600"
                         >
                           Lisää kuvaosio
                         </button>
@@ -485,27 +489,34 @@ const displayedFaqs = showAllFaqs
 
                     <BlockEditor blocks={editBlocks} onChange={setEditBlocks} />
 
-                    <div className="flex flex-col justify-center gap-3 sm:flex-row">
-                      <button
-                        type="button"
-                        onClick={handleUpdateFaq}
-                        className="rounded-full bg-neutral-100 px-5 py-3 text-black sm:min-w-[140px]"
-                      >
-                        Tallenna
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setEditingId(null)
-                          setEditQuestion('')
-                          setEditBlocks([])
-                        }}
-                        className="rounded-full bg-red-600 px-5 py-3 text-white transition-colors hover:bg-red-700 sm:min-w-[140px]"
-                      >
-                        Peruuta
-                      </button>
+                    <div className="mt-8 border-t border-neutral-600 pt-5">
+                      <div className="mt-1 flex flex-col gap-3 sm:flex-row sm:justify-end sm:items-center">
+                        <button
+                          type="button"
+                          onClick={handleUpdateFaq}
+                          className="inline-flex h-11.5 w-full items-center justify-center rounded-full
+                          bg-neutral-100 px-6 text-base font-semibold text-black
+                          transition-colors hover:bg-neutral-300 sm:w-auto sm:min-w-[180px]"
+                        >
+                          Tallenna
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEditingId(null)
+                            setEditQuestion('')
+                            setEditBlocks([])
+                          }}
+                          className="inline-flex h-11.5 w-full items-center justify-center rounded-full
+                          bg-red-600 px-5 text-base font-semibold text-white
+                          transition-colors hover:bg-red-700 sm:w-auto sm:min-w-[160px]"
+                        >
+                          Peruuta
+                        </button>
+                      </div>
                     </div>
-                  </>
+                                    </>
                 ) : (
                   <>
                     <div className="space-y-3 rounded-xl border border-neutral-600 bg-neutral-700 px-4 py-3 text-gray-200">
@@ -539,12 +550,12 @@ const displayedFaqs = showAllFaqs
                     Muokkaa
                   </button>
 
-                  <button
-                    type="button"
-                    onClick={() => faq._id && handleDeleteFaq(faq._id)}
-                  >
-                    Poista
-                  </button>
+                <button
+                  type="button"
+                  onClick={() => setDeleteFaqId(faq._id ?? null)}
+                >
+                  Poista
+                </button>
                 </div>
                   </>
                 )}
@@ -553,7 +564,7 @@ const displayedFaqs = showAllFaqs
           </div>
         ))}
 
-        {filteredFaqs.length > 5 && (
+             {filteredFaqs.length > 5 && (
           <div className="flex justify-center pt-4">
             <button
               type="button"
@@ -563,14 +574,50 @@ const displayedFaqs = showAllFaqs
               {showAllFaqs
                 ? 'Näytä vähemmän'
                 : `Näytä kaikki (${filteredFaqs.length})`}
-            </button>
-          </div>
-        )}
-      </>
-    )}
-  </div>
-</div>
+                  </button>
+                </div>
+              )}
+                    </>
+                  )}
+                </div>
+              </div>
+
+{deleteFaqId && (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+    <div className="w-full max-w-md rounded-xl bg-neutral-800 p-6 shadow-xl">
+      <h3 className="text-lg font-semibold text-white">
+        Poista kysymys?
+      </h3>
+
+      <p className="mt-3 text-gray-300">
+        Haluatko varmasti poistaa tämän kysymyksen? Toimintoa ei voi peruuttaa.
+      </p>
+
+      <div className="mt-6 flex justify-end gap-3">
+        <button
+          type="button"
+          onClick={() => setDeleteFaqId(null)}
+          className="rounded-full bg-neutral-700 px-5 py-2 text-white hover:bg-neutral-600"
+        >
+          Peruuta
+        </button>
+
+        <button
+          type="button"
+          onClick={async () => {
+            await handleDeleteFaq(deleteFaqId)
+            setDeleteFaqId(null)
+          }}
+          className="rounded-full bg-red-600 px-5 py-2 text-white hover:bg-red-700"
+        >
+          Poista
+        </button>
+      </div>
     </div>
+  </div>
+)}
+
+     </div>
     </div>
   )
 }

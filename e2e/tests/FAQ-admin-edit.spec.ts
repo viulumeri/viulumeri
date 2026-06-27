@@ -147,4 +147,24 @@ test('admin can see FAQ browse section', async ({ page }) => {
 
   await expect(searchInput).toHaveValue('salasana')
 })
+test('admin sees confirmation before deleting FAQ', async ({ page }) => {
+  await page
+    .getByRole('button', { name: 'Miten palvelu toimii?' })
+    .click()
+
+  await page.getByRole('button', { name: /^Poista$/ }).click()
+
+  const deleteDialog = page
+    .locator('div.fixed.inset-0')
+    .filter({ hasText: 'Poista kysymys?' })
+
+  await expect(deleteDialog).toBeVisible()
+  await expect(deleteDialog).toContainText(
+    'Haluatko varmasti poistaa tämän kysymyksen?'
+  )
+
+  await deleteDialog.getByRole('button', { name: 'Peruuta' }).click()
+
+  await expect(deleteDialog).not.toBeVisible()
+})
 })

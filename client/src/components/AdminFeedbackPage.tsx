@@ -9,9 +9,18 @@ import { useUpdateAdminFeedbackReadStatus } from '../hooks/useAdmin'
 import { useUpdateAdminFeedbackCategory } from '../hooks/useAdmin'
 import type { AdminFeedbackItem } from '../services/admin'
 import { categoryLabel } from '../utils/feedbackLabels'
-import { CheckCheck, ChevronDown, ChevronLeft, ChevronRight, MessageSquare, Trash2 } from 'lucide-react'
+import {
+  CheckCheck,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  MessageSquare,
+  Search,
+  Trash2
+} from 'lucide-react'
 
 const RESULTS_PER_PAGE = 5
+type FeedbackSortMode = 'recent' | 'read' | 'unread'
 
 const userTypeLabel: Record<AdminFeedbackItem['userType'], string> = {
   teacher: 'Opettaja',
@@ -32,19 +41,56 @@ export const AdminFeedbackPage = () => {
   const markAllRead = useMarkAllAdminFeedbacksRead()
   const deleteReadFeedbacks = useDeleteReadAdminFeedbacks()
   const [page, setPage] = useState(0)
+  const [searchInput, setSearchInput] = useState('')
+  const [sortMode, setSortMode] = useState<FeedbackSortMode>('recent')
   const [openFeedbackIds, setOpenFeedbackIds] = useState<Set<string>>(() => new Set())
   const feedbacks = useMemo(() => data?.feedbacks ?? [], [data?.feedbacks])
   const unreadCount = useMemo(() => feedbacks.filter(item => !item.isRead).length, [feedbacks])
   const readCount = feedbacks.length - unreadCount
-  const totalPages = Math.max(Math.ceil(feedbacks.length / RESULTS_PER_PAGE), 1)
+  const visibleFeedbacks = useMemo(() => {
+    const normalizedSearch = searchInput.trim().toLowerCase()
+    const searchedFeedbacks = normalizedSearch
+      ? feedbacks.filter(item => {
+          const searchableText = [
+            item.title,
+            item.message,
+            item.senderName,
+            item.senderEmail ?? '',
+            categoryLabel[item.category],
+            userTypeLabel[item.userType],
+            item.isRead ? 'luettu' : 'lukematta'
+          ]
+            .join(' ')
+            .toLowerCase()
+
+          return searchableText.includes(normalizedSearch)
+        })
+      : feedbacks
+
+    return [...searchedFeedbacks].sort((left, right) => {
+      if (sortMode === 'read' && left.isRead !== right.isRead) {
+        return left.isRead ? -1 : 1
+      }
+      if (sortMode === 'unread' && left.isRead !== right.isRead) {
+        return left.isRead ? 1 : -1
+      }
+
+      return new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime()
+    })
+  }, [feedbacks, searchInput, sortMode])
+  const totalPages = Math.max(Math.ceil(visibleFeedbacks.length / RESULTS_PER_PAGE), 1)
   const paginatedFeedbacks = useMemo(
-    () => feedbacks.slice(page * RESULTS_PER_PAGE, (page + 1) * RESULTS_PER_PAGE),
-    [feedbacks, page]
+    () => visibleFeedbacks.slice(page * RESULTS_PER_PAGE, (page + 1) * RESULTS_PER_PAGE),
+    [visibleFeedbacks, page]
   )
 
   useEffect(() => {
     setPage(current => Math.min(current, totalPages - 1))
   }, [totalPages])
+
+  useEffect(() => {
+    setPage(0)
+  }, [searchInput, sortMode])
 
   const toggleFeedback = (id: string) => {
     setOpenFeedbackIds(current => {
@@ -114,6 +160,43 @@ export const AdminFeedbackPage = () => {
             </button>
           </div>
         </div>
+
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <form
+            className="flex w-full max-w-lg items-center space-x-2"
+            onSubmit={event => event.preventDefault()}
+          >
+            <label htmlFor="admin-feedback-search" className="sr-only">
+              Etsi palautteita
+            </label>
+            <div className="relative w-full">
+              <div className="pointer-events-none absolute inset-y-0 start-0 flex items-center ps-3">
+                <Search size={16} strokeWidth={1.5} />
+              </div>
+              <input
+                id="admin-feedback-search"
+                type="text"
+                className="w-full rounded-lg border border-default-medium bg-neutral-secondary-medium px-3 py-2.5 ps-10 text-sm text-heading placeholder:text-body focus:border-brand focus:ring-brand"
+                placeholder="Etsi palautteita..."
+                onChange={event => setSearchInput(event.target.value)}
+                value={searchInput}
+              />
+            </div>
+          </form>
+
+          <label className="flex items-center gap-2 text-sm text-neutral-300">
+            <span>Järjestys</span>
+            <select
+              value={sortMode}
+              onChange={event => setSortMode(event.target.value as FeedbackSortMode)}
+              className="rounded-md border border-neutral-600 bg-neutral-700 px-3 py-2 text-sm text-gray-100 focus:border-transparent focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="recent">Uusimmat</option>
+              <option value="unread">Lukemattomat</option>
+              <option value="read">Luetut</option>
+            </select>
+          </label>
+        </div>
       </div>
 
       <div className="overflow-hidden rounded-lg border border-neutral-700 bg-neutral-900">
@@ -123,6 +206,8 @@ export const AdminFeedbackPage = () => {
           <p className="px-4 py-5 text-sm text-rose-300 sm:px-6">Palautteen lataus epäonnistui</p>
         ) : feedbacks.length === 0 ? (
           <p className="px-4 py-5 text-sm text-gray-400 sm:px-6">Ei palautteita.</p>
+        ) : visibleFeedbacks.length === 0 ? (
+          <p className="px-4 py-5 text-sm text-gray-400 sm:px-6">Ei hakutuloksia.</p>
         ) : (
           <ul className="space-y-3 p-3 sm:space-y-4 sm:p-6">
             {paginatedFeedbacks.map(item => {
@@ -261,7 +346,7 @@ export const AdminFeedbackPage = () => {
             <ChevronLeft size={18} strokeWidth={1.5} />
           </button>
           <span className="text-sm text-neutral-300">
-            {feedbacks.length > 0 ? page + 1 : 0} / {totalPages}
+            {visibleFeedbacks.length > 0 ? page + 1 : 0} / {totalPages}
           </span>
           <button
             type="button"

@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Search, CircleEllipsis } from 'lucide-react'
+import { Search } from 'lucide-react'
 import {
   useAdminTeachers,
   useAdminStudents,
@@ -13,13 +13,15 @@ import { useNotification } from '../hooks/useNotification'
 import type { Teacher, Student } from '../services/admin'
 import type { SearchResultUser } from '../types/admin'
 
+type AdminUserSortMode = 'name' | 'email' | 'teachers' | 'students'
+
 export const AdminPanel = () => {
   const { data: teachersData, error: teachersError } = useAdminTeachers()
   const { data: studentsData, error: studentsError } = useAdminStudents()
 
   const [searchUserInput, setSearchUserInput] = useState('')
+  const [sortMode, setSortMode] = useState<AdminUserSortMode>('name')
   const [selectedUser, setSelectedUser] = useState<Teacher | Student | null>(null)
-  const [actionsOpen, setActionsOpen] = useState(false)
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [impersonatingId, setImpersonatingId] = useState<string | null>(null)
   const [editing, setEditing] = useState(false)
@@ -105,23 +107,42 @@ export const AdminPanel = () => {
   const searchResults = useMemo(() => {
     const normalizedValue = searchUserInput.trim().toLowerCase()
 
-    if (!normalizedValue) return allUsers
+    const filteredUsers = normalizedValue
+      ? allUsers.filter(
+          user =>
+            user.name.toLowerCase().includes(normalizedValue) ||
+            user.email.toLowerCase().includes(normalizedValue)
+        )
+      : allUsers
 
-    return allUsers.filter(
-      user =>
-        user.name.toLowerCase().includes(normalizedValue) ||
-        user.email.toLowerCase().includes(normalizedValue)
-    )
-  }, [allUsers, searchUserInput])
+    return [...filteredUsers].sort((left, right) => {
+      if (sortMode === 'teachers' && left.role !== right.role) {
+        return left.role === 'teacher' ? -1 : 1
+      }
+      if (sortMode === 'students' && left.role !== right.role) {
+        return left.role === 'student' ? -1 : 1
+      }
+      if (sortMode === 'email') {
+        return left.email.localeCompare(right.email, 'fi')
+      }
+
+      return left.name.localeCompare(right.name, 'fi')
+    })
+  }, [allUsers, searchUserInput, sortMode])
 
   const handleSearchUserInputChange = (value: string) => {
     setSearchUserInput(value)
     setSelectedUser(null)
-    setActionsOpen(false)
     setEditing(false)
   }
 
   const handleResultSelect = (user: SearchResultUser) => {
+    if (selectedResultKey === `${user.role}-${user.id}`) {
+      setSelectedUser(null)
+      setEditing(false)
+      return
+    }
+
     const fullUserData =
       user.role === 'teacher'
         ? teachers.find(teacher => teacher.id === user.id)
@@ -129,7 +150,6 @@ export const AdminPanel = () => {
 
     if (fullUserData) {
       setSelectedUser(fullUserData)
-      setActionsOpen(false)
       setEditing(false)
     }
   }
@@ -194,74 +214,59 @@ export const AdminPanel = () => {
                       </div>
                     </div>
 
-                    <div className="relative self-end text-right sm:self-auto">
+                    <div className="flex flex-wrap gap-2 self-start sm:self-center sm:justify-end">
                       <button
                         type="button"
-                        aria-label="Avaa käyttäjätoiminnot"
-                        onClick={() => setActionsOpen(prev => !prev)}
-                        className="inline-flex items-center justify-center rounded-full bg-neutral-700 p-2 transition-colors hover:bg-neutral-600 active:bg-neutral-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-500"
+                        onClick={() => {
+                          setEditName(selectedUser.name)
+                          setEditEmail(selectedUser.email)
+                          setEditing(true)
+                        }}
+                        className="button-basic !px-3 !py-3 !text-sm"
                       >
-                        <CircleEllipsis />
+                        Muokkaa
                       </button>
-                      {actionsOpen && (
-                        <div className="absolute right-0 z-50 mt-2 w-48 rounded-lg border border-neutral-700 bg-neutral-900 shadow-xl">
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setActionsOpen(false)
-                              setEditName(selectedUser.name)
-                              setEditEmail(selectedUser.email)
-                              setEditing(true)
-                            }}
-                            className="w-full px-4 py-3 text-left text-sm hover:bg-neutral-800 active:bg-neutral-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-500"
-                          >
-                            Muokkaa
-                          </button>
-                          {!selectedUser.isAdmin && (
-                            <button
-                              type="button"
-                              disabled={Boolean(impersonatingId)}
-                              onClick={() => {
-                                if (impersonatingId) return
-                                setActionsOpen(false)
-                                setImpersonatingId(selectedUser.userId)
-                                impersonateUser.mutate({ userId: selectedUser.userId })
-                              }}
-                              className="w-full px-4 py-3 text-left text-sm hover:bg-neutral-800 active:bg-neutral-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-500 disabled:cursor-not-allowed disabled:opacity-50"
-                            >
-                              {impersonatingId === selectedUser.userId
-                                ? 'Impersonoidaan...'
-                                : 'Impersonoi'}
-                            </button>
-                          )}
-                          {!selectedUser.isAdmin && !selectedUser.isCurrentUser && (
-                            <button
-                              type="button"
-                              disabled={Boolean(deletingId)}
-                              onClick={() => {
-                                if (deletingId) return
-                                setActionsOpen(false)
-                                if (
-                                  confirm(
-                                    `Haluatko varmasti poistaa käyttäjän ${selectedUser.name}? Toimintoa ei voi perua.`
-                                  )
-                                ) {
-                                  setDeletingId(selectedUser.id)
-                                  if ('studentCount' in selectedUser) {
-                                    deleteTeacher.mutate(selectedUser.id)
-                                  } else {
-                                    deleteStudent.mutate(selectedUser.id)
-                                  }
-                                }
-                              }}
-                              className="w-full px-4 py-3 text-left text-sm text-rose-400 hover:bg-neutral-800 active:bg-neutral-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-500 disabled:cursor-not-allowed disabled:opacity-50"
-                            >
-                              {deletingId === selectedUser.id
-                                ? 'Poistetaan...'
-                                : 'Poista käyttäjä'}
-                            </button>
-                          )}
-                        </div>
+
+                      {!selectedUser.isAdmin && (
+                        <button
+                          type="button"
+                          disabled={Boolean(impersonatingId)}
+                          onClick={() => {
+                            if (impersonatingId) return
+                            setImpersonatingId(selectedUser.userId)
+                            impersonateUser.mutate({ userId: selectedUser.userId })
+                          }}
+                          className="button-basic !px-3 !py-3 !text-sm disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                          {impersonatingId === selectedUser.userId
+                            ? 'Impersonoidaan...'
+                            : 'Impersonoi'}
+                        </button>
+                      )}
+
+                      {!selectedUser.isAdmin && !selectedUser.isCurrentUser && (
+                        <button
+                          type="button"
+                          disabled={Boolean(deletingId)}
+                          onClick={() => {
+                            if (deletingId) return
+                            if (
+                              confirm(
+                                `Haluatko varmasti poistaa käyttäjän ${selectedUser.name}? Toimintoa ei voi perua.`
+                              )
+                            ) {
+                              setDeletingId(selectedUser.id)
+                              if ('studentCount' in selectedUser) {
+                                deleteTeacher.mutate(selectedUser.id)
+                              } else {
+                                deleteStudent.mutate(selectedUser.id)
+                              }
+                            }
+                          }}
+                          className="button-basic !px-3 !py-3 !text-sm bg-red-600 text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                          {deletingId === selectedUser.id ? 'Poistetaan...' : 'Poista käyttäjä'}
+                        </button>
                       )}
                     </div>
                   </div>
@@ -327,6 +332,21 @@ export const AdminPanel = () => {
             searchInput={searchUserInput}
             searchResults={searchResults}
             selectedResultKey={selectedResultKey}
+            toolbarEnd={
+              <label className="flex items-center gap-2 text-sm text-neutral-300">
+                <span>Järjestys</span>
+                <select
+                  value={sortMode}
+                  onChange={event => setSortMode(event.target.value as AdminUserSortMode)}
+                  className="rounded-md border border-neutral-600 bg-neutral-700 px-3 py-2 text-sm text-gray-100 focus:border-transparent focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="name">Nimi</option>
+                  <option value="email">Sähköposti</option>
+                  <option value="teachers">Opettajat</option>
+                  <option value="students">Oppilaat</option>
+                </select>
+              </label>
+            }
           />
         </div>
       </div>

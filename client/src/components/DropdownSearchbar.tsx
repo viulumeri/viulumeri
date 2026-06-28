@@ -19,6 +19,7 @@ interface DropdownSearchbarProps {
   searchInput: string
   searchResults: SearchResultUser[]
   selectedResultKey?: string | null
+  toolbarEnd?: ReactNode
 }
 
 const RESULTS_PER_PAGE = 10
@@ -30,7 +31,8 @@ export const DropdownSearchbar = ({
   renderExpandedResult,
   searchInput,
   searchResults,
-  selectedResultKey
+  selectedResultKey,
+  toolbarEnd
 }: DropdownSearchbarProps) => {
   const [page, setPage] = useState(0)
 
@@ -59,21 +61,25 @@ export const DropdownSearchbar = ({
 
   return (
     <div className="space-y-3">
-      <form className="flex max-w-lg items-center space-x-2" onSubmit={onSubmit}>
-        <label className="sr-only">Etsi käyttäjiä</label>
-        <div className="relative w-full">
-          <div className="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
-            <Users size={16} strokeWidth={1.5} />
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <form className="flex w-full max-w-lg items-center space-x-2" onSubmit={onSubmit}>
+          <label className="sr-only">Etsi käyttäjiä</label>
+          <div className="relative w-full">
+            <div className="pointer-events-none absolute inset-y-0 start-0 flex items-center ps-3">
+              <Users size={16} strokeWidth={1.5} />
+            </div>
+            <input
+              type="text"
+              className="w-full rounded-lg border border-default-medium bg-neutral-secondary-medium px-3 py-2.5 ps-10 text-sm text-heading placeholder:text-body focus:border-brand focus:ring-brand"
+              placeholder="Etsi käyttäjiä..."
+              onChange={handleInputChange}
+              value={searchInput}
+            />
           </div>
-          <input
-            type="text"
-            className="px-3 py-2.5 bg-neutral-secondary-medium border border-default-medium rounded-base ps-10 text-heading text-sm focus:ring-brand focus:border-brand rounded-lg w-full placeholder:text-body"
-            placeholder="Etsi käyttäjiä..."
-            onChange={handleInputChange}
-            value={searchInput}
-          />
-        </div>
-      </form>
+        </form>
+
+        {toolbarEnd}
+      </div>
 
       <div className="overflow-visible rounded-lg border border-neutral-700 bg-neutral-800">
         <div className="hidden grid-cols-[2fr_2fr_1fr] gap-4 px-4 py-3 text-sm font-semibold text-neutral-400 sm:grid">

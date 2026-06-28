@@ -266,7 +266,6 @@ test('admin flow covers dashboard, users, popups, feedback, FAQ, and user view',
       .click()
     await expect(usersSection).toContainText('Opettajaa ei ole asetettu')
 
-    await usersSection.getByLabel('Avaa käyttäjätoiminnot').click()
     const deleteResponsePromise = page.waitForResponse(response => {
       return (
         response.url().includes('/api/admin/students/') &&
@@ -650,7 +649,6 @@ test('admin can impersonate a user and stop from the mobile banner', async ({ pa
     .getByRole('button')
     .filter({ hasText: STUDENT.email })
     .click()
-  await usersSection.getByLabel('Avaa käyttäjätoiminnot').click()
 
   const impersonateResponsePromise = page.waitForResponse(response => {
     return (

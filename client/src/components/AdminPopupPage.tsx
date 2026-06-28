@@ -141,7 +141,7 @@ const SelectedImagePreview = ({
   )
 }
 
-export const PopupAdminPage = () => {
+export const AdminPopupPage = () => {
   const { showError, showSuccess } = useNotification()
 
   const [title, setTitle] = useState('')

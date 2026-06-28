@@ -346,6 +346,19 @@ export const adminService = {
     })
   },
 
+  markAllFeedbacksRead: async (): Promise<{ modifiedCount: number }> => {
+    const response = await axios.patch('/api/admin/feedbacks/read', {}, {
+      withCredentials: true
+    })
+    return response.data
+  },
+
+  deleteReadFeedbacks: async (): Promise<void> => {
+    await axios.delete('/api/admin/feedbacks/read', {
+      withCredentials: true
+    })
+  },
+
   updateAdminFeedbackReadStatus: async (
     id: string,
     isRead: boolean

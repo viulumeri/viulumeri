@@ -606,6 +606,16 @@ const deleteFaqResponsePromise = page.waitForResponse(response => {
 
 await updatedFaqSection.getByRole('button', { name: 'Poista' }).click()
 
+const deleteDialog = page
+  .locator('div.fixed.inset-0')
+  .filter({ hasText: 'Poista kysymys?' })
+
+await expect(deleteDialog).toBeVisible()
+
+await deleteDialog
+  .getByRole('button', { name: 'Poista' })
+  .click()
+
 const deleteFaqResponse = await deleteFaqResponsePromise
 expect(deleteFaqResponse.ok()).toBe(true)
 

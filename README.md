@@ -4,9 +4,9 @@ Viulumeri-nuottikirjan digitaalinen kumppani säestysraitojen toistamiseen ja ha
 
 ## Ohjeet
 
-Luo opettaja-, tai opiskelijatunnus. Opettajana voit luoda liittymislinkin, jota klikkaamalla oppilas voi liittyä oppilaaksesi.
+Luo opettaja- tai opiskelijatunnus. Opettajana voit luoda liittymislinkin, jota klikkaamalla oppilas voi liittyä oppilaaksesi.
 
-Opettajana näet oppilaslistan ja oppilasnäkymän, jossa voit antaa kotitehtäväksi Viulumeren kappaleita, sekä lisätä niihin omia ohjeita.
+Opettajana näet oppilaslistan ja oppilasnäkymän, jossa voit antaa kotitehtäväksi Viulumeren kappaleita. Voit lisätä kotitehtäviin omia ohjeita, joita voit muotoilla ja joihin voit upottaa YouTube-videoita.
 
 Oppilaana näet nykyisen (ja vanhat) kotitehtävät ja voit klikata 'harjoittelin'-nappulaa, joka mahdollistaa harjoituskertojen helpon kirjaamisen.
 
@@ -18,7 +18,11 @@ Lopulta opettajana voit merkata kappaleen oppilaskohtaisesti soitetuksi.
 
 Kappaleet-näkymässä voit selata ja toistaa kaikkia Viulumeren kappaleita, sekä nähdä onko kappale merkattu soitetuksi.
 
-Opettajat ja oppilaat voivat lähettää kehittäjälle palautetta asetusnäkymästä palautelomakkeen avulla. Lomakkeen kautta on esimerkiksi mahdollista raportoida bugeista tai ehdottaa sovellukselle uusia ominaisuuksia
+Opettajana tai oppilaana voit lähettää kehittäjälle palautetta asetusnäkymän palautelomakkeella.
+
+Ylläpitäjänä pääset admin-näkymään, jossa voit hallita käyttäjiä (haku, muokkaus, poisto, impersonointi), pop-up-ilmoituksia, kappaleita (lisäys, järjestys) ja FAQ-sisältöä sekä lukea käyttäjien lähettämiä palautteita.
+
+Sovellus on asennettavissa Android- ja iOS-mobiililaitteille. Käyttäjänä näet asennusohjeet ensimmäisellä kirjautumiskerralla, ja lisäksi löydät ne asetusnäkymästä.
 
 ## App
 
